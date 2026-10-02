@@ -1,0 +1,1911 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>筋トレ日記</title>
+<meta name="description" content="開始と終了を押すだけで、日付・入館/退館・滞在時間・種目とセットが残る筋トレ日記。">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="theme-color" content="#F2F3F5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#060708" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="筋トレ日記">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<style>
+:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px)}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: one phone-width column (max 560px) centered at every size; glass tab bar fixed to the bottom; sheets rise from the bottom edge */
+:root{
+  --bg:#F2F3F5;
+  --card:#FFFFFF;
+  --fill:#E8EAED;
+  --fill-2:#F5F6F7;
+  --fg:#0E0F11;
+  --fg-2:#3B3E44;
+  --muted:#767A82;
+  --line:rgba(14,15,17,.09);
+  --inv-bg:#0E0F11;
+  --inv-fg:#FFFFFF;
+  --rec:#E5484D;
+  --on-rec:#FFFFFF;
+  --pr:#946A1C;
+  --pr-wash:rgba(148,106,28,.12);
+  --bar:#BCC0C7;
+  --thumb-off:#FFFFFF;
+  --glass:rgba(242,243,245,.84);
+  --scrim:rgba(14,15,17,.30);
+  --shadow:0 1px 1px rgba(14,15,17,.03),0 6px 22px rgba(14,15,17,.06);
+  --pop-shadow:0 12px 32px rgba(14,15,17,.18);
+  --sans:"Geist","Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"Geist Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --r-card:20px;
+  --r-ctl:14px;
+  --ease:cubic-bezier(.22,.8,.24,1);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#060708;--card:#141518;--fill:#222428;--fill-2:#1A1C1F;--fg:#F2F3F5;--fg-2:#C7CAD0;--muted:#8C9199;
+    --line:rgba(255,255,255,.08);--inv-bg:#F2F3F5;--inv-fg:#0E0F11;--rec:#FF5C61;--on-rec:#FFFFFF;--pr:#DDB466;
+    --pr-wash:rgba(221,180,102,.14);--bar:#43474E;--thumb-off:#5B6068;--glass:rgba(6,7,8,.8);--scrim:rgba(0,0,0,.58);
+    --shadow:0 0 0 1px rgba(255,255,255,.045);--pop-shadow:0 12px 32px rgba(0,0,0,.5);color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#060708;--card:#141518;--fill:#222428;--fill-2:#1A1C1F;--fg:#F2F3F5;--fg-2:#C7CAD0;--muted:#8C9199;
+  --line:rgba(255,255,255,.08);--inv-bg:#F2F3F5;--inv-fg:#0E0F11;--rec:#FF5C61;--on-rec:#FFFFFF;--pr:#DDB466;
+  --pr-wash:rgba(221,180,102,.14);--bar:#43474E;--thumb-off:#5B6068;--glass:rgba(6,7,8,.8);--scrim:rgba(0,0,0,.58);
+  --shadow:0 0 0 1px rgba(255,255,255,.045);--pop-shadow:0 12px 32px rgba(0,0,0,.5);color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+body.no-scroll{overflow:hidden}
+h1,h2,h3,p,ol,ul{margin:0}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;touch-action:manipulation;text-align:inherit}
+button:disabled{cursor:default}
+input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--fg);outline-offset:2px;border-radius:10px}
+small{font-size:inherit}
+
+.app{max-width:560px;margin:0 auto;padding-inline:20px;padding-block:6px calc(156px + env(safe-area-inset-bottom,0px))}
+.view.enter{animation:enter .34s var(--ease)}
+@keyframes enter{from{opacity:.001;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* top bar */
+.topbar{display:flex;align-items:center;justify-content:space-between;height:44px}
+.brand{font-weight:600;font-size:13px;letter-spacing:.04em;color:var(--fg-2)}
+.icon-btn{width:40px;height:40px;display:grid;place-items:center;border-radius:12px;color:var(--fg-2);flex:none}
+.icon-btn:active{background:var(--fill)}
+.icon-btn svg{width:22px;height:22px}
+
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:500}
+.eyebrow.on{color:var(--fg)}
+
+/* hero */
+.hero{display:grid;gap:6px;padding-block:18px 4px}
+.hero-date{font-size:15px;color:var(--fg-2);font-weight:500}
+.greet{font-size:clamp(30px,8.8vw,44px);font-weight:600;letter-spacing:-.025em;line-height:1.04;text-wrap:balance}
+.status{color:var(--muted);font-size:15px}
+.clock{font-size:clamp(76px,24vw,112px);font-weight:300;letter-spacing:-.055em;line-height:.95;font-variant-numeric:tabular-nums;margin-top:26px;margin-left:-.04em}
+.clock-cap{font-size:13px;color:var(--muted)}
+.hero-cta{margin-top:26px}
+.live .clock{margin-top:18px}
+.live-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px}
+.rec{display:inline-flex;align-items:center;gap:9px}
+.rec-dot{width:8px;height:8px;border-radius:50%;background:var(--rec);animation:rec 1.9s ease-out infinite}
+@keyframes rec{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--rec) 55%,transparent)}100%{box-shadow:0 0 0 11px color-mix(in srgb,var(--rec) 0%,transparent)}}
+.in-time{display:flex;align-items:baseline;gap:8px;font-size:13px;color:var(--muted);padding:6px 10px;margin-right:-10px;border-radius:12px}
+.in-time:active{background:var(--fill)}
+.in-time b{font-size:24px;color:var(--fg);font-weight:600;letter-spacing:-.015em;font-variant-numeric:tabular-nums}
+.mini{display:flex;flex-wrap:wrap;gap:6px 20px;color:var(--muted);font-size:13px;margin:8px 0 16px}
+.mini b{color:var(--fg);font-size:17px;font-weight:600;margin-left:6px;font-variant-numeric:tabular-nums}
+.done-range{font-size:clamp(42px,12.5vw,60px);font-weight:300;letter-spacing:-.045em;line-height:1;margin-top:14px;font-variant-numeric:tabular-nums}
+.done-range span{color:var(--muted);margin:0 .14em}
+.done-dur{font-size:clamp(28px,8vw,36px);font-weight:600;letter-spacing:-.02em;line-height:1.15}
+.done-dur small,.tile-v small,.kv-v small{font-size:.5em;color:var(--muted);font-weight:500;margin:0 .18em 0 .06em;letter-spacing:0}
+.pr-line{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--fg-2);margin-top:6px}
+.hero .tiles{margin:18px 0 6px}
+.stack{display:grid;gap:4px}
+
+/* buttons */
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:56px;border-radius:18px;font-size:17px;font-weight:600;letter-spacing:.01em;text-align:center;transition:transform .16s var(--ease),background-color .2s,opacity .2s}
+.btn:active{transform:scale(.982)}
+.btn svg{width:20px;height:20px}
+.btn-primary{background:var(--inv-bg);color:var(--inv-fg)}
+.btn-xl{min-height:66px;font-size:18px;border-radius:22px}
+.btn-soft{background:var(--fill);color:var(--fg)}
+.btn-quiet{min-height:46px;color:var(--fg-2);font-size:15px;font-weight:500}
+.btn-danger{background:var(--rec);color:var(--on-rec)}
+.btn-soft.danger{color:var(--rec)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* cards & tiles */
+.card{background:var(--card);border-radius:var(--r-card);box-shadow:var(--shadow);padding:18px}
+.section{margin-top:26px;display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+.section > *,.workout > *,.copy > *{min-width:0}
+.tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.tile{background:var(--card);border-radius:18px;box-shadow:var(--shadow);padding:13px 14px 12px;display:grid;gap:3px;min-width:0;align-content:start}
+.tile-l{font-size:12px;color:var(--muted)}
+.tile-v{font-size:26px;font-weight:600;letter-spacing:-.02em;line-height:1.12;white-space:nowrap}
+.tile-s{font-size:11.5px;color:var(--muted)}
+.last{display:grid;gap:4px;text-align:left;width:100%}
+.last-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.last-d{font-size:12px;color:var(--muted)}
+.last-t{font-size:20px;font-weight:600;letter-spacing:-.01em;margin-top:4px}
+.last-l{font-size:13px;color:var(--fg-2);line-height:1.6}
+.last-m{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.howto{display:grid;gap:14px}
+.steps{list-style:none;padding:0;display:grid;gap:14px;counter-reset:s}
+.steps li{display:grid;grid-template-columns:28px 1fr;gap:2px 12px;counter-increment:s}
+.steps li::before{content:counter(s);grid-row:1/3;width:28px;height:28px;border-radius:50%;background:var(--fill);display:grid;place-items:center;font-family:var(--mono);font-size:12px;color:var(--fg-2)}
+.steps b{font-weight:600;font-size:15px}
+.steps span{font-size:13px;color:var(--muted)}
+
+.notice{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 12px 12px 14px;border-radius:16px;background:var(--fill);font-size:13px;color:var(--fg-2);margin-top:6px}
+.notice div{display:grid;gap:1px}
+.notice b{color:var(--fg);font-weight:600;font-size:14px}
+.notice-btn{flex:none;min-height:36px;padding:0 12px;border-radius:11px;background:var(--card);color:var(--fg);font-weight:600;font-size:13px;box-shadow:var(--shadow);white-space:nowrap}
+.notice.warn{background:color-mix(in srgb,var(--rec) 12%,var(--card));color:var(--fg)}
+
+/* workout editor */
+.workout{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;margin-top:22px}
+.rest-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 10px 10px 16px;background:var(--card);border-radius:18px;box-shadow:var(--shadow)}
+.rr-t{font-size:14px;font-weight:600}
+.rr-s{font-size:11.5px;color:var(--muted)}
+.seg{display:flex;gap:3px;background:var(--fill);padding:3px;border-radius:12px;flex:none}
+.seg button{min-width:42px;height:32px;padding:0 6px;border-radius:9px;font-family:var(--mono);font-size:13px;color:var(--fg-2);text-align:center}
+.seg button.on{background:var(--card);color:var(--fg);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+
+.copy{display:grid;gap:10px}
+.copy .eyebrow{padding:6px 4px 0}
+.mo{display:grid;gap:4px;width:100%;text-align:left;padding:16px;background:var(--card);border-radius:var(--r-card);box-shadow:var(--shadow);transition:transform .16s var(--ease)}
+.mo:active{transform:scale(.99)}
+.mo-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.mo-t{font-weight:600;font-size:16px}
+.mo-d{font-size:12px;color:var(--muted);white-space:nowrap}
+.mo-l{font-size:13px;color:var(--fg-2);line-height:1.6}
+.mo-go{margin-top:10px;display:flex;align-items:center;justify-content:center;gap:8px;min-height:50px;border-radius:15px;background:var(--inv-bg);color:var(--inv-fg);font-weight:600;font-size:15px}
+.mo-go svg{width:18px;height:18px}
+.mo.small{padding:12px 16px}
+.mo.small .mo-t{font-size:15px}
+.empty-ex{padding:20px 6px 4px;font-size:14px;color:var(--muted);text-align:center}
+
+.ex{background:var(--card);border-radius:var(--r-card);box-shadow:var(--shadow);padding:18px 16px 10px;display:grid;gap:14px;scroll-margin-top:24px}
+.ex-h{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.ex-en{font-family:var(--mono);font-size:10.5px;letter-spacing:.15em;color:var(--muted);text-transform:uppercase}
+.ex-name{font-size:19px;font-weight:600;letter-spacing:-.01em;line-height:1.3;margin-top:1px}
+.ex-part{flex:none;font-size:11.5px;color:var(--fg-2);background:var(--fill);border-radius:999px;padding:3px 10px;margin-top:2px}
+.prev{display:grid;gap:8px;padding:11px 12px;border-radius:14px;background:var(--fill-2)}
+.prev-l{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+.prev-sets{display:flex;flex-wrap:wrap;gap:6px}
+.pchip{font-family:var(--mono);font-size:13px;padding:4px 9px;border-radius:9px;background:var(--card);color:var(--fg-2);font-variant-numeric:tabular-nums;box-shadow:var(--shadow)}
+.pchip.is-next{box-shadow:inset 0 0 0 1.5px var(--fg);color:var(--fg)}
+.prev.is-empty{font-size:12.5px;color:var(--muted)}
+.sets{list-style:none;padding:0;display:grid}
+.set{display:grid;grid-template-columns:24px minmax(0,1fr) auto 34px;align-items:center;gap:8px;min-height:46px;border-bottom:1px solid var(--line)}
+.set:last-child{border-bottom:0}
+.set.is-new{animation:rowin .5s var(--ease)}
+@keyframes rowin{from{opacity:.001;transform:translateY(-8px)}to{opacity:1;transform:none}}
+.set-n{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.set-v{font-size:21px;font-weight:500;letter-spacing:-.01em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.set-v small{font-size:13px;color:var(--muted);margin-left:2px}
+.set-v .x{color:var(--muted);margin:0 7px;font-weight:400;font-size:16px}
+.set-v .bw{font-size:16px}
+.set-tags{display:flex;gap:6px;align-items:center}
+.up{font-family:var(--mono);font-size:11.5px;color:var(--fg-2);white-space:nowrap}
+.badge-pr{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.12em;color:var(--pr);background:var(--pr-wash);padding:3px 7px;border-radius:6px;white-space:nowrap}
+.set-del{width:34px;height:34px;color:var(--muted);border-radius:10px;display:grid;place-items:center}
+.set-del svg{width:16px;height:16px}
+.set-del:active{background:var(--fill)}
+.target{grid-column:1/-1;font-size:12.5px;color:var(--muted);padding-left:4px}
+.target b{font-family:var(--mono);font-weight:500;color:var(--fg);margin-left:6px}
+.entry{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.field{display:grid;gap:6px;min-width:0}
+.flabel{font-size:12px;color:var(--muted);padding-left:4px}
+.stepper{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;align-items:center;height:56px;border-radius:var(--r-ctl);background:var(--fill);transition:box-shadow .2s}
+.stepper:focus-within{box-shadow:inset 0 0 0 1.5px var(--fg)}
+.stepper button{height:100%;font-size:24px;line-height:1;color:var(--fg-2);text-align:center;border-radius:var(--r-ctl)}
+.stepper button:active{color:var(--fg);background:color-mix(in srgb,var(--fg) 6%,transparent)}
+.stepper input{width:100%;min-width:0;border:0;background:transparent;text-align:center;font-size:24px;font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:-.01em;padding:0;outline:none;-moz-appearance:textfield}
+.stepper input::placeholder{color:var(--muted);font-weight:400}
+.btn-log{grid-column:1/-1;min-height:54px;border-radius:16px;background:var(--inv-bg);color:var(--inv-fg);font-weight:600;font-size:16px;text-align:center;transition:transform .16s var(--ease)}
+.btn-log:active{transform:scale(.982)}
+.ex-foot{display:flex;gap:2px;justify-content:flex-end}
+.link-btn{font-size:13px;color:var(--muted);padding:8px 10px;border-radius:10px}
+.link-btn:active{background:var(--fill)}
+.memo{display:block;width:100%;min-height:64px;border:0;border-radius:12px;background:var(--fill-2);padding:10px 12px;resize:vertical;font-size:16px;line-height:1.5;outline:none}
+.memo:focus{box-shadow:inset 0 0 0 1.5px var(--fg)}
+.shake{animation:shake .38s}
+@keyframes shake{20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}
+.btn-add svg{width:18px;height:18px}
+.end-bottom{margin-top:6px}
+
+/* tab bar */
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+.tabbar-in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);height:58px}
+.tab{display:grid;justify-items:center;align-content:center;gap:2px;font-size:10.5px;color:var(--muted);position:relative;text-align:center}
+.tab svg{width:24px;height:24px}
+.tab.on{color:var(--fg)}
+.live-dot{position:absolute;top:8px;left:calc(50% + 8px);width:8px;height:8px;border-radius:50%;background:var(--rec);box-shadow:0 0 0 2px var(--bg)}
+
+/* rest timer */
+.rest{position:fixed;z-index:25;left:16px;right:16px;margin-inline:auto;max-width:520px;bottom:calc(70px + env(safe-area-inset-bottom,0px));display:flex;align-items:center;gap:12px;padding:9px 9px 9px 11px;border-radius:24px;background:var(--inv-bg);color:var(--inv-fg);box-shadow:var(--pop-shadow)}
+.rest.pop{animation:pillin .42s var(--ease)}
+@keyframes pillin{from{opacity:.001;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}
+.rest-ring{width:42px;height:42px;transform:rotate(-90deg);flex:none}
+.rest-ring circle{fill:none;stroke-width:3.4}
+.rest-ring .trk{stroke:color-mix(in srgb,var(--inv-fg) 18%,transparent)}
+.rest-ring .prg{stroke:var(--inv-fg);stroke-linecap:round;transition:stroke-dashoffset .5s linear}
+.rest-txt{flex:1;display:grid;line-height:1.15;min-width:0}
+.rest-l{font-size:11px;opacity:.7;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rest-t{font-size:26px;font-weight:500;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.rest button{height:40px;min-width:46px;padding:0 8px;border-radius:13px;background:color-mix(in srgb,var(--inv-fg) 13%,transparent);font-family:var(--mono);font-size:13px;text-align:center;display:grid;place-items:center}
+.rest button svg{width:16px;height:16px}
+.rest.is-done{animation:done 1s ease-in-out 3}
+@keyframes done{50%{transform:scale(1.025)}}
+
+/* toast */
+.toast{position:fixed;z-index:40;left:16px;right:16px;top:calc(12px + env(safe-area-inset-top,0px));max-width:420px;margin-inline:auto;padding:12px 12px 12px 16px;border-radius:18px;background:var(--inv-bg);color:var(--inv-fg);font-size:14px;display:flex;align-items:center;gap:12px;min-height:50px;box-shadow:var(--pop-shadow);transform:translateY(-150%);opacity:0;pointer-events:none;transition:transform .42s var(--ease),opacity .3s}
+.toast.show{transform:none;opacity:1;pointer-events:auto}
+.t-act{margin-left:auto;font-weight:600;padding:7px 11px;border-radius:11px;background:color-mix(in srgb,var(--inv-fg) 14%,transparent);white-space:nowrap}
+.toast.pr{display:grid;justify-items:center;text-align:center;gap:3px;padding:18px 16px 16px;background:var(--card);color:var(--fg);box-shadow:0 0 0 1px var(--pr-wash),var(--pop-shadow)}
+.toast.pr.show{animation:prpop .55s var(--ease)}
+@keyframes prpop{0%{transform:translateY(-30%) scale(.9)}100%{transform:none}}
+.pr-badge{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.2em;color:var(--pr);background:var(--pr-wash);padding:4px 10px;border-radius:7px}
+.pr-name{font-family:var(--mono);font-size:12px;letter-spacing:.14em;color:var(--muted);margin-top:8px}
+.pr-ja{font-size:13px;color:var(--fg-2)}
+.pr-vals{font-size:30px;font-weight:300;letter-spacing:-.03em;font-variant-numeric:tabular-nums;margin-top:2px}
+.pr-vals i{font-style:normal;color:var(--muted);margin:0 10px;font-size:22px}
+.pr-vals b{font-weight:600}
+
+/* sheet */
+.sheet{position:fixed;inset:0;z-index:30;display:flex;align-items:flex-end;justify-content:center}
+.sheet-scrim{position:absolute;inset:0;background:var(--scrim);opacity:0;transition:opacity .3s}
+.sheet-panel{position:relative;width:100%;max-width:560px;max-height:min(90vh,880px);overflow:auto;overscroll-behavior:contain;background:var(--bg);border-radius:26px 26px 0 0;padding:8px 20px calc(28px + env(safe-area-inset-bottom,0px));transform:translateY(100%);transition:transform .36s var(--ease)}
+.sheet.open .sheet-scrim{opacity:1}
+.sheet.open .sheet-panel{transform:none}
+.grab{width:38px;height:5px;border-radius:3px;background:var(--bar);margin:2px auto 12px}
+.sheet-h{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px}
+.sheet-h h2{font-size:23px;font-weight:600;letter-spacing:-.015em;line-height:1.25;text-wrap:balance}
+.sheet-h .eyebrow{margin-bottom:4px}
+.sheet-h .icon-btn{margin:-4px -8px 0 0}
+.muted{color:var(--muted);font-size:14px}
+
+.search input{width:100%;height:50px;border-radius:15px;border:0;background:var(--fill);padding:0 16px;font-size:16px;outline:none}
+.search input:focus{box-shadow:inset 0 0 0 1.5px var(--fg)}
+.group-l{font-size:12px;color:var(--muted);margin:20px 4px 8px}
+.pick-list{background:var(--card);border-radius:18px;box-shadow:var(--shadow);padding:0 14px}
+.pick{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:1px 12px;width:100%;text-align:left;padding:11px 0;border-bottom:1px solid var(--line)}
+.pick:last-child{border-bottom:0}
+.pick-n{font-size:16px;font-weight:500}
+.pick-s{font-size:12px;color:var(--muted);grid-column:1;font-variant-numeric:tabular-nums}
+.pi{grid-row:1/3;grid-column:2;color:var(--fg-2);display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:var(--fill)}
+.pi svg{width:16px;height:16px}
+.pick:disabled{opacity:.45}
+.pick-on{grid-row:1/3;grid-column:2;font-size:12px;color:var(--muted)}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;height:34px;padding:0 14px;border-radius:999px;background:var(--fill);font-size:13px;color:var(--fg-2);white-space:nowrap;text-align:center}
+.chip.on{background:var(--inv-bg);color:var(--inv-fg)}
+.part-tabs{margin:18px -20px 0;padding:0 20px}
+
+.end-sum{display:grid;justify-items:center;gap:4px;padding:8px 0 18px;text-align:center}
+.end-times{font-size:clamp(40px,12vw,54px);font-weight:300;letter-spacing:-.045em;line-height:1.05;font-variant-numeric:tabular-nums}
+.end-times i{font-style:normal;color:var(--muted);margin:0 .2em;font-size:.6em;vertical-align:.12em}
+.end-dur{font-size:15px;color:var(--muted)}
+.end-dur b{color:var(--fg);font-weight:600;font-size:18px;margin-left:6px}
+.end-note{font-size:12px;color:var(--muted)}
+.end-meta{display:flex;justify-content:center;gap:18px;font-size:13px;color:var(--muted);margin-bottom:14px}
+.end-meta b{color:var(--fg);font-weight:600;margin-left:5px}
+.sheet .memo{margin-bottom:14px}
+
+.dt{display:grid;gap:12px;padding-bottom:20px}
+.dt + .dt{border-top:1px solid var(--line);padding-top:20px}
+.dt-times{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.dt-times div{background:var(--card);border-radius:16px;padding:12px 12px 10px;box-shadow:var(--shadow);display:grid;gap:1px;min-width:0}
+.dt-times span{font-size:12px;color:var(--muted)}
+.dt-times b{font-size:22px;font-weight:600;letter-spacing:-.015em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.dt-meta{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:13px;color:var(--muted);padding:0 4px}
+.dt-meta b{color:var(--fg);font-weight:600;margin-left:5px}
+.dt-list{background:var(--card);border-radius:18px;box-shadow:var(--shadow);padding:2px 16px}
+.dt-ex{padding:13px 0;border-bottom:1px solid var(--line)}
+.dt-ex:last-child{border-bottom:0}
+.dt-ex-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.dt-ex-h b{font-size:15px;font-weight:600}
+.dt-ex-h span{font-size:12px;color:var(--muted);white-space:nowrap}
+.dt-sets{list-style:none;padding:0;margin-top:6px;display:grid;gap:3px}
+.dt-sets li{display:flex;align-items:center;gap:10px;font-size:15px;font-variant-numeric:tabular-nums}
+.dt-sets .n{font-family:var(--mono);font-size:11px;color:var(--muted);width:14px}
+.dt-sets small{font-size:12px;color:var(--muted);margin-left:1px}
+.dt-sets .x{color:var(--muted);margin:0 2px}
+.dt-memo{font-size:13px;color:var(--fg-2);background:var(--fill-2);border-radius:10px;padding:8px 10px;margin-top:8px;white-space:pre-wrap}
+.confirm-t{font-size:14px;color:var(--fg-2);text-align:center;padding:4px 0 10px}
+.tag{display:inline-block;font-size:10.5px;font-weight:500;color:var(--fg-2);background:var(--fill);border-radius:6px;padding:1px 7px;vertical-align:.15em;margin-left:6px;letter-spacing:.02em}
+
+/* settings */
+.group{background:var(--card);border-radius:18px;box-shadow:var(--shadow);padding:0 16px}
+.group + .group{margin-top:14px}
+.g-row{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:56px;padding:10px 0;border-bottom:1px solid var(--line);width:100%;text-align:left}
+.g-row:last-child{border-bottom:0}
+.g-t{font-size:15px}
+.g-s{font-size:12px;color:var(--muted);margin-top:1px}
+.g-btn{cursor:pointer;font-size:15px}
+.g-btn.danger{color:var(--rec)}
+.g-confirm{display:grid;gap:10px;padding:14px 0}
+.switch{flex:none;width:51px;height:31px;border-radius:999px;background:var(--fill);position:relative;transition:background-color .22s}
+.switch::after{content:"";position:absolute;top:2px;left:2px;width:27px;height:27px;border-radius:50%;background:var(--thumb-off);box-shadow:0 2px 5px rgba(0,0,0,.18);transition:transform .26s var(--ease),background-color .22s}
+.switch[aria-checked="true"]{background:var(--fg)}
+.switch[aria-checked="true"]::after{transform:translateX(20px);background:var(--bg)}
+
+/* calendar */
+.page-h{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding-block:22px 16px}
+.page-h h1{font-size:32px;font-weight:700;letter-spacing:-.025em;line-height:1.1}
+.page-h .h-sub{font-size:16px;font-weight:500;color:var(--muted);letter-spacing:0;margin-left:8px}
+.cal{padding:14px 10px 8px}
+.cal-nav{display:flex;align-items:center;justify-content:space-between;padding:0 4px 10px}
+.cal-title{font-size:19px;font-weight:600;letter-spacing:-.01em}
+.cal-title span{color:var(--muted);font-weight:500;margin-right:6px;font-size:15px}
+.cal-nav-btns{display:flex;gap:2px}
+.cal-wd,.cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
+.cal-wd span{text-align:center;font-size:11px;color:var(--muted);padding-bottom:6px}
+.cal-grid{row-gap:2px}
+.day{display:grid;justify-items:center;align-content:start;gap:4px;padding:5px 0 9px;border-radius:13px;min-height:54px;text-align:center}
+.day:not(:disabled):active,.day.sel{background:var(--fill)}
+.day-n{width:32px;height:32px;display:grid;place-items:center;border-radius:50%;font-size:15px;font-variant-numeric:tabular-nums}
+.day.today .day-n{background:var(--inv-bg);color:var(--inv-fg);font-weight:600}
+.day.future .day-n{color:var(--muted);opacity:.6}
+.mk{width:7px;height:7px;border-radius:50%;display:block}
+.mk.train{background:var(--fg)}
+.mk.visit{box-shadow:inset 0 0 0 1.5px var(--fg)}
+.mk.rest{width:9px;height:1.5px;border-radius:1px;background:var(--muted);margin-top:3px}
+.mk.none{visibility:hidden}
+.legend{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;font-size:12px;color:var(--muted);padding:10px 0 6px;border-top:1px solid var(--line);margin-top:6px}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.list{background:var(--card);border-radius:var(--r-card);box-shadow:var(--shadow);padding:0 16px}
+.row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--line);width:100%;text-align:left}
+.row:last-child{border-bottom:0}
+.row-date{display:grid;justify-items:center;width:34px;line-height:1.15}
+.row-date b{font-size:20px;font-weight:600;font-variant-numeric:tabular-nums}
+.row-date span{font-size:11px;color:var(--muted)}
+.row-main{min-width:0;display:grid}
+.row-t{font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row-s{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chev{color:var(--muted);display:grid}
+.chev svg{width:16px;height:16px}
+.sec-l{font-size:13px;color:var(--muted);margin:0 4px -4px}
+.empty{display:grid;gap:12px;justify-items:center;text-align:center;padding:30px 20px}
+.empty p{font-size:14px;color:var(--muted);max-width:30ch}
+
+/* stats */
+.cc-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.cc-h h3{font-size:16px;font-weight:600}
+.cc-s{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.chart-card .chips{margin:14px -18px 0;padding:0 18px}
+.chart{position:relative;height:172px;margin-top:12px}
+.chart svg{display:block;overflow:visible}
+.chart .ax{font-family:var(--mono);font-size:10px;fill:var(--muted)}
+.chart .grid{stroke:var(--line);stroke-width:1}
+.chart .bar{fill:var(--bar);transition:fill .15s}
+.chart .bar.cur,.chart .bar.is-hot{fill:var(--fg)}
+.chart .avg{stroke:var(--fg-2);stroke-width:1}
+.chart .ln{fill:none;stroke:var(--fg);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.chart .area{fill:var(--fg);opacity:.06}
+.chart .pt{fill:var(--fg);stroke:var(--card);stroke-width:2;transition:r .15s}
+.chart .pt.pr{fill:var(--pr)}
+.chart .pt.is-hot{r:6px}
+.chart .lbl{font-size:12px;font-weight:600;fill:var(--fg);font-variant-numeric:tabular-nums}
+.chart .hit{fill:transparent;cursor:pointer}
+.chart-empty{display:grid;place-items:center;height:100%;font-size:13px;color:var(--muted)}
+.tip{position:absolute;left:0;top:0;pointer-events:none;transform:translate(-50%,calc(-100% - 10px));background:var(--inv-bg);color:var(--inv-fg);font-size:12px;padding:6px 10px;border-radius:10px;white-space:nowrap;opacity:0;transition:opacity .15s;font-variant-numeric:tabular-nums}
+.tip.show{opacity:1}
+.chart-key{display:flex;gap:14px;font-size:11.5px;color:var(--muted);margin-top:8px}
+.chart-key span{display:inline-flex;align-items:center;gap:6px}
+.chart-key i{width:8px;height:8px;border-radius:50%;background:var(--fg);display:block}
+.chart-key i.pr{background:var(--pr)}
+.chart-key i.line{width:14px;height:1px;border-radius:0;background:var(--fg-2)}
+.kv{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.kv:last-child{border-bottom:0}
+.kv-n{font-weight:500;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kv-s{font-size:12px;color:var(--muted)}
+.kv-v{font-size:18px;font-weight:600;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;letter-spacing:-.01em}
+.kv-v .from{color:var(--muted);font-weight:400}
+.kv-v .arr{color:var(--muted);margin:0 6px;font-weight:400}
+
+/* edit view */
+.edit-top{display:flex;align-items:center;height:44px;margin-left:-8px}
+.back{display:inline-flex;align-items:center;gap:2px;font-size:16px;color:var(--fg);padding:8px;border-radius:10px}
+.back svg{width:20px;height:20px}
+.times-edit{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.time-field{display:grid;gap:6px}
+.time-field span{font-size:12px;color:var(--muted);padding-left:4px}
+.time-field input{height:54px;border-radius:14px;border:0;background:var(--fill);padding:0 14px;font-size:21px;font-weight:600;font-variant-numeric:tabular-nums;width:100%;min-width:0;outline:none}
+.time-field input:focus{box-shadow:inset 0 0 0 1.5px var(--fg)}
+.time-field input:disabled{opacity:.5}
+.te-dur{grid-column:1/-1;font-size:13px;color:var(--muted);padding-left:4px}
+.te-dur b{color:var(--fg);font-weight:600;margin-left:6px}
+.edit-done{margin-top:18px}
+
+@media (min-width:700px){
+  .app{padding-top:24px}
+  .tabbar-in{height:62px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
+</style>
+</head>
+<body>
+
+
+<div class="app">
+  <main id="view" class="view" aria-live="off"></main>
+</div>
+
+<div id="rest" class="rest" hidden role="timer" aria-label="休憩タイマー">
+  <svg class="rest-ring" viewBox="0 0 36 36" aria-hidden="true"><circle class="trk" cx="18" cy="18" r="15"/><circle class="prg" cx="18" cy="18" r="15" pathLength="100" stroke-dasharray="100" stroke-dashoffset="0"/></svg>
+  <div class="rest-txt"><span class="rest-l">休憩</span><span class="rest-t">0:00</span></div>
+  <button data-act="restAdd" data-d="-15" aria-label="15秒減らす">−15</button>
+  <button data-act="restAdd" data-d="15" aria-label="15秒増やす">+15</button>
+  <button data-act="restStop" aria-label="休憩タイマーを止める"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 7l10 10M17 7L7 17"/></svg></button>
+</div>
+
+<nav class="tabbar" aria-label="画面の切り替え">
+  <div class="tabbar-in">
+    <button class="tab" data-act="tab" data-tab="today">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>
+      <span>今日</span><i id="liveDot" class="live-dot" hidden></i>
+    </button>
+    <button class="tab" data-act="tab" data-tab="calendar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/></svg>
+      <span>カレンダー</span>
+    </button>
+    <button class="tab" data-act="tab" data-tab="stats">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" aria-hidden="true"><path d="M5.5 19.5v-7M12 19.5V5M18.5 19.5v-10"/></svg>
+      <span>統計</span>
+    </button>
+  </div>
+</nav>
+
+<div id="sheet" class="sheet" hidden>
+  <div class="sheet-scrim" data-act="closeSheet"></div>
+  <div id="sheetPanel" class="sheet-panel" role="dialog" aria-modal="true"></div>
+</div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+'use strict';
+
+/* ============================================================
+   1. Utilities
+   ============================================================ */
+const $ = (s, r = document) => r.querySelector(s);
+const U = {
+  pad: n => String(n).padStart(2, '0'),
+  key(t) { const d = new Date(t); return `${d.getFullYear()}-${U.pad(d.getMonth() + 1)}-${U.pad(d.getDate())}`; },
+  fromKey(k) { const [y, m, d] = k.split('-').map(Number); return new Date(y, m - 1, d); },
+  hm(t) { const d = new Date(t); return `${U.pad(d.getHours())}:${U.pad(d.getMinutes())}`; },
+  md(t) { const d = new Date(t); return `${d.getMonth() + 1}月${d.getDate()}日`; },
+  mdS(t) { const d = new Date(t); return `${d.getMonth() + 1}/${d.getDate()}`; },
+  wd(t) { return '日月火水木金土'[new Date(t).getDay()]; },
+  mins(ms) { return Math.max(0, Math.round(ms / 60000)); },
+  dur(ms) { const m = U.mins(ms), h = Math.floor(m / 60), r = m % 60; return h ? `${h}時間${r}分` : `${r}分`; },
+  durS(ms) { const m = U.mins(ms), h = Math.floor(m / 60), r = m % 60; return h ? `${h}h ${r}m` : `${r}m`; },
+  durH(ms) { const m = U.mins(ms), h = Math.floor(m / 60), r = m % 60; return h ? `${h}<small>h</small>${r}<small>m</small>` : `${r}<small>m</small>`; },
+  clock(ms) { const s = Math.max(0, Math.floor(ms / 1000)); return `${U.pad(Math.floor(s / 3600))}:${U.pad(Math.floor(s / 60) % 60)}:${U.pad(s % 60)}`; },
+  mmss(ms) { const s = Math.max(0, Math.ceil(ms / 1000)); return `${Math.floor(s / 60)}:${U.pad(s % 60)}`; },
+  w(n) { return String(Math.round(n * 100) / 100); },
+  n(n) { return Math.round(n).toLocaleString('ja-JP'); },
+  id() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); },
+  esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); },
+  greet(t) { const h = new Date(t).getHours(); return h >= 4 && h < 11 ? 'Good Morning' : h >= 11 && h < 17 ? 'Good Afternoon' : 'Good Evening'; },
+  day0(t) { const d = new Date(t); d.setHours(0, 0, 0, 0); return d; },
+  addDays(d, n) { const x = new Date(d); x.setDate(x.getDate() + n); return x; },
+  weekStart(t) { const d = U.day0(t); d.setDate(d.getDate() - (d.getDay() + 6) % 7); return d; }, // Monday
+  clone: o => JSON.parse(JSON.stringify(o)),
+  dateLong(t) { return `${U.md(t)} ${U.wd(t)}曜日`; },
+};
+const fmt = {
+  volTxt: v => v >= 1000 ? `${(v / 1000).toFixed(1)}t` : `${U.n(v)}kg`,
+  volH: v => v >= 1000 ? `${(v / 1000).toFixed(1)}<small>t</small>` : `${U.n(v)}<small>kg</small>`,
+  setH: x => x.w > 0 ? `${U.w(x.w)}<small>kg</small><span class="x">×</span>${x.r}` : `<span class="bw">自重</span><span class="x">×</span>${x.r}`,
+  setT: x => x.w > 0 ? `${U.w(x.w)}kg × ${x.r}` : `自重 × ${x.r}`,
+  chip: x => `${x.w > 0 ? U.w(x.w) : '自重'}×${x.r}`,
+};
+const lsGet = k => { try { return localStorage.getItem(k); } catch { return null; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, v); return true; } catch { return false; } };
+
+const sv = (p, w = 1.8) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+const I = {
+  sliders: sv('<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>'),
+  plus: sv('<path d="M12 5v14M5 12h14"/>', 2),
+  x: sv('<path d="M7 7l10 10M17 7L7 17"/>'),
+  chevL: sv('<path d="M15 5l-7 7 7 7"/>', 2),
+  chevR: sv('<path d="M9 5l7 7-7 7"/>', 2),
+  chevLs: sv('<path d="M14 6l-6 6 6 6"/>', 2),
+  chevRs: sv('<path d="M10 6l6 6-6 6"/>', 2),
+  copy: sv('<rect x="8.5" y="8.5" width="11" height="11" rx="2.5"/><path d="M15.5 8.5V7a2.5 2.5 0 0 0-2.5-2.5H7A2.5 2.5 0 0 0 4.5 7v6A2.5 2.5 0 0 0 7 15.5h1.5"/>'),
+};
+
+/* ============================================================
+   2. Exercise library
+   ============================================================ */
+const PARTS = { chest: '胸', back: '背中', legs: '脚', shoulders: '肩', arms: '腕', core: '腹', other: 'その他' };
+const LIB = [
+  ['ベンチプレス', 'Bench Press', 'chest'], ['インクラインベンチプレス', 'Incline Bench Press', 'chest'], ['インクラインダンベルプレス', 'Incline DB Press', 'chest'],
+  ['ダンベルプレス', 'Dumbbell Press', 'chest'], ['ダンベルフライ', 'Dumbbell Fly', 'chest'], ['ペックフライ', 'Pec Fly', 'chest'],
+  ['チェストプレス', 'Chest Press', 'chest'], ['ケーブルクロスオーバー', 'Cable Crossover', 'chest'], ['ディップス', 'Dips', 'chest'],
+  ['デッドリフト', 'Deadlift', 'back'], ['ラットプルダウン', 'Lat Pulldown', 'back'], ['懸垂', 'Pull-up', 'back'],
+  ['ベントオーバーロウ', 'Bent-over Row', 'back'], ['ワンハンドロウ', 'One-arm Row', 'back'], ['シーテッドロウ', 'Seated Row', 'back'],
+  ['Tバーロウ', 'T-bar Row', 'back'], ['バックエクステンション', 'Back Extension', 'back'],
+  ['スクワット', 'Squat', 'legs'], ['レッグプレス', 'Leg Press', 'legs'], ['ブルガリアンスクワット', 'Bulgarian Split Squat', 'legs'],
+  ['ルーマニアンデッドリフト', 'Romanian Deadlift', 'legs'], ['レッグエクステンション', 'Leg Extension', 'legs'], ['レッグカール', 'Leg Curl', 'legs'],
+  ['ヒップスラスト', 'Hip Thrust', 'legs'], ['カーフレイズ', 'Calf Raise', 'legs'],
+  ['ショルダープレス', 'Shoulder Press', 'shoulders'], ['サイドレイズ', 'Lateral Raise', 'shoulders'], ['リアデルトフライ', 'Rear Delt Fly', 'shoulders'],
+  ['フェイスプル', 'Face Pull', 'shoulders'], ['アップライトロウ', 'Upright Row', 'shoulders'],
+  ['バーベルカール', 'Barbell Curl', 'arms'], ['ダンベルカール', 'Dumbbell Curl', 'arms'], ['ハンマーカール', 'Hammer Curl', 'arms'],
+  ['トライセプスプレスダウン', 'Triceps Pushdown', 'arms'], ['フレンチプレス', 'French Press', 'arms'], ['ナローベンチプレス', 'Close-grip Bench', 'arms'],
+  ['アブローラー', 'Ab Roller', 'core'], ['クランチ', 'Crunch', 'core'], ['ハンギングレッグレイズ', 'Hanging Leg Raise', 'core'], ['ケーブルクランチ', 'Cable Crunch', 'core'],
+];
+const LIBMAP = new Map(LIB.map(([ja, en, part]) => [ja, { en, part }]));
+const Lib = {
+  part: name => LIBMAP.get(name)?.part || Store.meta.custom[name] || 'other',
+  en: name => LIBMAP.get(name)?.en || '',
+};
+
+/* ============================================================
+   3. Store — localStorage first, private cloud copy when available
+   ============================================================ */
+const LS = { data: 'kintore-diary.v1', rest: 'kintore-diary.rest' };
+const DEFAULT_SETTINGS = { restAuto: true, restSec: 90, step: 2.5, wake: false };
+const normMeta = m => ({ activeId: m?.activeId ?? null, settings: { ...DEFAULT_SETTINGS, ...(m?.settings || {}) }, custom: { ...(m?.custom || {}) }, updatedAt: m?.updatedAt || 0 });
+const blankState = () => ({ v: 1, sessions: {}, meta: normMeta(null) });
+
+const Store = {
+  state: blankState(),
+  rev: 1,
+  localOK: true,
+  subs: new Set(),
+  get meta() { return this.state.meta; },
+  get settings() { return this.state.meta.settings; },
+  load() {
+    this.localOK = lsSet('kintore-diary.probe', '1');
+    const raw = lsGet(LS.data);
+    if (!raw) return;
+    try {
+      const s = JSON.parse(raw);
+      if (s && s.v === 1) this.state = { v: 1, sessions: s.sessions || {}, meta: normMeta(s.meta) };
+    } catch {}
+    this.rev++;
+  },
+  persist() { this.localOK = lsSet(LS.data, JSON.stringify(this.state)); },
+  /* Every change goes through here: stamp, save locally, queue cloud write, re-render. */
+  commit({ sessions = [], meta = false, silent = false } = {}) {
+    const now = Date.now();
+    for (const id of sessions) { const s = this.state.sessions[id]; if (s) s.updatedAt = now; }
+    if (meta) this.state.meta.updatedAt = now;
+    this.rev++;
+    this.persist();
+    Cloud.queue(sessions, meta);
+    if (!silent) this.emit(false);
+  },
+  emit(remote) { this.subs.forEach(f => f(remote)); },
+};
+
+const Model = {
+  get: id => Store.state.sessions[id],
+  newSession(start, end = null) {
+    return { id: U.id(), date: U.key(start), start, end, exercises: [], memo: '', updatedAt: 0 };
+  },
+  start(t = Date.now()) {
+    const s = this.newSession(t);
+    Store.state.sessions[s.id] = s;
+    Store.meta.activeId = s.id;
+    Store.commit({ sessions: [s.id], meta: true });
+    return s;
+  },
+  createPast(start, end) {
+    const s = this.newSession(start, end);
+    Store.state.sessions[s.id] = s;
+    Store.commit({ sessions: [s.id] });
+    return s;
+  },
+  finish(id, t = Date.now()) {
+    const s = this.get(id); if (!s) return;
+    s.end = Math.max(t, s.start + 60000);
+    if (Store.meta.activeId === id) Store.meta.activeId = null;
+    Store.commit({ sessions: [id], meta: true });
+  },
+  tombstone(s) { return { id: s.id, date: s.date, start: s.start, deleted: true, exercises: [], updatedAt: 0 }; },
+  remove(ids) {
+    let meta = false;
+    for (const id of ids) {
+      const s = this.get(id); if (!s) continue;
+      Store.state.sessions[id] = this.tombstone(s);
+      if (Store.meta.activeId === id) { Store.meta.activeId = null; meta = true; }
+    }
+    Store.commit({ sessions: ids, meta });
+  },
+  addExercise(sid, name) {
+    const s = this.get(sid);
+    const e = { id: U.id(), name, sets: [], memo: '' };
+    s.exercises.push(e);
+    Store.commit({ sessions: [sid] });
+    return e;
+  },
+};
+
+/* Optional cloud copy: each signed-in viewer's private subtree on claude.ai.
+   One document per month ("m2026-10") plus one "meta" document. Newer updatedAt wins. */
+const Cloud = {
+  col: null, status: 'off', pending: new Set(), metaDirty: false, timer: 0, busy: false,
+  month: s => 'm' + s.date.slice(0, 7),
+  label() {
+    if (this.status === 'off') return Store.localOK ? 'この端末に保存しています' : 'この環境では保存できません。閉じると記録が消えます';
+    if (this.status === 'syncing') return 'このブラウザ＋あなた専用のクラウド領域（同期中）';
+    if (this.status === 'error') return 'クラウドに同期できませんでした。このブラウザには保存されています';
+    return 'このブラウザ＋あなた専用のクラウド領域（同期済み）';
+  },
+  setStatus(s) { this.status = s; if (Sheet.fn === settingsSheet) Sheet.refresh(); },
+  async init() {
+    const c = window.claude;
+    if (!c || typeof c.use !== 'function') return;
+    let db = null, user = null;
+    try { [db, user] = await Promise.all([c.use('db'), c.use('user')]); } catch { return; }
+    if (!db || !user) return;
+    let uid = null;
+    try { uid = await user.id(); } catch {}
+    if (!uid) return;
+    try { this.col = db.collection('data/users/' + uid); } catch { this.col = null; return; }
+    this.setStatus('syncing');
+    try {
+      const snap = await this.col.limit(1000).get();
+      const r = this.merge(snap.docs, true);
+      r.push.forEach(m => this.pending.add(m));
+      if (r.pushMeta) this.metaDirty = true;
+      if (r.changed) { Store.rev++; Store.persist(); Store.emit(true); }
+      await this.flush();
+      this.col.limit(1000).onSnapshot(qs => {
+        const m = this.merge(qs.docs, false);
+        if (m.changed) { Store.rev++; Store.persist(); Store.emit(true); }
+      }, () => {});
+    } catch { this.setStatus('error'); }
+  },
+  merge(docs, collect) {
+    const st = Store.state;
+    let changed = false, pushMeta = false;
+    const push = new Set(), rs = {};
+    let rm = null;
+    for (const d of docs) {
+      if (!d.exists) continue;
+      const b = d.data(); if (!b) continue;
+      if (d.id === 'meta') rm = b;
+      else if (b.sessions && typeof b.sessions === 'object') Object.assign(rs, b.sessions);
+    }
+    for (const [id, r] of Object.entries(rs)) {
+      if (!r || typeof r.start !== 'number' || !r.date) continue;
+      const l = st.sessions[id];
+      if (!l || (r.updatedAt || 0) > (l.updatedAt || 0)) {
+        const copy = U.clone(r); copy.exercises = copy.exercises || [];
+        st.sessions[id] = copy; changed = true;
+      } else if (collect && (l.updatedAt || 0) > (r.updatedAt || 0)) push.add(this.month(l));
+    }
+    if (collect) for (const l of Object.values(st.sessions)) if (!rs[l.id]) push.add(this.month(l));
+    if (rm && (rm.updatedAt || 0) > (st.meta.updatedAt || 0)) { st.meta = normMeta(rm); changed = true; }
+    else if (collect && st.meta.updatedAt && (!rm || st.meta.updatedAt > (rm.updatedAt || 0))) pushMeta = true;
+    return { changed, push, pushMeta };
+  },
+  queue(ids, meta) {
+    if (!this.col) return;
+    for (const id of ids) { const s = Store.state.sessions[id]; if (s) this.pending.add(this.month(s)); }
+    if (meta) this.metaDirty = true;
+    clearTimeout(this.timer);
+    this.timer = setTimeout(() => this.flush(), 700);
+  },
+  async flush() {
+    if (!this.col) return;
+    if (this.busy) { clearTimeout(this.timer); this.timer = setTimeout(() => this.flush(), 700); return; }
+    if (!this.pending.size && !this.metaDirty) { this.setStatus('synced'); return; }
+    this.busy = true; this.setStatus('syncing');
+    let ok = true;
+    try {
+      for (const m of [...this.pending]) {
+        this.pending.delete(m);
+        const sessions = {};
+        for (const s of Object.values(Store.state.sessions)) if (this.month(s) === m) sessions[s.id] = s;
+        if (!(await this.write(m, { sessions }))) { this.pending.add(m); ok = false; }
+      }
+      if (this.metaDirty) {
+        this.metaDirty = false;
+        const mt = Store.meta;
+        if (!(await this.write('meta', { activeId: mt.activeId, settings: mt.settings, custom: mt.custom, updatedAt: mt.updatedAt }))) { this.metaDirty = true; ok = false; }
+      }
+    } finally { this.busy = false; }
+    this.setStatus(ok ? 'synced' : 'error');
+  },
+  async write(id, body) {
+    for (let a = 0; a < 2; a++) {
+      try { await this.col.doc(id).set(U.clone(body)); return true; }
+      catch (e) {
+        if (e?.code !== 'unavailable' || a) return false;
+        await new Promise(r => setTimeout(r, 600 + Math.random() * 600));
+      }
+    }
+    return false;
+  },
+};
+
+/* ============================================================
+   4. Queries & analytics
+   ============================================================ */
+const Q = {
+  _rev: 0, _all: [], _srev: 0, _st: null,
+  all() {
+    if (this._rev !== Store.rev) {
+      this._all = Object.values(Store.state.sessions).filter(s => !s.deleted).sort((a, b) => a.start - b.start);
+      this._rev = Store.rev;
+    }
+    return this._all;
+  },
+  active() { const id = Store.meta.activeId; const s = id && Store.state.sessions[id]; return s && !s.deleted && !s.end ? s : null; },
+  onDate(k) { return this.all().filter(s => s.date === k); },
+  sets(s) { return s.exercises.reduce((n, e) => n + e.sets.length, 0); },
+  volume(s) { return s.exercises.reduce((v, e) => v + e.sets.reduce((a, x) => a + x.w * x.r, 0), 0); },
+  trained(s) { return this.sets(s) > 0; },
+  lastSetAt(s) { let t = 0; s.exercises.forEach(e => e.sets.forEach(x => { if (x.at > t) t = x.at; })); return t; },
+  prev(name, s) {
+    const list = this.all();
+    for (let i = list.length - 1; i >= 0; i--) {
+      const o = list[i];
+      if (o.id === s.id || o.start >= s.start) continue;
+      const e = o.exercises.find(x => x.name === name && x.sets.length);
+      if (e) return { s: o, e };
+    }
+    return null;
+  },
+  best(name, s) {
+    let b = null;
+    for (const o of this.all()) {
+      if (o.id === s.id || o.start >= s.start) continue;
+      for (const e of o.exercises) if (e.name === name) for (const x of e.sets) if (b === null || x.w > b) b = x.w;
+    }
+    return b;
+  },
+  prFlags(s, e) {
+    const b = this.best(e.name, s);
+    let m = -Infinity;
+    return e.sets.map(x => { const pr = b !== null && x.w > Math.max(b, m); m = Math.max(m, x.w); return pr; });
+  },
+  prCount(s) { return s.exercises.filter(e => this.prFlags(s, e).some(Boolean)).length; },
+  menus(s, n = 4) {
+    const out = [], seen = new Set(), list = this.all();
+    for (let i = list.length - 1; i >= 0 && out.length < n; i--) {
+      const o = list[i];
+      if (o.id === s.id || !o.exercises.length) continue;
+      const sig = o.exercises.map(e => e.name).join('|');
+      if (seen.has(sig)) continue;
+      seen.add(sig); out.push(o);
+    }
+    return out;
+  },
+  title(s) {
+    const ps = [...new Set(s.exercises.map(e => Lib.part(e.name)))].filter(p => p !== 'other').map(p => PARTS[p]);
+    return ps.length ? ps.join('・') : s.exercises.length ? 'トレーニング' : '来館のみ';
+  },
+  dayState(k) { const ss = this.onDate(k); if (!ss.length) return null; return ss.some(s => this.trained(s)) ? 'train' : 'visit'; },
+  firstDate() { const a = this.all(); return a.length ? a[0].date : null; },
+  hasSamples() { return this.all().some(s => s.sample); },
+  avgStartMin() {
+    const a = this.all().slice(-12); if (!a.length) return null;
+    return Math.round(a.reduce((t, s) => t + (s.start - U.day0(s.start).getTime()) / 60000, 0) / a.length);
+  },
+  stats() {
+    if (this._srev === Store.rev && this._st) return this._st;
+    const all = this.all(), now = Date.now();
+    const days = new Set(all.map(s => s.date));
+    const ym = U.key(now).slice(0, 7);
+    const ws = U.weekStart(now), we = U.addDays(ws, 7);
+    const month = [...days].filter(k => k.startsWith(ym)).length;
+    const week = [...days].filter(k => { const t = U.fromKey(k); return t >= ws && t < we; }).length;
+    const ended = all.filter(s => s.end);
+    const total = ended.reduce((a, s) => a + (s.end - s.start), 0);
+    const avg = ended.length ? total / ended.length : 0;
+    const sets = all.reduce((a, s) => a + this.sets(s), 0);
+    let streak = 0, d = U.day0(now);
+    if (!days.has(U.key(d))) d = U.addDays(d, -1);
+    while (days.has(U.key(d))) { streak++; d = U.addDays(d, -1); }
+    let longest = 0, run = 0, prevK = null;
+    for (const k of [...days].sort()) {
+      run = prevK && U.key(U.addDays(U.fromKey(prevK), 1)) === k ? run + 1 : 1;
+      longest = Math.max(longest, run); prevK = k;
+    }
+    const ex = new Map();
+    for (const s of all) for (const e of s.exercises) {
+      if (!e.sets.length) continue;
+      const top = Math.max(...e.sets.map(x => x.w));
+      const reps = Math.max(...e.sets.filter(x => x.w === top).map(x => x.r));
+      let r = ex.get(e.name);
+      if (!r) { r = { name: e.name, best: -1, bestReps: 0, bestAt: 0, history: [], count: 0 }; ex.set(e.name, r); }
+      r.count++;
+      r.history.push({ t: s.start, top, reps });
+      if (top > r.best || (top === r.best && reps > r.bestReps)) { r.best = top; r.bestReps = reps; r.bestAt = s.start; }
+    }
+    const improved = [...ex.values()]
+      .filter(r => r.history.length > 1 && r.history.at(-1).top > r.history.at(-2).top)
+      .map(r => ({ name: r.name, from: r.history.at(-2).top, to: r.history.at(-1).top, t: r.history.at(-1).t }))
+      .sort((a, b) => b.t - a.t);
+    this._st = { count: all.length, month, week, total, avg, sets, streak, longest, ex, improved };
+    this._srev = Store.rev;
+    return this._st;
+  },
+};
+
+/* ============================================================
+   5. UI primitives: sheet, toast, rest timer, sound, wake lock
+   ============================================================ */
+const UI = {
+  tab: 'today', back: 'today', editId: null, addSid: null,
+  calMonth: new Date(new Date().getFullYear(), new Date().getMonth(), 1), calSel: null,
+  statEx: null, flash: null, memoOpen: new Set(), exQuery: '', exPart: 'chest',
+  confirmDel: null, confirmWipe: false, undo: null, endMemo: '',
+};
+const Drafts = {
+  m: new Map(),
+  get(s, e, prev) {
+    if (this.m.has(e.id)) return this.m.get(e.id);
+    const last = e.sets[e.sets.length - 1] || prev?.e.sets[0];
+    const d = { w: last ? U.w(last.w) : '', r: last ? String(last.r) : '' };
+    this.m.set(e.id, d);
+    return d;
+  },
+};
+
+const Sheet = {
+  root: null, panel: null, fn: null, t: 0,
+  open(fn) {
+    this.fn = fn; clearTimeout(this.t);
+    this.panel.innerHTML = '<div class="grab"></div>' + fn();
+    this.panel.scrollTop = 0;
+    this.root.hidden = false;
+    document.body.classList.add('no-scroll');
+    requestAnimationFrame(() => requestAnimationFrame(() => this.root.classList.add('open')));
+  },
+  refresh() {
+    if (!this.fn || this.root.hidden) return;
+    const st = this.panel.scrollTop;
+    this.panel.innerHTML = '<div class="grab"></div>' + this.fn();
+    this.panel.scrollTop = st;
+  },
+  close() {
+    if (!this.fn) return;
+    this.fn = null; UI.confirmDel = null; UI.confirmWipe = false;
+    this.root.classList.remove('open');
+    document.body.classList.remove('no-scroll');
+    this.t = setTimeout(() => { this.root.hidden = true; this.panel.innerHTML = ''; }, 340);
+  },
+};
+
+const Toast = {
+  el: null, t: 0,
+  show(html, ms = 2600, cls = '') {
+    clearTimeout(this.t);
+    this.el.className = 'toast' + (cls ? ' ' + cls : '');
+    this.el.innerHTML = html;
+    void this.el.offsetWidth;
+    this.el.classList.add('show');
+    this.t = setTimeout(() => this.hide(), ms);
+  },
+  hide() { this.el.classList.remove('show'); },
+  pr(name, from, to) {
+    const en = Lib.en(name);
+    this.show(`<span class="pr-badge">NEW PR</span><span class="pr-name">${en ? U.esc(en.toUpperCase()) : U.esc(name)}</span>${en ? `<span class="pr-ja">${U.esc(name)}</span>` : ''}<span class="pr-vals">${U.w(from)}kg<i>→</i><b>${U.w(to)}kg</b></span>`, 3800, 'pr');
+  },
+};
+
+const Sound = {
+  ctx: null,
+  prime() {
+    try {
+      if (!this.ctx) { const C = window.AudioContext || window.webkitAudioContext; if (C) this.ctx = new C(); }
+      if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+    } catch {}
+  },
+  chime() {
+    const c = this.ctx; if (!c || c.state !== 'running') return;
+    const t0 = c.currentTime;
+    [[0, 880], [0.2, 1320]].forEach(([dt, f]) => {
+      const o = c.createOscillator(), g = c.createGain();
+      o.type = 'sine'; o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, t0 + dt);
+      g.gain.exponentialRampToValueAtTime(0.2, t0 + dt + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + dt + 0.4);
+      o.connect(g).connect(c.destination);
+      o.start(t0 + dt); o.stop(t0 + dt + 0.45);
+    });
+  },
+};
+const Haptic = {
+  tap() { try { navigator.vibrate && navigator.vibrate(10); } catch {} },
+  done() { try { navigator.vibrate && navigator.vibrate([180, 90, 180]); } catch {} },
+};
+
+const Rest = {
+  el: null, end: 0, total: 0, doneAt: 0,
+  load() {
+    try { const r = JSON.parse(lsGet(LS.rest) || 'null'); if (r && r.end > Date.now()) { this.end = r.end; this.total = r.total; } } catch {}
+  },
+  save() { lsSet(LS.rest, JSON.stringify(this.end ? { end: this.end, total: this.total } : null)); },
+  start(sec) { this.total = sec * 1000; this.end = Date.now() + this.total; this.doneAt = 0; this.save(); this.paint(true); },
+  add(sec) {
+    if (!this.end) return;
+    if (this.doneAt) { if (sec > 0) this.start(sec); return; }
+    this.end = Math.max(Date.now() + 1000, this.end + sec * 1000);
+    this.total = Math.max(this.total + sec * 1000, this.end - Date.now(), 1000);
+    this.save(); this.paint();
+  },
+  stop() { this.end = 0; this.doneAt = 0; this.save(); this.paint(); },
+  tick() {
+    if (!this.end) return;
+    if (this.end - Date.now() <= 0 && !this.doneAt) { this.doneAt = Date.now(); Sound.chime(); Haptic.done(); }
+    if (this.doneAt && Date.now() - this.doneAt > 8000) { this.stop(); return; }
+    this.paint();
+  },
+  paint(fresh) {
+    const el = this.el;
+    if (!this.end) { el.hidden = true; return; }
+    el.hidden = false;
+    const left = Math.max(0, this.end - Date.now());
+    el.classList.toggle('is-done', !!this.doneAt);
+    $('.rest-t', el).textContent = this.doneAt ? '0:00' : U.mmss(left);
+    $('.rest-l', el).textContent = this.doneAt ? '休憩終了 · 次のセットへ' : `休憩 ${Math.round(this.total / 1000)}秒`;
+    $('.prg', el).style.strokeDashoffset = String(100 - (left / this.total) * 100);
+    if (fresh) { el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
+  },
+};
+
+const Wake = {
+  lock: null,
+  async sync() {
+    const want = Store.settings.wake && !!Q.active() && document.visibilityState === 'visible';
+    try {
+      if (want && !this.lock && navigator.wakeLock) {
+        this.lock = await navigator.wakeLock.request('screen');
+        this.lock.addEventListener && this.lock.addEventListener('release', () => { this.lock = null; });
+      } else if (!want && this.lock) { await this.lock.release(); this.lock = null; }
+    } catch { this.lock = null; }
+  },
+};
+
+const Caps = { downloads: null };
+
+/* ============================================================
+   6. Components
+   ============================================================ */
+function storageNotice() {
+  if (Store.localOK || Cloud.status === 'synced') return '';
+  return `<div class="notice warn"><div><b>この環境では記録を保存できません</b><span>ページを閉じると記録が消えてしまいます</span></div></div>`;
+}
+function sampleNotice() {
+  if (!Q.hasSamples()) return '';
+  return `<div class="notice"><span>サンプルデータを表示しています</span><button class="notice-btn" data-act="sampleRemove">サンプルを削除</button></div>`;
+}
+
+function restRowHTML() {
+  const cur = Store.settings.restSec;
+  return `<div class="rest-row">
+    <div><p class="rr-t">休憩タイマー</p><p class="rr-s">${Store.settings.restAuto ? '記録後に自動スタート' : 'タップでスタート'}</p></div>
+    <div class="seg" role="group" aria-label="休憩時間（秒）">${[60, 90, 120, 180].map(v => `<button class="${v === cur ? 'on' : ''}" data-act="restPick" data-v="${v}" aria-label="${v}秒">${v}</button>`).join('')}</div>
+  </div>`;
+}
+
+function copyMenuHTML(s) {
+  const ms = Q.menus(s);
+  if (!ms.length) return `<p class="empty-ex">「種目を追加」から始めましょう。<br>次回からは前回の記録が目安として表示されます。</p>`;
+  const [first, ...rest] = ms;
+  const list = o => o.exercises.map(e => U.esc(e.name)).join(' · ');
+  return `<div class="copy">
+    <p class="eyebrow">Last menu</p>
+    <button class="mo" data-act="copyMenu" data-from="${first.id}" data-sid="${s.id}">
+      <span class="mo-h"><span class="mo-t">${Q.title(first)}</span><span class="mo-d">${U.md(first.start)}（${U.wd(first.start)}）</span></span>
+      <span class="mo-l">${list(first)}</span>
+      <span class="mo-go">${I.copy}前回のメニューをコピー</span>
+    </button>
+    ${rest.length ? `<p class="eyebrow">Other days</p>` + rest.map(o => `<button class="mo small" data-act="copyMenu" data-from="${o.id}" data-sid="${s.id}">
+      <span class="mo-h"><span class="mo-t">${Q.title(o)}</span><span class="mo-d">${U.md(o.start)}</span></span>
+      <span class="mo-l">${list(o)}</span></button>`).join('') : ''}
+  </div>`;
+}
+
+function exCardHTML(s, e) {
+  const prev = Q.prev(e.name, s);
+  const prs = Q.prFlags(s, e);
+  const d = Drafts.get(s, e, prev);
+  const n = e.sets.length;
+  const en = Lib.en(e.name);
+  const prevBlock = prev
+    ? `<div class="prev"><div class="prev-l"><span>前回</span><span>${U.md(prev.s.start)}</span></div>
+        <div class="prev-sets">${prev.e.sets.map((x, i) => `<span class="pchip${i === n ? ' is-next' : ''}">${fmt.chip(x)}</span>`).join('')}</div></div>`
+    : `<div class="prev is-empty">はじめての種目です。今日の記録が次回の目安になります。</div>`;
+  const rows = e.sets.map((x, i) => {
+    const p = prev?.e.sets[i];
+    let up = '';
+    if (p) { if (x.w > p.w) up = `+${U.w(x.w - p.w)}kg`; else if (x.w === p.w && x.r > p.r) up = `+${x.r - p.r}回`; }
+    return `<li class="set${UI.flash === `${e.id}:${i}` ? ' is-new' : ''}">
+      <span class="set-n">${i + 1}</span>
+      <span class="set-v">${fmt.setH(x)}</span>
+      <span class="set-tags">${up ? `<span class="up">↑ ${up}</span>` : ''}${prs[i] ? '<span class="badge-pr">PR</span>' : ''}</span>
+      <button class="set-del" data-act="delSet" data-sid="${s.id}" data-ex="${e.id}" data-i="${i}" aria-label="${i + 1}セット目を削除">${I.x}</button>
+    </li>`;
+  }).join('');
+  const target = prev?.e.sets[n];
+  const memoShown = UI.memoOpen.has(e.id) || !!e.memo;
+  return `<article class="ex" id="ex-${e.id}">
+    <header class="ex-h">
+      <div>${en ? `<p class="ex-en">${U.esc(en)}</p>` : ''}<h3 class="ex-name">${U.esc(e.name)}</h3></div>
+      <span class="ex-part">${PARTS[Lib.part(e.name)]}</span>
+    </header>
+    ${prevBlock}
+    ${n ? `<ol class="sets">${rows}</ol>` : ''}
+    <div class="entry">
+      ${target ? `<p class="target">前回の${n + 1}セット目<b>${fmt.setT(target)}</b></p>` : ''}
+      <div class="field"><span class="flabel">重量 kg</span>
+        <div class="stepper">
+          <button data-act="step" data-ex="${e.id}" data-k="w" data-d="-1" aria-label="重量を減らす">−</button>
+          <input id="w-${e.id}" data-draft="w" data-ex="${e.id}" data-sid="${s.id}" inputmode="decimal" enterkeyhint="next" autocomplete="off" value="${U.esc(d.w)}" placeholder="0" aria-label="${U.esc(e.name)}の重量">
+          <button data-act="step" data-ex="${e.id}" data-k="w" data-d="1" aria-label="重量を増やす">+</button>
+        </div>
+      </div>
+      <div class="field"><span class="flabel">回数</span>
+        <div class="stepper">
+          <button data-act="step" data-ex="${e.id}" data-k="r" data-d="-1" aria-label="回数を減らす">−</button>
+          <input id="r-${e.id}" data-draft="r" data-ex="${e.id}" data-sid="${s.id}" inputmode="numeric" enterkeyhint="done" autocomplete="off" value="${U.esc(d.r)}" placeholder="0" aria-label="${U.esc(e.name)}の回数">
+          <button data-act="step" data-ex="${e.id}" data-k="r" data-d="1" aria-label="回数を増やす">+</button>
+        </div>
+      </div>
+      <button class="btn-log" data-act="logSet" data-sid="${s.id}" data-ex="${e.id}">${n + 1}セット目を記録</button>
+    </div>
+    ${memoShown ? `<textarea class="memo" id="memo-${e.id}" data-memo="1" data-sid="${s.id}" data-ex="${e.id}" rows="2" placeholder="フォーム、使ったマシン、調子など">${U.esc(e.memo)}</textarea>` : ''}
+    <div class="ex-foot">
+      ${memoShown ? '' : `<button class="link-btn" data-act="memo" data-ex="${e.id}">メモ</button>`}
+      <button class="link-btn" data-act="delEx" data-sid="${s.id}" data-ex="${e.id}">種目を削除</button>
+    </div>
+  </article>`;
+}
+
+function editorHTML(s, live) {
+  let h = live ? restRowHTML() : '';
+  if (!s.exercises.length) h += copyMenuHTML(s);
+  h += s.exercises.map(e => exCardHTML(s, e)).join('');
+  h += `<button class="btn btn-soft btn-add" data-act="addEx" data-sid="${s.id}">${I.plus}<span>種目を追加</span></button>`;
+  return h;
+}
+
+function sessionDetailHTML(s) {
+  const live = !s.end;
+  const exs = s.exercises.map(e => {
+    const prs = Q.prFlags(s, e);
+    return `<div class="dt-ex">
+      <div class="dt-ex-h"><b>${U.esc(e.name)}</b><span>${e.sets.length}セット</span></div>
+      ${e.sets.length ? `<ul class="dt-sets">${e.sets.map((x, i) => `<li><span class="n">${i + 1}</span><span>${x.w > 0 ? `${U.w(x.w)}<small>kg</small>` : '自重'} <span class="x">×</span> ${x.r}</span>${prs[i] ? '<span class="badge-pr">PR</span>' : ''}</li>`).join('')}</ul>` : ''}
+      ${e.memo ? `<p class="dt-memo">${U.esc(e.memo)}</p>` : ''}
+    </div>`;
+  }).join('');
+  let actions;
+  if (live) actions = `<button class="btn btn-primary" data-act="goToday">トレーニング中の画面へ</button>`;
+  else if (UI.confirmDel === s.id) actions = `<p class="confirm-t">この記録を削除しますか？ 元に戻せません。</p>
+    <div class="two"><button class="btn btn-soft" data-act="cancelDel">キャンセル</button><button class="btn btn-danger" data-act="doDel" data-sid="${s.id}">削除する</button></div>`;
+  else actions = `<div class="two"><button class="btn btn-soft" data-act="editSession" data-sid="${s.id}">編集</button><button class="btn btn-soft danger" data-act="askDel" data-sid="${s.id}">削除</button></div>`;
+  return `<div class="dt">
+    <div class="dt-times">
+      <div><span>入館</span><b>${U.hm(s.start)}</b></div>
+      <div><span>退館</span><b>${live ? '—' : U.hm(s.end)}</b></div>
+      <div><span>滞在</span><b>${live ? '計測中' : U.durS(s.end - s.start)}</b></div>
+    </div>
+    <div class="dt-meta"><span>種目<b>${s.exercises.length}</b></span><span>セット<b>${Q.sets(s)}</b></span><span>ボリューム<b>${fmt.volTxt(Q.volume(s))}</b></span>${s.sample ? '<span class="tag">サンプル</span>' : ''}</div>
+    ${exs ? `<div class="dt-list">${exs}</div>` : ''}
+    ${s.memo ? `<p class="dt-memo">${U.esc(s.memo)}</p>` : ''}
+    ${actions}
+  </div>`;
+}
+
+/* ---------- sheets ---------- */
+function detailSheet(k) {
+  const ss = Q.onDate(k), d = U.fromKey(k), future = k > U.key(Date.now());
+  const head = `<div class="sheet-h"><div><p class="eyebrow">${d.getFullYear()}年${U.md(d)} ${U.wd(d)}曜日</p><h2>${ss.length ? ss.map(s => Q.title(s)).join(' / ') : '休み'}</h2></div>
+    <button class="icon-btn" data-act="closeSheet" aria-label="閉じる">${I.x}</button></div>`;
+  if (!ss.length) return head + `<div class="stack"><p class="muted" style="padding:0 4px 16px">この日の記録はありません。</p>${future ? '' : `<button class="btn btn-soft" data-act="addOnDate" data-k="${k}">${I.plus}この日の記録を追加</button>`}</div>`;
+  return head + ss.map(sessionDetailHTML).join('');
+}
+
+function endSheet() {
+  const s = Q.active();
+  if (!s) return `<div class="sheet-h"><h2>トレーニングは終了しています</h2><button class="icon-btn" data-act="closeSheet" aria-label="閉じる">${I.x}</button></div>`;
+  const now = Date.now();
+  return `<div class="sheet-h"><h2>トレーニングを終了</h2><button class="icon-btn" data-act="closeSheet" aria-label="閉じる">${I.x}</button></div>
+  <div class="end-sum">
+    <div class="end-times"><span>${U.hm(s.start)}</span><i>→</i><span data-tick="endnow">${U.hm(now)}</span></div>
+    <p class="end-dur">滞在<b data-tick="enddur">${U.dur(now - s.start)}</b></p>
+    <p class="end-note">現在時刻を退館時間として保存します</p>
+  </div>
+  <div class="end-meta"><span>種目<b>${s.exercises.length}</b></span><span>セット<b>${Q.sets(s)}</b></span><span>ボリューム<b>${fmt.volTxt(Q.volume(s))}</b></span></div>
+  <textarea id="endMemo" class="memo" rows="2" placeholder="ひとことメモ（任意）">${U.esc(UI.endMemo)}</textarea>
+  <div class="stack">
+    <button class="btn btn-primary" data-act="endConfirm">終了して保存</button>
+    <button class="btn btn-quiet" data-act="closeSheet">トレーニングを続ける</button>
+  </div>`;
+}
+
+function allExerciseNames() {
+  const st = Q.stats();
+  return [...new Set([...LIB.map(x => x[0]), ...Object.keys(Store.meta.custom), ...st.ex.keys()])];
+}
+function pickRow(n, have, st) {
+  const r = st.ex.get(n);
+  const sub = r ? `前回 ${fmt.chip({ w: r.history.at(-1).top, r: r.history.at(-1).reps })} · ${U.md(r.history.at(-1).t)}` : (Lib.en(n) || PARTS[Lib.part(n)]);
+  return `<button class="pick" data-act="pickEx" data-name="${U.esc(n)}" ${have.has(n) ? 'disabled' : ''}>
+    <span class="pick-n">${U.esc(n)}</span><span class="pick-s">${U.esc(sub)}</span>
+    ${have.has(n) ? '<span class="pick-on">追加済み</span>' : `<span class="pi">${I.plus}</span>`}
+  </button>`;
+}
+function exListHTML() {
+  const s = Model.get(UI.addSid); if (!s) return '';
+  const have = new Set(s.exercises.map(e => e.name));
+  const st = Q.stats();
+  const names = allExerciseNames();
+  const q = UI.exQuery.trim();
+  if (q) {
+    const ql = q.toLowerCase();
+    const hits = names.filter(n => n.toLowerCase().includes(ql) || Lib.en(n).toLowerCase().includes(ql));
+    const exact = names.includes(q);
+    return `<div class="pick-list" style="margin-top:14px">
+      ${exact ? '' : `<button class="pick" data-act="pickEx" data-name="${U.esc(q)}"><span class="pick-n">「${U.esc(q)}」を追加</span><span class="pick-s">新しい種目として登録します</span><span class="pi">${I.plus}</span></button>`}
+      ${hits.map(n => pickRow(n, have, st)).join('')}
+    </div>`;
+  }
+  const recent = [...st.ex.values()].sort((a, b) => b.history.at(-1).t - a.history.at(-1).t).slice(0, 6).map(r => r.name);
+  const parts = Object.keys(PARTS).filter(p => p !== 'other' || names.some(n => Lib.part(n) === 'other'));
+  const inPart = names.filter(n => Lib.part(n) === UI.exPart);
+  return `${recent.length ? `<p class="group-l">最近の種目</p><div class="pick-list">${recent.map(n => pickRow(n, have, st)).join('')}</div>` : ''}
+    <div class="chips part-tabs" role="tablist">${parts.map(p => `<button class="chip${p === UI.exPart ? ' on' : ''}" data-act="exPart" data-p="${p}" role="tab" aria-selected="${p === UI.exPart}">${PARTS[p]}</button>`).join('')}</div>
+    <div class="pick-list" style="margin-top:10px">${inPart.map(n => pickRow(n, have, st)).join('') || '<p class="muted" style="padding:14px 0">この部位の種目はまだありません</p>'}</div>`;
+}
+function addExSheet() {
+  return `<div class="sheet-h"><h2>種目を追加</h2><button class="icon-btn" data-act="closeSheet" aria-label="閉じる">${I.x}</button></div>
+  <div class="search"><input id="exq" type="search" placeholder="種目名で検索、または新しく追加" value="${U.esc(UI.exQuery)}" autocomplete="off" enterkeyhint="done" aria-label="種目を検索"></div>
+  <div id="exlist">${exListHTML()}</div>`;
+}
+
+function settingsSheet() {
+  const st = Store.settings;
+  const sw = (k, label) => `<button class="switch" role="switch" aria-checked="${!!st[k]}" data-act="toggle" data-k="${k}" aria-label="${label}"></button>`;
+  const seg = (vals, cur, act) => `<div class="seg">${vals.map(v => `<button class="${cur === v ? 'on' : ''}" data-act="${act}" data-v="${v}">${v}</button>`).join('')}</div>`;
+  return `<div class="sheet-h"><h2>設定</h2><button class="icon-btn" data-act="closeSheet" aria-label="閉じる">${I.x}</button></div>
+  <p class="group-l">休憩タイマー</p>
+  <div class="group">
+    <div class="g-row"><div><p class="g-t">セット記録後に自動で開始</p><p class="g-s">記録ボタンを押すと休憩タイマーが動きます</p></div>${sw('restAuto', '自動で開始')}</div>
+    <div class="g-row"><p class="g-t">休憩時間（秒）</p>${seg([60, 90, 120, 180], st.restSec, 'setRest')}</div>
+  </div>
+  <p class="group-l">記録</p>
+  <div class="group">
+    <div class="g-row"><p class="g-t">重量の刻み（kg）</p>${seg([1, 1.25, 2.5, 5], st.step, 'setStep')}</div>
+    <div class="g-row"><div><p class="g-t">トレーニング中は画面を消さない</p><p class="g-s">対応しているブラウザのみ</p></div>${sw('wake', '画面を消さない')}</div>
+  </div>
+  <p class="group-l">データ</p>
+  <div class="group">
+    <div class="g-row"><div><p class="g-t">保存先</p><p class="g-s">${Cloud.label()}</p></div></div>
+    <button class="g-row g-btn" data-act="exportData">バックアップを保存</button>
+    <label class="g-row g-btn">バックアップから復元<input id="importFile" type="file" accept=".json,application/json" hidden></label>
+    ${Q.hasSamples() ? `<button class="g-row g-btn" data-act="sampleRemove">サンプルデータを削除</button>` : `<button class="g-row g-btn" data-act="sampleAdd">サンプルデータを追加</button>`}
+  </div>
+  <div class="group">
+    ${UI.confirmWipe
+      ? `<div class="g-confirm"><p class="confirm-t">すべての記録を削除しますか？ 元に戻せません。</p><div class="two"><button class="btn btn-soft" data-act="wipeCancel">キャンセル</button><button class="btn btn-danger" data-act="wipeDo">削除する</button></div></div>`
+      : `<button class="g-row g-btn danger" data-act="wipeAsk">すべての記録を削除</button>`}
+  </div>`;
+}
+
+/* ---------- charts (hand-drawn SVG, one series each) ---------- */
+const f1 = n => Math.round(n * 10) / 10;
+const ChartData = {
+  weekly() {
+    const ws = U.weekStart(Date.now()), days = new Set(Q.all().map(s => s.date)), items = [];
+    for (let i = 11; i >= 0; i--) {
+      const st = U.addDays(ws, -7 * i);
+      let c = 0; for (let j = 0; j < 7; j++) if (days.has(U.key(U.addDays(st, j)))) c++;
+      items.push({ v: c, l: U.mdS(st), tip: `${U.mdS(st)}の週 · ${c}回`, cur: i === 0 });
+    }
+    const mx = Math.max(...items.map(x => x.v)); const max = Math.max(4, mx + (mx % 2));
+    return { items, max, ticks: [0, max / 2, max], fy: t => String(t), label: '週ごとのトレーニング回数' };
+  },
+  duration() {
+    const ended = Q.all().filter(s => s.end), last = ended.slice(-12);
+    const items = last.map((s, i) => ({ v: U.mins(s.end - s.start), l: U.mdS(s.start), tip: `${U.mdS(s.start)} · ${U.dur(s.end - s.start)}`, cur: i === last.length - 1 }));
+    const avg = ended.length ? ended.reduce((a, s) => a + U.mins(s.end - s.start), 0) / ended.length : null;
+    let max = Math.ceil(Math.max(60, ...items.map(x => x.v), avg || 0) / 60) * 60; if ((max / 60) % 2) max += 60;
+    return { items, max, avg, ticks: [0, max / 2, max], fy: t => t ? `${t / 60}h` : '0', label: 'トレーニング時間' };
+  },
+  ex(name) {
+    const r = Q.stats().ex.get(name); if (!r) return null;
+    const full = r.history, zero = full.every(h => h.top === 0), val = h => zero ? h.reps : h.top;
+    const prs = new Set(); let run = -Infinity;
+    full.forEach((h, i) => { if (i > 0 && val(h) > run) prs.add(i); run = Math.max(run, val(h)); });
+    const off = Math.max(0, full.length - 16), hist = full.slice(off);
+    return {
+      items: hist.map((h, i) => ({ v: val(h), l: U.mdS(h.t), pr: prs.has(i + off), tip: `${U.mdS(h.t)} · ${zero ? `自重 × ${h.reps}` : `${U.w(h.top)}kg × ${h.reps}`}` })),
+      unit: zero ? '回' : 'kg', minSpan: zero ? 4 : 5,
+      step: sp => zero ? (sp <= 8 ? 2 : 5) : sp <= 10 ? 2.5 : sp <= 25 ? 5 : sp <= 60 ? 10 : 20,
+      label: `${name}の推移`,
+    };
+  },
+};
+const Charts = {
+  mount(root) { root.querySelectorAll('.chart[data-chart]').forEach(el => this.draw(el)); },
+  draw(el) {
+    const W = Math.round(el.clientWidth) || 300, H = Math.round(el.clientHeight) || 172, kind = el.dataset.chart;
+    const d = ChartData[kind] && ChartData[kind](el.dataset.arg);
+    if (!d || !d.items.length) { el.innerHTML = '<p class="chart-empty">まだデータがありません</p>'; return; }
+    el.innerHTML = (kind === 'ex' ? this.line(W, H, d) : this.bars(W, H, d)) + '<div class="tip"></div>';
+  },
+  bars(W, H, d) {
+    const pl = 30, pr = 4, pt = 14, pb = 22, iw = W - pl - pr, ih = H - pt - pb, y0 = pt + ih;
+    const n = d.items.length, band = iw / n, bw = Math.min(22, band * 0.62), Y = v => f1(y0 - (v / d.max) * ih);
+    let s = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${U.esc(d.label)}">`;
+    for (const t of d.ticks) s += `<line class="grid" x1="${pl}" x2="${W - pr}" y1="${Y(t)}" y2="${Y(t)}"/><text class="ax" x="${pl - 7}" y="${Y(t) + 3.5}" text-anchor="end">${d.fy(t)}</text>`;
+    const k = Math.ceil(n / 6);
+    d.items.forEach((it, i) => {
+      const x = f1(pl + band * i + (band - bw) / 2), top = Y(it.v), h = y0 - top;
+      if (h > 0.5) { const r = Math.min(4, h, bw / 2); s += `<path class="bar mark${it.cur ? ' cur' : ''}" data-i="${i}" d="M${x},${y0}V${f1(top + r)}Q${x},${top} ${f1(x + r)},${top}H${f1(x + bw - r)}Q${f1(x + bw)},${top} ${f1(x + bw)},${f1(top + r)}V${y0}Z"/>`; }
+      if ((n - 1 - i) % k === 0) s += `<text class="ax" x="${f1(x + bw / 2)}" y="${H - 5}" text-anchor="middle">${it.l}</text>`;
+    });
+    if (d.avg != null) { const ya = Y(d.avg); s += `<line class="avg" x1="${pl}" x2="${W - pr}" y1="${ya}" y2="${ya}"/>`; }
+    d.items.forEach((it, i) => { s += `<rect class="hit" x="${f1(pl + band * i)}" y="${pt}" width="${f1(band)}" height="${ih}" data-i="${i}" data-tip="${U.esc(it.tip)}" data-x="${f1(pl + band * i + band / 2)}" data-y="${Math.min(Y(it.v), y0 - 2)}"/>`; });
+    return s + '</svg>';
+  },
+  line(W, H, d) {
+    const pl = 36, pr = 50, pt = 16, pb = 22, iw = W - pl - pr, ih = H - pt - pb, y0 = pt + ih;
+    const vals = d.items.map(i => i.v);
+    let lo = Math.min(...vals), hi = Math.max(...vals);
+    const span = Math.max(hi - lo, d.minSpan), step = d.step(span);
+    lo = Math.max(0, Math.floor((lo - span * 0.2) / step) * step);
+    hi = Math.ceil((hi + span * 0.2) / step) * step; if (hi <= lo) hi = lo + step;
+    const n = d.items.length;
+    const X = i => f1(n === 1 ? pl + iw / 2 : pl + (iw * i) / (n - 1));
+    const Y = v => f1(y0 - ((v - lo) / (hi - lo)) * ih);
+    const P = d.items.map((it, i) => [X(i), Y(it.v)]);
+    let s = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${U.esc(d.label)}">`;
+    for (const t of [lo, (lo + hi) / 2, hi]) s += `<line class="grid" x1="${pl}" x2="${W - pr}" y1="${Y(t)}" y2="${Y(t)}"/><text class="ax" x="${pl - 7}" y="${Y(t) + 3.5}" text-anchor="end">${U.w(t)}</text>`;
+    if (n > 1) {
+      s += `<path class="area" d="M${P[0][0]},${y0}L${P.map(p => p.join(',')).join('L')}L${P[n - 1][0]},${y0}Z"/>`;
+      s += `<path class="ln" d="M${P.map(p => p.join(',')).join('L')}"/>`;
+    }
+    d.items.forEach((it, i) => { s += `<circle class="pt mark${it.pr ? ' pr' : ''}" data-i="${i}" cx="${P[i][0]}" cy="${P[i][1]}" r="4"/>`; });
+    const L = P[n - 1];
+    s += `<text class="lbl" x="${f1(L[0] + 10)}" y="${f1(L[1] + 4)}">${U.w(d.items[n - 1].v)}${d.unit}</text>`;
+    const lab = n === 1 ? [0] : n < 5 ? [0, n - 1] : [0, Math.floor((n - 1) / 2), n - 1];
+    lab.forEach(i => { s += `<text class="ax" x="${P[i][0]}" y="${H - 5}" text-anchor="middle">${d.items[i].l}</text>`; });
+    const half = n === 1 ? iw / 2 : iw / (n - 1) / 2;
+    d.items.forEach((it, i) => { s += `<rect class="hit" x="${f1(P[i][0] - half)}" y="${pt}" width="${f1(half * 2)}" height="${ih}" data-i="${i}" data-tip="${U.esc(it.tip)}" data-x="${P[i][0]}" data-y="${P[i][1] - 4}"/>`; });
+    return s + '</svg>';
+  },
+  tip(h) {
+    const chart = h.closest('.chart'); if (!chart) return;
+    const tip = chart.querySelector('.tip'), W = chart.clientWidth;
+    tip.textContent = h.dataset.tip;
+    tip.style.left = Math.min(W - 64, Math.max(64, Number(h.dataset.x))) + 'px';
+    tip.style.top = h.dataset.y + 'px';
+    tip.classList.add('show');
+    chart.querySelectorAll('.is-hot').forEach(x => x.classList.remove('is-hot'));
+    const mk = chart.querySelector(`.mark[data-i="${h.dataset.i}"]`); if (mk) mk.classList.add('is-hot');
+  },
+  hideAll() {
+    document.querySelectorAll('.chart .tip.show').forEach(t => t.classList.remove('show'));
+    document.querySelectorAll('.chart .is-hot').forEach(x => x.classList.remove('is-hot'));
+  },
+};
+
+/* ============================================================
+   7. Views
+   ============================================================ */
+const Views = {
+  today() {
+    const now = Date.now(), s = Q.active();
+    let h = `<div class="topbar"><span class="brand">筋トレ日記</span><button class="icon-btn" data-act="settings" aria-label="設定">${I.sliders}</button></div>`;
+    h += storageNotice();
+    if (s) {
+      h += this.liveHero(s);
+      h += `<section class="workout" aria-label="トレーニングの記録">${editorHTML(s, true)}</section>`;
+      if (s.exercises.length) h += `<button class="btn btn-quiet end-bottom" data-act="endAsk">トレーニングを終了する</button>`;
+      return h;
+    }
+    const todays = Q.onDate(U.key(now)).filter(x => x.end);
+    h += todays.length ? this.doneHero(todays) : this.idleHero(now);
+    h += this.summary(todays.length > 0);
+    return h;
+  },
+  idleHero(now) {
+    return `<section class="hero">
+      <p class="hero-date" data-tick="date">${U.dateLong(now)}</p>
+      <h1 class="greet" data-tick="greet">${U.greet(now).toUpperCase()}</h1>
+      <p class="status">まだトレーニングを開始していません</p>
+      <div class="clock" data-tick="now">${U.hm(now)}</div>
+      <p class="clock-cap">開始を押すと、この時刻が入館時間として記録されます</p>
+      <button class="btn btn-primary btn-xl hero-cta" data-act="start">トレーニング開始</button>
+    </section>`;
+  },
+  liveHero(s) {
+    const now = Date.now(), lastAt = Q.lastSetAt(s);
+    const forgot = now - s.start > 3 * 3600e3 && lastAt && now - lastAt > 45 * 60e3;
+    return `<section class="hero live">
+      <p class="hero-date">${U.dateLong(s.start)}</p>
+      <div class="live-row">
+        <span class="rec"><i class="rec-dot"></i><span class="eyebrow on">Training</span></span>
+        <button class="in-time" data-act="editSession" data-sid="${s.id}" aria-label="入館時間 ${U.hm(s.start)}（タップで修正）"><span>入館</span><b>${U.hm(s.start)}</b></button>
+      </div>
+      <div class="clock" data-tick="elapsed">${U.clock(now - s.start)}</div>
+      <p class="clock-cap">経過時間</p>
+      <div class="mini"><span>種目<b>${s.exercises.length}</b></span><span>セット<b>${Q.sets(s)}</b></span><span>ボリューム<b>${fmt.volTxt(Q.volume(s))}</b></span></div>
+      ${forgot ? `<div class="notice" style="margin:0 0 12px"><div><b>終了を押し忘れていませんか？</b><span>最後のセットは ${U.hm(lastAt)} でした</span></div><button class="notice-btn" data-act="endAt" data-t="${lastAt + 5 * 60000}">${U.hm(lastAt + 5 * 60000)}で終了</button></div>` : ''}
+      <button class="btn btn-soft" data-act="endAsk">トレーニング終了</button>
+    </section>`;
+  },
+  doneHero(todays) {
+    const first = todays[0], last = todays[todays.length - 1];
+    const total = todays.reduce((a, x) => a + (x.end - x.start), 0);
+    const names = new Set(); let sets = 0, vol = 0, prs = 0;
+    for (const x of todays) { x.exercises.forEach(e => names.add(e.name)); sets += Q.sets(x); vol += Q.volume(x); prs += Q.prCount(x); }
+    return `<section class="hero">
+      <p class="hero-date" data-tick="date">${U.dateLong(Date.now())}</p>
+      <p class="eyebrow" style="margin-top:8px">Today’s Workout</p>
+      <div class="done-range">${U.hm(first.start)}<span>—</span>${U.hm(last.end)}</div>
+      <div class="done-dur">${U.durH(total)}</div>
+      ${prs ? `<p class="pr-line"><span class="badge-pr">NEW PR</span>${prs}種目で自己ベストを更新</p>` : ''}
+      <div class="tiles">
+        <div class="tile"><span class="tile-l">種目</span><span class="tile-v">${names.size}<small>種目</small></span></div>
+        <div class="tile"><span class="tile-l">セット</span><span class="tile-v">${sets}<small>セット</small></span></div>
+        <div class="tile"><span class="tile-l">ボリューム</span><span class="tile-v">${fmt.volH(vol)}</span></div>
+      </div>
+      <button class="btn btn-primary" data-act="openDay" data-k="${first.date}">今日の記録を見る</button>
+      <button class="btn btn-quiet" data-act="start">もう一度トレーニングを開始</button>
+    </section>`;
+  },
+  summary(isDone) {
+    const st = Q.stats();
+    if (!st.count) return `<section class="section"><div class="card howto">
+      <p class="eyebrow">How it works</p>
+      <ol class="steps">
+        <li><b>ジムに着いたら「トレーニング開始」</b><span>日付と入館時刻が自動で入ります</span></li>
+        <li><b>種目・重量・回数を記録</b><span>前回の記録が目安として表示されます</span></li>
+        <li><b>帰るときに「トレーニング終了」</b><span>退館時刻と滞在時間が自動で保存されます</span></li>
+      </ol>
+      <button class="btn btn-quiet" data-act="sampleAdd">サンプルデータで試してみる</button>
+    </div></section>`;
+    const todayK = U.key(Date.now());
+    const last = Q.all().filter(x => x.end && x.date !== todayK).at(-1);
+    return `<section class="section">
+      <div class="tiles">
+        <div class="tile"><span class="tile-l">今週</span><span class="tile-v">${st.week}<small>回</small></span></div>
+        <div class="tile"><span class="tile-l">連続</span><span class="tile-v">${st.streak}<small>日</small></span></div>
+        <div class="tile"><span class="tile-l">平均時間</span><span class="tile-v">${st.avg ? U.durH(st.avg) : '—'}</span></div>
+      </div>
+      ${last && !isDone ? `<button class="card last" data-act="openDay" data-k="${last.date}">
+        <span class="last-h"><span class="eyebrow">前回のトレーニング</span><span class="last-d">${U.md(last.start)}（${U.wd(last.start)}）</span></span>
+        <span class="last-t">${Q.title(last)}</span>
+        <span class="last-l">${last.exercises.map(e => U.esc(e.name)).join(' · ') || '種目の記録なし'}</span>
+        <span class="last-m">${U.hm(last.start)}–${U.hm(last.end)} · ${U.durS(last.end - last.start)} · ${Q.sets(last)}セット</span>
+      </button>` : ''}
+    </section>`;
+  },
+
+  calendar() {
+    const m = UI.calMonth, y = m.getFullYear(), mo = m.getMonth();
+    const off = (new Date(y, mo, 1).getDay() + 6) % 7, n = new Date(y, mo + 1, 0).getDate();
+    const todayK = U.key(Date.now()), firstK = Q.firstDate(), ym = `${y}-${U.pad(mo + 1)}`;
+    let cells = '';
+    for (let i = 0; i < off; i++) cells += '<span class="day pad" aria-hidden="true"></span>';
+    for (let d = 1; d <= n; d++) {
+      const k = `${ym}-${U.pad(d)}`, st = Q.dayState(k), fut = k > todayK, isT = k === todayK;
+      const mk = st === 'train' ? 'train' : st === 'visit' ? 'visit' : (!fut && !isT && firstK && k >= firstK) ? 'rest' : 'none';
+      const word = { train: 'トレーニング', visit: '来館', rest: '休み', none: '' }[mk];
+      cells += `<button class="day${isT ? ' today' : ''}${fut ? ' future' : ''}${UI.calSel === k ? ' sel' : ''}" data-act="day" data-k="${k}" ${fut ? 'disabled' : ''} aria-label="${mo + 1}月${d}日 ${word}"><span class="day-n">${d}</span><i class="mk ${mk}"></i></button>`;
+    }
+    const inMonth = Q.all().filter(s => s.date.startsWith(ym));
+    const days = new Set(inMonth.map(s => s.date)).size;
+    const ended = inMonth.filter(s => s.end), tot = ended.reduce((a, s) => a + (s.end - s.start), 0);
+    const rows = [...inMonth].reverse().map(s => `<button class="row" data-act="openDay" data-k="${s.date}">
+      <span class="row-date"><b>${new Date(s.start).getDate()}</b><span>${U.wd(s.start)}</span></span>
+      <span class="row-main"><span class="row-t">${Q.title(s)}${s.sample ? '<span class="tag">サンプル</span>' : ''}</span>
+      <span class="row-s">${U.hm(s.start)}–${s.end ? U.hm(s.end) : '計測中'}${s.end ? ` · ${U.durS(s.end - s.start)}` : ''} · ${Q.sets(s)}セット</span></span>
+      <span class="chev">${I.chevR}</span></button>`).join('');
+    const isCur = y === new Date().getFullYear() && mo === new Date().getMonth();
+    return `<header class="page-h"><h1>カレンダー</h1>${isCur ? '' : `<button class="btn btn-soft" style="width:auto;min-height:36px;padding:0 14px;font-size:14px" data-act="calToday">今月</button>`}</header>
+      ${sampleNotice()}
+      <section class="card cal" style="margin-top:${Q.hasSamples() ? 12 : 0}px">
+        <div class="cal-nav">
+          <p class="cal-title"><span>${y}年</span>${mo + 1}月</p>
+          <div class="cal-nav-btns"><button class="icon-btn" data-act="calMove" data-d="-1" aria-label="前の月">${I.chevLs}</button><button class="icon-btn" data-act="calMove" data-d="1" aria-label="次の月">${I.chevRs}</button></div>
+        </div>
+        <div class="cal-wd" aria-hidden="true">${'月火水木金土日'.split('').map(w => `<span>${w}</span>`).join('')}</div>
+        <div class="cal-grid">${cells}</div>
+        <div class="legend"><span><i class="mk train"></i>トレーニング</span><span><i class="mk visit"></i>来館のみ</span><span><i class="mk rest"></i>休み</span></div>
+      </section>
+      <section class="section">
+        <div class="tiles">
+          <div class="tile"><span class="tile-l">${mo + 1}月の来館</span><span class="tile-v">${days}<small>日</small></span></div>
+          <div class="tile"><span class="tile-l">合計時間</span><span class="tile-v">${tot ? U.durH(tot) : '—'}</span></div>
+          <div class="tile"><span class="tile-l">平均時間</span><span class="tile-v">${ended.length ? U.durH(tot / ended.length) : '—'}</span></div>
+        </div>
+        ${rows ? `<p class="sec-l">${mo + 1}月の記録</p><div class="list">${rows}</div>` : `<div class="card empty"><p>${mo + 1}月の記録はまだありません。<br>トレーニングを開始すると、その日に自動でマークが付きます。</p></div>`}
+      </section>`;
+  },
+
+  stats() {
+    const st = Q.stats();
+    let h = `<header class="page-h"><h1>統計</h1></header>` + sampleNotice();
+    if (!st.count) return h + `<div class="card empty"><p>記録がたまると、回数・時間・重量の推移がここに表示されます。</p><button class="btn btn-soft" style="width:auto;padding:0 18px" data-act="sampleAdd">サンプルデータで見てみる</button></div>`;
+    const exList = [...st.ex.values()].sort((a, b) => b.count - a.count || b.history.at(-1).t - a.history.at(-1).t);
+    if (!UI.statEx || !st.ex.has(UI.statEx)) UI.statEx = exList[0]?.name || null;
+    const totH = st.total >= 3600e3 ? `${Math.floor(st.total / 3600e3)}<small>h</small>` : U.durH(st.total);
+    const dd = ChartData.duration();
+    h += `<div class="tiles" style="margin-top:${Q.hasSamples() ? 12 : 0}px">
+      <div class="tile"><span class="tile-l">今月</span><span class="tile-v">${st.month}<small>回</small></span></div>
+      <div class="tile"><span class="tile-l">今週</span><span class="tile-v">${st.week}<small>回</small></span></div>
+      <div class="tile"><span class="tile-l">連続</span><span class="tile-v">${st.streak}<small>日</small></span><span class="tile-s">最長 ${st.longest}日</span></div>
+      <div class="tile"><span class="tile-l">平均時間</span><span class="tile-v">${st.avg ? U.durH(st.avg) : '—'}</span></div>
+      <div class="tile"><span class="tile-l">総時間</span><span class="tile-v">${st.total ? totH : '—'}</span></div>
+      <div class="tile"><span class="tile-l">総セット</span><span class="tile-v">${U.n(st.sets)}</span></div>
+    </div>
+    <section class="section">
+      <div class="card chart-card"><div class="cc-h"><h3>週ごとのトレーニング</h3><span class="cc-s">直近12週 · 回数</span></div><div class="chart" data-chart="weekly"></div></div>
+      <div class="card chart-card"><div class="cc-h"><h3>トレーニング時間</h3><span class="cc-s">直近12回</span></div><div class="chart" data-chart="duration"></div>
+        ${dd.avg != null ? `<div class="chart-key"><span><i class="line"></i>平均 ${U.durS(dd.avg * 60000)}</span></div>` : ''}</div>
+      ${UI.statEx ? `<div class="card chart-card"><div class="cc-h"><h3>種目の推移</h3><span class="cc-s">各回の最高重量</span></div>
+        <div class="chips">${exList.slice(0, 12).map(r => `<button class="chip${r.name === UI.statEx ? ' on' : ''}" data-act="statEx" data-name="${U.esc(r.name)}">${U.esc(r.name)}</button>`).join('')}</div>
+        <div class="chart" data-chart="ex" data-arg="${U.esc(UI.statEx)}"></div>
+        <div class="chart-key"><span><i></i>最高重量</span><span><i class="pr"></i>自己ベスト更新</span></div></div>` : ''}
+    </section>
+    <section class="section">
+      <p class="sec-l">前回から重量が伸びた種目</p>
+      ${st.improved.length ? `<div class="list">${st.improved.map(r => `<div class="kv"><div style="min-width:0"><p class="kv-n">${U.esc(r.name)}</p><p class="kv-s">${U.md(r.t)}</p></div>
+        <p class="kv-v"><span class="from">${U.w(r.from)}</span><span class="arr">→</span>${U.w(r.to)}<small>kg</small></p></div>`).join('')}</div>`
+        : `<div class="card empty" style="padding:20px"><p>前回より重量を上げると、ここに表示されます。</p></div>`}
+    </section>
+    <section class="section">
+      <p class="sec-l">種目ごとの最高重量</p>
+      <div class="list">${exList.map(r => `<div class="kv"><div style="min-width:0"><p class="kv-n">${U.esc(r.name)}</p><p class="kv-s">${U.md(r.bestAt)} · ${r.count}回実施</p></div>
+        <p class="kv-v">${r.best > 0 ? `${U.w(r.best)}<small>kg</small>` : '自重'} <span class="arr">×</span>${r.bestReps}</p></div>`).join('')}</div>
+    </section>`;
+    return h;
+  },
+
+  edit() {
+    const s = Model.get(UI.editId);
+    if (!s || s.deleted) return `<div class="card empty"><p>この記録は見つかりませんでした。</p></div>`;
+    const backLabel = { today: '今日', calendar: 'カレンダー', stats: '統計' }[UI.back] || '戻る';
+    return `<div class="edit-top"><button class="back" data-act="editDone">${I.chevL}<span>${backLabel}</span></button></div>
+      <header class="page-h" style="padding-top:6px"><div><p class="eyebrow">Edit record</p><h1>${U.md(s.start)}<span class="h-sub">${U.wd(s.start)}曜日</span></h1></div></header>
+      <section class="card times-edit">
+        <label class="time-field"><span>入館</span><input type="time" id="edStart" value="${U.hm(s.start)}"></label>
+        <label class="time-field"><span>退館</span><input type="time" id="edEnd" value="${s.end ? U.hm(s.end) : ''}" ${s.end ? '' : 'disabled'}></label>
+        <p class="te-dur">滞在<b>${s.end ? U.dur(s.end - s.start) : 'トレーニング中'}</b></p>
+      </section>
+      <section class="workout">${editorHTML(s, false)}</section>
+      <button class="btn btn-primary edit-done" data-act="editDone">完了</button>`;
+  },
+};
+
+/* ============================================================
+   8. App shell
+   ============================================================ */
+const App = {
+  view: null, pendingRemote: false,
+  render() {
+    const t = UI.tab;
+    this.view.innerHTML = t === 'today' ? Views.today() : t === 'calendar' ? Views.calendar() : t === 'stats' ? Views.stats() : Views.edit();
+    Charts.mount(this.view);
+    this.paintTabs();
+    Sheet.refresh();
+    tick(true);
+  },
+  go(tab) {
+    if (tab === 'edit' && !Model.get(UI.editId)) tab = 'calendar';
+    UI.tab = tab;
+    this.view.classList.remove('enter'); void this.view.offsetWidth; this.view.classList.add('enter');
+    window.scrollTo(0, 0);
+    this.render();
+  },
+  paintTabs() {
+    const cur = UI.tab === 'edit' ? UI.back : UI.tab;
+    document.querySelectorAll('.tab').forEach(b => { const on = b.dataset.tab === cur; b.classList.toggle('on', on); b.setAttribute('aria-current', on ? 'page' : 'false'); });
+    $('#liveDot').hidden = !Q.active() || UI.tab === 'today';
+  },
+};
+const isTyping = () => { const a = document.activeElement; return !!a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA'); };
+Store.subs.add(remote => {
+  if (remote && isTyping()) { App.pendingRemote = true; return; }
+  App.render();
+});
+
+let lastDay = '';
+function tick(force) {
+  const now = Date.now(), s = Q.active();
+  document.querySelectorAll('[data-tick]').forEach(el => {
+    const k = el.dataset.tick; let v;
+    if (k === 'now') v = U.hm(now);
+    else if (k === 'elapsed' && s) v = U.clock(now - s.start);
+    else if (k === 'greet') v = U.greet(now).toUpperCase();
+    else if (k === 'date') v = U.dateLong(now);
+    else if (k === 'endnow') v = U.hm(now);
+    else if (k === 'enddur' && s) v = U.dur(now - s.start);
+    if (v !== undefined && el.textContent !== v) el.textContent = v;
+  });
+  Rest.tick();
+  const day = U.key(now);
+  if (!force && lastDay && day !== lastDay) { lastDay = day; App.render(); return; }
+  lastDay = day;
+}
+
+/* ============================================================
+   9. Sample data (marked sample:true, removable in one tap)
+   ============================================================ */
+function makeSamples() {
+  let seed = 11;
+  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const plans = [
+    [['ベンチプレス', [[70, 10], [75, 8], [75, 7], [70, 9]], 2.5], ['インクラインダンベルプレス', [[22, 10], [24, 8], [22, 10]], 2], ['ペックフライ', [[40, 12], [45, 10], [40, 12]], 2.5], ['ディップス', [[0, 12], [0, 10], [0, 8]], 0]],
+    [['デッドリフト', [[100, 6], [110, 5], [110, 4]], 5], ['ラットプルダウン', [[50, 10], [55, 9], [50, 11]], 2.5], ['シーテッドロウ', [[45, 12], [50, 10], [50, 9]], 2.5], ['フェイスプル', [[20, 15], [20, 15]], 0]],
+    [['スクワット', [[80, 8], [90, 6], [90, 5], [80, 8]], 5], ['レッグプレス', [[140, 12], [160, 10], [160, 9]], 10], ['レッグカール', [[35, 12], [35, 11], [30, 14]], 2.5], ['カーフレイズ', [[60, 15], [60, 14]], 0]],
+    [['ショルダープレス', [[30, 10], [35, 8], [32.5, 8]], 2.5], ['サイドレイズ', [[8, 15], [8, 14], [8, 12]], 0], ['バーベルカール', [[30, 10], [30, 9]], 2.5], ['トライセプスプレスダウン', [[25, 12], [27.5, 10]], 2.5]],
+  ];
+  const today0 = U.day0(Date.now()), out = [], occ = [0, 0, 0, 0];
+  let k = 0;
+  for (let back = 40; back >= 1; back--) {
+    const d = U.addDays(today0, -back);
+    if (![1, 2, 4, 6].includes(d.getDay())) continue;
+    if (rnd() < 0.12) continue;
+    const pi = k % 4; k++;
+    const o = occ[pi]++;
+    const start = d.getTime() + (18 * 60 + 20 + Math.floor(rnd() * 75)) * 60000;
+    const visitOnly = back === 16;
+    let t = start + 6 * 60000;
+    const exercises = visitOnly ? [] : plans[pi].map(([name, sets, inc]) => ({
+      id: U.id(), name, memo: '',
+      sets: sets.map(([w, r]) => {
+        t += (2 + rnd() * 2.5) * 60000;
+        const step = Math.floor(o / 2);
+        return { w: w + (inc ? inc * step : 0), r: Math.max(1, (inc ? r : r + step) - (rnd() < 0.25 ? 1 : 0)), at: Math.round(t) };
+      }),
+    }));
+    const end = Math.round(visitOnly ? start + 42 * 60000 : t + (6 + rnd() * 8) * 60000);
+    out.push({ id: 'smp' + U.id(), date: U.key(start), start, end, exercises, memo: visitOnly ? 'ランニングマシン 30分だけ' : '', sample: true, updatedAt: 0 });
+  }
+  return out;
+}
+
+/* ============================================================
+   10. Actions (every data-act in the markup maps to one entry)
+   ============================================================ */
+function shake(el) { if (!el) return; const t = el.closest('.stepper') || el; t.classList.remove('shake'); void t.offsetWidth; t.classList.add('shake'); }
+function findEx(d) { const s = Model.get(d.sid); const e = s && s.exercises.find(x => x.id === d.ex); return e ? { s, e } : null; }
+let memoTimer = 0;
+
+const Actions = {
+  tab(d) { App.go(d.tab); },
+  settings() { Sheet.open(settingsSheet); },
+  closeSheet() { Sheet.close(); },
+
+  start() {
+    Sound.prime();
+    if (Q.active()) { App.go('today'); return; }
+    const s = Model.start();
+    App.go('today');
+    Wake.sync();
+    Toast.show(`<span>${U.md(s.start)} ${U.hm(s.start)} 入館を記録しました</span>`);
+  },
+  endAsk() { const s = Q.active(); if (!s) return; UI.endMemo = s.memo || ''; Sheet.open(endSheet); },
+  endConfirm() {
+    const s = Q.active(); if (!s) { Sheet.close(); return; }
+    s.memo = UI.endMemo.trim();
+    Sheet.close();
+    Model.finish(s.id);
+    Rest.stop(); Wake.sync();
+    App.go('today');
+    Toast.show(`<span>お疲れさまでした · ${U.dur(s.end - s.start)}</span>`);
+  },
+  endAt(d) {
+    const s = Q.active(); if (!s) return;
+    Model.finish(s.id, Math.min(Number(d.t), Date.now()));
+    Rest.stop(); Wake.sync();
+    App.go('today');
+    Toast.show(`<span>${U.hm(s.end)} 退館として保存しました</span>`);
+  },
+
+  addEx(d) { UI.addSid = d.sid; UI.exQuery = ''; Sheet.open(addExSheet); },
+  exPart(d) { UI.exPart = d.p; const l = $('#exlist'); if (l) l.innerHTML = exListHTML(); },
+  pickEx(d) {
+    const name = (d.name || '').trim().slice(0, 40);
+    const s = Model.get(UI.addSid); if (!name || !s) return;
+    Sheet.close();
+    if (!LIBMAP.has(name) && !Store.meta.custom[name] && !Q.stats().ex.has(name)) { Store.meta.custom[name] = 'other'; Store.commit({ meta: true, silent: true }); }
+    const e = Model.addExercise(s.id, name);
+    UI.exQuery = '';
+    requestAnimationFrame(() => {
+      const card = document.getElementById('ex-' + e.id);
+      if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  },
+  copyMenu(d) {
+    const s = Model.get(d.sid), from = Model.get(d.from); if (!s || !from) return;
+    const have = new Set(s.exercises.map(e => e.name));
+    const add = from.exercises.filter(e => !have.has(e.name)).map(e => ({ id: U.id(), name: e.name, sets: [], memo: '' }));
+    s.exercises.push(...add);
+    Store.commit({ sessions: [s.id] });
+    Toast.show(`<span>${add.length}種目をコピーしました</span>`);
+  },
+  step(d) {
+    const input = document.getElementById(`${d.k}-${d.ex}`); if (!input) return;
+    const step = d.k === 'w' ? Store.settings.step : 1;
+    let v = parseFloat(String(input.value).replace(',', '.')) || 0;
+    v = Math.max(0, Math.round((v + step * Number(d.d)) * 100) / 100);
+    if (d.k === 'r') v = Math.round(v);
+    input.value = d.k === 'w' ? U.w(v) : String(v);
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    Haptic.tap();
+  },
+  logSet(d) {
+    const f = findEx(d); if (!f) return;
+    const { s, e } = f;
+    const wEl = document.getElementById('w-' + e.id), rEl = document.getElementById('r-' + e.id);
+    const w = parseFloat(String(wEl.value).replace(',', '.') || '0'), r = parseInt(rEl.value, 10);
+    if (!Number.isFinite(w) || w < 0 || w > 1000) { shake(wEl); return; }
+    if (!Number.isFinite(r) || r < 1 || r > 999) { shake(rEl); rEl.focus(); return; }
+    const best = Q.best(e.name, s);
+    const sessMax = e.sets.length ? Math.max(...e.sets.map(x => x.w)) : -Infinity;
+    const isPR = best !== null && w > Math.max(best, sessMax);
+    const live = !s.end;
+    e.sets.push({ w: Math.round(w * 100) / 100, r, at: live ? Date.now() : (s.end || s.start) });
+    Drafts.m.set(e.id, { w: U.w(w), r: String(r) });
+    Sound.prime();
+    if (isTyping()) document.activeElement.blur();
+    UI.flash = `${e.id}:${e.sets.length - 1}`;
+    Store.commit({ sessions: [s.id] });
+    UI.flash = null;
+    if (isPR) Toast.pr(e.name, best, w);
+    if (live && UI.tab === 'today' && Store.settings.restAuto) Rest.start(Store.settings.restSec);
+    Haptic.tap();
+  },
+  delSet(d) {
+    const f = findEx(d); if (!f) return;
+    const i = Number(d.i);
+    UI.undo = { sid: f.s.id, exercises: U.clone(f.s.exercises) };
+    f.e.sets.splice(i, 1);
+    Store.commit({ sessions: [f.s.id] });
+    Toast.show(`<span>${i + 1}セット目を削除しました</span><button class="t-act" data-act="undo">元に戻す</button>`, 4500);
+  },
+  delEx(d) {
+    const f = findEx(d); if (!f) return;
+    UI.undo = { sid: f.s.id, exercises: U.clone(f.s.exercises) };
+    f.s.exercises = f.s.exercises.filter(x => x.id !== f.e.id);
+    Store.commit({ sessions: [f.s.id] });
+    Toast.show(`<span>「${U.esc(f.e.name)}」を削除しました</span><button class="t-act" data-act="undo">元に戻す</button>`, 4500);
+  },
+  undo() {
+    const u = UI.undo; if (!u) return;
+    const s = Model.get(u.sid); if (!s || s.deleted) return;
+    s.exercises = u.exercises; UI.undo = null;
+    Store.commit({ sessions: [s.id] });
+    Toast.hide();
+  },
+  memo(d) {
+    UI.memoOpen.add(d.ex); App.render();
+    const t = document.getElementById('memo-' + d.ex); if (t) t.focus();
+  },
+
+  restPick(d) { const v = Number(d.v); Store.settings.restSec = v; Store.commit({ meta: true }); Sound.prime(); Rest.start(v); },
+  restAdd(d) { Rest.add(Number(d.d)); },
+  restStop() { Rest.stop(); },
+
+  calMove(d) { const m = UI.calMonth; UI.calMonth = new Date(m.getFullYear(), m.getMonth() + Number(d.d), 1); App.render(); },
+  calToday() { const n = new Date(); UI.calMonth = new Date(n.getFullYear(), n.getMonth(), 1); App.render(); },
+  day(d) { UI.calSel = d.k; App.render(); Sheet.open(() => detailSheet(d.k)); },
+  openDay(d) { Sheet.open(() => detailSheet(d.k)); },
+  goToday() { Sheet.close(); App.go('today'); },
+  editSession(d) {
+    Sheet.close();
+    if (UI.tab !== 'edit') UI.back = UI.tab;
+    UI.editId = d.sid;
+    App.go('edit');
+  },
+  editDone() { App.go(UI.back || 'calendar'); },
+  editTime() {
+    const s = Model.get(UI.editId); if (!s) return;
+    const base = U.fromKey(s.date);
+    const at = v => { const [h, m] = v.split(':').map(Number); const x = new Date(base); x.setHours(h, m, 0, 0); return x.getTime(); };
+    const sv = $('#edStart')?.value, ev = $('#edEnd')?.value;
+    if (!sv) return;
+    s.start = at(sv);
+    if (s.end && ev) { let e = at(ev); if (e <= s.start) e += 864e5; s.end = e; }
+    Store.commit({ sessions: [s.id] });
+  },
+  askDel(d) { UI.confirmDel = d.sid; Sheet.refresh(); },
+  cancelDel() { UI.confirmDel = null; Sheet.refresh(); },
+  doDel(d) { UI.confirmDel = null; Model.remove([d.sid]); Toast.show('<span>記録を削除しました</span>'); },
+  addOnDate(d) {
+    const base = U.fromKey(d.k).getTime();
+    const avgMin = Q.avgStartMin() ?? 19 * 60, dur = Q.stats().avg || 90 * 60000;
+    let start = base + avgMin * 60000, end = start + dur;
+    if (end > Date.now()) { end = Date.now(); start = Math.max(base, end - dur); }
+    const s = Model.createPast(start, end);
+    Sheet.close();
+    UI.back = UI.tab === 'edit' ? UI.back : UI.tab;
+    UI.editId = s.id;
+    App.go('edit');
+  },
+  statEx(d) { UI.statEx = d.name; App.render(); },
+
+  toggle(d) { Store.settings[d.k] = !Store.settings[d.k]; Store.commit({ meta: true }); Wake.sync(); },
+  setRest(d) { Store.settings.restSec = Number(d.v); Store.commit({ meta: true }); },
+  setStep(d) { Store.settings.step = Number(d.v); Store.commit({ meta: true }); },
+
+  sampleAdd() {
+    const list = makeSamples();
+    for (const s of list) Store.state.sessions[s.id] = s;
+    Store.commit({ sessions: list.map(s => s.id) });
+    Sheet.close();
+    Toast.show('<span>サンプルを追加しました。設定からいつでも削除できます</span>', 3200);
+  },
+  sampleRemove() {
+    const ids = Object.values(Store.state.sessions).filter(s => s.sample && !s.deleted).map(s => s.id);
+    Model.remove(ids);
+    Toast.show('<span>サンプルデータを削除しました</span>');
+  },
+  async exportData() {
+    const json = JSON.stringify({ app: 'kintore-diary', exportedAt: new Date().toISOString(), v: 1, sessions: Store.state.sessions, meta: Store.state.meta }, null, 2);
+    const name = `kintore-diary-${U.key(Date.now())}.json`;
+    if (Caps.downloads) {
+      try { await Caps.downloads.save({ filename: name, data: json }); Toast.show('<span>バックアップを保存しました</span>'); }
+      catch (e) { if (e?.code !== 'declined') Toast.show('<span>保存できませんでした</span>'); }
+      return;
+    }
+    if (!window.claude) {
+      try {
+        const file = new File([json], name, { type: 'application/json' });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: '筋トレ日記のバックアップ' }); return; }
+      } catch (e) { if (e && e.name === 'AbortError') return; }
+      try {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
+        a.download = name; document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+        return;
+      } catch {}
+    }
+    try { await navigator.clipboard.writeText(json); Toast.show('<span>バックアップをクリップボードにコピーしました</span>'); }
+    catch { Toast.show('<span>この環境ではバックアップを保存できません</span>'); }
+  },
+  importFile(input) {
+    const file = input.files && input.files[0]; if (!file) return;
+    const rd = new FileReader();
+    rd.onload = () => {
+      try {
+        const data = JSON.parse(rd.result), ids = [];
+        for (const [id, s] of Object.entries(data.sessions || {})) {
+          if (!s || typeof s.start !== 'number' || !s.date) continue;
+          const cur = Store.state.sessions[id];
+          if (!cur || (s.updatedAt || 0) > (cur.updatedAt || 0)) { Store.state.sessions[id] = { exercises: [], memo: '', ...s }; ids.push(id); }
+        }
+        if (data.meta && data.meta.custom) Object.assign(Store.meta.custom, data.meta.custom);
+        Store.commit({ sessions: ids, meta: true });
+        Toast.show(`<span>${ids.length}件の記録を読み込みました</span>`);
+      } catch { Toast.show('<span>このファイルは読み込めませんでした</span>'); }
+      input.value = '';
+    };
+    rd.readAsText(file);
+  },
+  wipeAsk() { UI.confirmWipe = true; Sheet.refresh(); },
+  wipeCancel() { UI.confirmWipe = false; Sheet.refresh(); },
+  wipeDo() {
+    UI.confirmWipe = false;
+    Model.remove(Object.values(Store.state.sessions).filter(s => !s.deleted).map(s => s.id));
+    Rest.stop(); Drafts.m.clear();
+    Sheet.close();
+    Toast.show('<span>すべての記録を削除しました</span>');
+  },
+};
+
+/* ============================================================
+   11. Event wiring & boot
+   ============================================================ */
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-act]');
+  if (!t || t.disabled) return;
+  const fn = Actions[t.dataset.act];
+  if (fn) { e.preventDefault(); fn(t.dataset, t, e); }
+});
+document.addEventListener('input', e => {
+  const t = e.target;
+  if (t.dataset.draft) {
+    const d = Drafts.m.get(t.dataset.ex) || { w: '', r: '' };
+    d[t.dataset.draft] = t.value; Drafts.m.set(t.dataset.ex, d);
+  } else if (t.dataset.memo) {
+    const f = findEx(t.dataset); if (!f) return;
+    f.e.memo = t.value;
+    clearTimeout(memoTimer);
+    memoTimer = setTimeout(() => Store.commit({ sessions: [f.s.id], silent: true }), 600);
+  } else if (t.id === 'exq') {
+    UI.exQuery = t.value;
+    const l = $('#exlist'); if (l) l.innerHTML = exListHTML();
+  } else if (t.id === 'endMemo') UI.endMemo = t.value;
+});
+document.addEventListener('change', e => {
+  const t = e.target;
+  if (t.id === 'edStart' || t.id === 'edEnd') Actions.editTime();
+  else if (t.id === 'importFile') Actions.importFile(t);
+});
+document.addEventListener('keydown', e => {
+  const t = e.target;
+  if (e.key === 'Escape' && Sheet.fn) { Sheet.close(); return; }
+  if (e.key !== 'Enter') return;
+  if (t.dataset && t.dataset.draft) {
+    e.preventDefault();
+    if (t.dataset.draft === 'w') { const r = document.getElementById('r-' + t.dataset.ex); if (r) r.focus(); }
+    else Actions.logSet(t.dataset);
+  } else if (t.id === 'exq') {
+    e.preventDefault();
+    const q = UI.exQuery.trim(); if (!q) return;
+    const ql = q.toLowerCase();
+    const names = allExerciseNames();
+    const hit = names.includes(q) ? q : names.find(n => n.toLowerCase().includes(ql) || Lib.en(n).toLowerCase().includes(ql));
+    Actions.pickEx({ name: hit || q });
+  }
+});
+document.addEventListener('focusin', e => { if (e.target.dataset && e.target.dataset.draft) setTimeout(() => { try { e.target.select(); } catch {} }, 0); });
+document.addEventListener('focusout', () => {
+  if (App.pendingRemote) setTimeout(() => { if (!isTyping() && App.pendingRemote) { App.pendingRemote = false; App.render(); } }, 50);
+});
+document.addEventListener('pointerover', e => { const h = e.target.closest && e.target.closest('.hit'); if (h) Charts.tip(h); });
+document.addEventListener('pointerdown', e => { const h = e.target.closest && e.target.closest('.hit'); if (h) Charts.tip(h); else Charts.hideAll(); });
+document.addEventListener('pointerout', e => {
+  if (e.pointerType !== 'mouse') return;
+  const from = e.target.closest && e.target.closest('.hit'), to = e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest('.hit');
+  if (from && !to) Charts.hideAll();
+});
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { App.render(); Wake.sync(); } });
+let rsz = 0;
+window.addEventListener('resize', () => { clearTimeout(rsz); rsz = setTimeout(() => Charts.mount(App.view), 150); });
+window.addEventListener('storage', e => { if (e.key === LS.data && !isTyping()) { Store.load(); App.render(); } });
+
+function boot() {
+  App.view = $('#view');
+  Sheet.root = $('#sheet'); Sheet.panel = $('#sheetPanel');
+  Toast.el = $('#toast'); Rest.el = $('#rest');
+  Store.load(); Rest.load();
+  App.render(); Rest.paint();
+  setInterval(tick, 500);
+  Wake.sync();
+  Cloud.init();
+  if (window.claude && typeof window.claude.use === 'function') window.claude.use('downloads').then(d => { Caps.downloads = d; }).catch(() => {});
+  if (location.hash === '#calendar' || location.hash === '#stats') App.go(location.hash.slice(1));
+}
+boot();
+})();
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(() => {}); });
+}
+</script>
+</body>
+</html>
