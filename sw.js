@@ -2,7 +2,7 @@
    - App shell is cached so the app opens even with no signal in the gym.
    - The page itself is fetched from the network first (to pick up updates),
      falling back to the cached copy after 2.5 seconds or when offline. */
-const CACHE = 'kintore-diary-v2';
+const CACHE = 'kintore-diary-v3';
 const SHELL = [
   './',
   './index.html',

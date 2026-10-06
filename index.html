@@ -331,6 +331,24 @@ small{font-size:inherit}
 .pick:last-child{border-bottom:0}
 .pick-n{font-size:16px;font-weight:500}
 .pick-s{font-size:12px;color:var(--muted);grid-column:1;font-variant-numeric:tabular-nums}
+.pick-last{grid-column:1;display:flex;flex-wrap:wrap;align-items:center;gap:4px 5px;margin-top:4px}
+.pl-d{font-size:11.5px;color:var(--muted);margin-right:2px;white-space:nowrap}
+.pl-c{font-family:var(--mono);font-size:12px;line-height:1.5;color:var(--fg);background:var(--fill);border-radius:7px;padding:1px 6px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pl-m{font-size:11.5px;color:var(--muted)}
+.part-box{display:grid;place-items:center;align-content:center;gap:1px;width:100%;aspect-ratio:120/100;background:var(--fig-bg);border-radius:inherit}
+.part-box b{font-size:16px;font-weight:600;color:var(--fg)}
+.part-box small{font-size:9.5px;color:var(--muted);letter-spacing:.02em}
+.part-box.new{color:var(--muted)}
+.part-box.new svg{width:20px;height:20px}
+.pick-new{display:grid;gap:2px;min-width:0;padding:4px 0}
+.part-pick{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.part-pick .chip{height:32px;padding:0 12px}
+.g-btn .g-t,.g-btn .g-s{display:block}
+.pick-hint{font-size:12.5px;color:var(--muted);padding:12px 4px 0}
+.part-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.part-opt{min-height:58px;border-radius:16px;background:var(--card);box-shadow:var(--shadow);font-size:16px;font-weight:600;text-align:center;transition:transform .16s var(--ease)}
+.part-opt:active{transform:scale(.97)}
+.part-opt.on{background:var(--inv-bg);color:var(--inv-fg)}
 .pi{grid-row:1/3;grid-column:2;color:var(--fg-2);display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:var(--fill)}
 .pi svg{width:16px;height:16px}
 .pick-main:disabled{opacity:.45}
@@ -1157,7 +1175,7 @@ const Figs = {
    3. Store — localStorage first, private cloud copy when available
    ============================================================ */
 const LS = { data: 'kintore-diary.v1', rest: 'kintore-diary.rest' };
-const DEFAULT_SETTINGS = { restAuto: true, restSec: 90, step: 2.5, wake: false };
+const DEFAULT_SETTINGS = { restAuto: true, restSec: 90, step: 2.5, wake: false, restSound: true };
 const normMeta = m => ({ activeId: m?.activeId ?? null, settings: { ...DEFAULT_SETTINGS, ...(m?.settings || {}) }, custom: { ...(m?.custom || {}) }, updatedAt: m?.updatedAt || 0 });
 const blankState = () => ({ v: 1, sessions: {}, meta: normMeta(null) });
 
@@ -1504,27 +1522,56 @@ const Toast = {
   },
 };
 
+/* Rest-timer beep: two short tones ("pi-pip"), queued on the audio clock when the
+   timer starts so it lands exactly on zero. It mixes with music from other apps.
+   Browsers only play it while the app is open, and iPhone mutes it in silent mode. */
 const Sound = {
-  ctx: null,
+  ctx: null, pending: [], unlocked: false, onReady: null,
+  get on() { return Store.settings.restSound !== false; },
   prime() {
     try {
-      if (!this.ctx) { const C = window.AudioContext || window.webkitAudioContext; if (C) this.ctx = new C(); }
-      if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
-    } catch {}
+      if (!this.ctx) { const C = window.AudioContext || window.webkitAudioContext; if (!C) return Promise.resolve(); this.ctx = new C(); }
+      const c = this.ctx;
+      if (!this.unlocked) { // iOS: play one silent sample inside the tap to unlock output
+        const b = c.createBuffer(1, 1, 22050), src = c.createBufferSource();
+        src.buffer = b; src.connect(c.destination); src.start(0);
+        this.unlocked = true;
+      }
+      const p = c.state === 'running' ? Promise.resolve() : c.resume();
+      return p.then(() => { if (this.onReady) this.onReady(); }).catch(() => {});
+    } catch { return Promise.resolve(); }
   },
-  chime() {
-    const c = this.ctx; if (!c || c.state !== 'running') return;
-    const t0 = c.currentTime;
-    [[0, 880], [0.2, 1320]].forEach(([dt, f]) => {
-      const o = c.createOscillator(), g = c.createGain();
-      o.type = 'sine'; o.frequency.value = f;
-      g.gain.setValueAtTime(0.0001, t0 + dt);
-      g.gain.exponentialRampToValueAtTime(0.2, t0 + dt + 0.02);
-      g.gain.exponentialRampToValueAtTime(0.0001, t0 + dt + 0.4);
-      o.connect(g).connect(c.destination);
-      o.start(t0 + dt); o.stop(t0 + dt + 0.45);
-    });
+  ready() { return !!this.ctx && this.ctx.state === 'running'; },
+  tones(at) {
+    const c = this.ctx, nodes = [];
+    for (const dt of [0, 0.24]) {
+      const t = at + dt, g = c.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.5, t + 0.012);
+      g.gain.setValueAtTime(0.5, t + 0.09);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.17);
+      g.connect(c.destination);
+      for (const [f, v] of [[1568, 1], [3136, 0.35]]) {
+        const o = c.createOscillator(), og = c.createGain();
+        o.type = 'sine'; o.frequency.value = f; og.gain.value = v;
+        o.connect(og).connect(g); o.start(t); o.stop(t + 0.2);
+        nodes.push(o);
+      }
+    }
+    return nodes;
   },
+  /* queue the beep `sec` seconds from now; true when it is queued */
+  schedule(sec) {
+    this.cancel();
+    if (!this.on || !this.ready()) return false;
+    this.pending = this.tones(this.ctx.currentTime + Math.max(0, sec));
+    return true;
+  },
+  cancel() {
+    for (const o of this.pending) { try { o.stop(0); } catch {} try { o.disconnect(); } catch {} }
+    this.pending = [];
+  },
+  beep() { if (this.ready()) this.tones(this.ctx.currentTime + 0.02); },
 };
 const Haptic = {
   tap() { try { navigator.vibrate && navigator.vibrate(10); } catch {} },
@@ -1537,18 +1584,33 @@ const Rest = {
     try { const r = JSON.parse(lsGet(LS.rest) || 'null'); if (r && r.end > Date.now()) { this.end = r.end; this.total = r.total; } } catch {}
   },
   save() { lsSet(LS.rest, JSON.stringify(this.end ? { end: this.end, total: this.total } : null)); },
-  start(sec) { this.total = sec * 1000; this.end = Date.now() + this.total; this.doneAt = 0; this.save(); this.paint(true); },
+  armed: false,
+  start(sec) { this.total = sec * 1000; this.end = Date.now() + this.total; this.doneAt = 0; this.save(); this.arm(); this.paint(true); },
+  /* (re)queue the end-of-rest beep for the time that is left */
+  arm() {
+    const left = (this.end - Date.now()) / 1000;
+    if (this.end && !this.doneAt && left > 0) this.armed = Sound.schedule(left);
+    else { Sound.cancel(); this.armed = false; }
+  },
+  rearm() { if (this.end && !this.doneAt && !this.armed) this.arm(); },
+  disarm() { Sound.cancel(); this.armed = false; },
   add(sec) {
     if (!this.end) return;
     if (this.doneAt) { if (sec > 0) this.start(sec); return; }
     this.end = Math.max(Date.now() + 1000, this.end + sec * 1000);
     this.total = Math.max(this.total + sec * 1000, this.end - Date.now(), 1000);
-    this.save(); this.paint();
+    this.save(); this.arm(); this.paint();
   },
-  stop() { this.end = 0; this.doneAt = 0; this.save(); this.paint(); },
+  stop() { this.disarm(); this.end = 0; this.doneAt = 0; this.save(); this.paint(); },
   tick() {
     if (!this.end) return;
-    if (this.end - Date.now() <= 0 && !this.doneAt) { this.doneAt = Date.now(); Sound.chime(); Haptic.done(); }
+    if (this.end - Date.now() <= 0 && !this.doneAt) {
+      this.doneAt = Date.now();
+      // fallback when the beep could not be queued (only if we are on time)
+      if (!this.armed && Sound.on && this.doneAt - this.end < 2000) Sound.beep();
+      this.armed = false;
+      Haptic.done();
+    }
     if (this.doneAt && Date.now() - this.doneAt > 8000) { this.stop(); return; }
     this.paint();
   },
@@ -1647,7 +1709,8 @@ function exCardHTML(s, e) {
       <div class="ex-ttl">
         <p class="ex-en">${PARTS[Lib.part(e.name)]}${en ? ` · ${U.esc(en)}` : ''}</p>
         <h3 class="ex-name">${U.esc(e.name)}</h3>
-        ${FIGS[e.name] ? `<button class="ex-guide" data-act="guide" data-name="${U.esc(e.name)}">動きとポイント${I.chevRs}</button>` : ''}
+        ${FIGS[e.name] ? `<button class="ex-guide" data-act="guide" data-name="${U.esc(e.name)}">動きとポイント${I.chevRs}</button>`
+          : isCustom(e.name) ? `<button class="ex-guide" data-act="partAsk" data-name="${U.esc(e.name)}">部位を変更${I.chevRs}</button>` : ''}
       </div>
     </header>
     ${prevBlock}
@@ -1745,16 +1808,32 @@ function allExerciseNames() {
   const st = Q.stats();
   return [...new Set([...LIB.map(x => x[0]), ...Object.keys(Store.meta.custom), ...st.ex.keys()])];
 }
-function pickRow(n, have, st) {
-  const r = st.ex.get(n);
-  const sub = r ? `前回 ${fmt.chip({ w: r.history.at(-1).top, r: r.history.at(-1).reps })} · ${U.md(r.history.at(-1).t)}` : (Lib.en(n) || PARTS[Lib.part(n)]);
+/* last session's sets for an exercise, e.g. 「前回 9/26  80×8  80×7  75×10」 */
+function lastLine(n, s) {
+  const p = s ? Q.prev(n, s) : null;
+  if (!p) return `<span class="pick-s">${U.esc(Lib.en(n) || 'まだ記録がありません')}</span>`;
+  const sets = p.e.sets, shown = sets.slice(0, 6);
+  return `<span class="pick-last"><span class="pl-d">前回 ${U.mdS(p.s.start)}</span>${shown.map(x => `<span class="pl-c">${fmt.chip(x)}</span>`).join('')}${sets.length > 6 ? `<span class="pl-m">+${sets.length - 6}</span>` : ''}</span>`;
+}
+const isCustom = n => !LIBMAP.has(n);
+function pickRow(n, have, s) {
   const fig = FIGS[n]
     ? `<button class="pick-fig" data-act="guide" data-from="pick" data-name="${U.esc(n)}" aria-label="${U.esc(n)}の動きを見る">${figSVG(n, false)}</button>`
-    : `<span class="pick-fig"><i class="fig-empty"></i></span>`;
+    : `<button class="pick-fig" data-act="partAsk" data-from="pick" data-name="${U.esc(n)}" aria-label="${U.esc(n)}の部位を変更"><span class="part-box"><b>${PARTS[Lib.part(n)]}</b><small>部位を変更</small></span></button>`;
   return `<div class="pick">${fig}<button class="pick-main" data-act="pickEx" data-name="${U.esc(n)}" ${have.has(n) ? 'disabled' : ''}>
-    <span class="pick-n">${U.esc(n)}</span><span class="pick-s">${U.esc(sub)}</span>
+    <span class="pick-n">${U.esc(n)}</span>${lastLine(n, s)}
     ${have.has(n) ? '<span class="pick-on">追加済み</span>' : `<span class="pi">${I.plus}</span>`}
   </button></div>`;
+}
+function newExRow(q) {
+  return `<div class="pick">
+    <span class="pick-fig"><span class="part-box new">${I.plus}</span></span>
+    <div class="pick-new">
+      <p class="pick-n">「${U.esc(q)}」を新しく追加</p>
+      <p class="pick-s">部位を選ぶと、そのタブに追加されます</p>
+      <div class="part-pick" role="group" aria-label="部位">${Object.keys(PARTS).map(p => `<button class="chip" data-act="pickEx" data-name="${U.esc(q)}" data-part="${p}">${PARTS[p]}</button>`).join('')}</div>
+    </div>
+  </div>`;
 }
 function exListHTML() {
   const s = Model.get(UI.addSid); if (!s) return '';
@@ -1767,16 +1846,17 @@ function exListHTML() {
     const hits = names.filter(n => n.toLowerCase().includes(ql) || Lib.en(n).toLowerCase().includes(ql));
     const exact = names.includes(q);
     return `<div class="pick-list" style="margin-top:14px">
-      ${exact ? '' : `<div class="pick"><span class="pick-fig"><i class="fig-empty"></i></span><button class="pick-main" data-act="pickEx" data-name="${U.esc(q)}"><span class="pick-n">「${U.esc(q)}」を追加</span><span class="pick-s">新しい種目として登録します</span><span class="pi">${I.plus}</span></button></div>`}
-      ${hits.map(n => pickRow(n, have, st)).join('')}
+      ${exact ? '' : newExRow(q)}
+      ${hits.map(n => pickRow(n, have, s)).join('')}
     </div>`;
   }
   const recent = [...st.ex.values()].sort((a, b) => b.history.at(-1).t - a.history.at(-1).t).slice(0, 6).map(r => r.name);
   const parts = Object.keys(PARTS).filter(p => p !== 'other' || names.some(n => Lib.part(n) === 'other'));
   const inPart = names.filter(n => Lib.part(n) === UI.exPart);
-  return `${recent.length ? `<p class="group-l">最近の種目</p><div class="pick-list">${recent.map(n => pickRow(n, have, st)).join('')}</div>` : ''}
+  return `${recent.length ? `<p class="group-l">最近の種目</p><div class="pick-list">${recent.map(n => pickRow(n, have, s)).join('')}</div>` : ''}
     <div class="chips part-tabs" role="tablist">${parts.map(p => `<button class="chip${p === UI.exPart ? ' on' : ''}" data-act="exPart" data-p="${p}" role="tab" aria-selected="${p === UI.exPart}">${PARTS[p]}</button>`).join('')}</div>
-    <div class="pick-list" style="margin-top:10px">${inPart.map(n => pickRow(n, have, st)).join('') || '<p class="muted" style="padding:14px 0">この部位の種目はまだありません</p>'}</div>`;
+    <div class="pick-list" style="margin-top:10px">${inPart.map(n => pickRow(n, have, s)).join('') || '<p class="muted" style="padding:14px 0">この部位の種目はまだありません</p>'}</div>
+    ${names.some(isCustom) ? '' : `<p class="pick-hint">リストにない種目は、上の検索欄に名前を入れると追加できます</p>`}`;
 }
 function guideSheet() {
   const { name, from } = UI.guide, g = Guide.get(name), en = Lib.en(name);
@@ -1798,6 +1878,14 @@ function guideSheet() {
   <section class="g-sec"><h3>ポイント</h3><ul class="points">${g.points.map(t => `<li>${U.esc(t)}</li>`).join('')}</ul></section>` : ''}
   ${actions}`;
 }
+function partSheet() {
+  const { name, from } = UI.partFor, cur = Lib.part(name);
+  return `<div class="sheet-h"><div><p class="eyebrow">部位を変更</p><h2>${U.esc(name)}</h2></div>
+    <button class="icon-btn" data-act="closeSheet" aria-label="閉じる">${I.x}</button></div>
+  <p class="muted" style="padding:0 4px 14px">選んだ部位のタブに表示されます</p>
+  <div class="part-grid">${Object.keys(PARTS).map(p => `<button class="part-opt${p === cur ? ' on' : ''}" data-act="setPart" data-p="${p}" aria-pressed="${p === cur}">${PARTS[p]}</button>`).join('')}</div>
+  ${from === 'pick' ? `<button class="btn btn-quiet" style="margin-top:12px" data-act="guideBack">一覧に戻る</button>` : ''}`;
+}
 function addExSheet() {
   return `<div class="sheet-h"><h2>種目を追加</h2><button class="icon-btn" data-act="closeSheet" aria-label="閉じる">${I.x}</button></div>
   <div class="search"><input id="exq" type="search" placeholder="種目名で検索、または新しく追加" value="${U.esc(UI.exQuery)}" autocomplete="off" enterkeyhint="done" aria-label="種目を検索"></div>
@@ -1813,6 +1901,8 @@ function settingsSheet() {
   <div class="group">
     <div class="g-row"><div><p class="g-t">セット記録後に自動で開始</p><p class="g-s">記録ボタンを押すと休憩タイマーが動きます</p></div>${sw('restAuto', '自動で開始')}</div>
     <div class="g-row"><p class="g-t">休憩時間（秒）</p>${seg([60, 90, 120, 180], st.restSec, 'setRest')}</div>
+    <div class="g-row"><div><p class="g-t">終わったら音で知らせる</p><p class="g-s">「ピピッ」と短く2回だけ鳴ります</p></div>${sw('restSound', '終わったら音で知らせる')}</div>
+    <button class="g-row g-btn" data-act="testSound"><span><span class="g-t">音を試す</span><span class="g-s">iPhoneは消音モード中や、画面が消えている間は鳴りません</span></span></button>
   </div>
   <p class="group-l">記録</p>
   <div class="group">
@@ -2253,12 +2343,27 @@ const Actions = {
   exPart(d) { UI.exPart = d.p; const l = $('#exlist'); if (l) { l.innerHTML = exListHTML(); Figs.mount(l); } },
   guide(d) { UI.guide = { name: d.name, from: d.from || 'card' }; Sheet.open(guideSheet); },
   guideBack() { Sheet.open(addExSheet); },
+  partAsk(d) { UI.partFor = { name: d.name, from: d.from || 'card' }; Sheet.open(partSheet); },
+  setPart(d) {
+    const { name, from } = UI.partFor || {}; if (!name || !PARTS[d.p]) return;
+    Store.meta.custom[name] = d.p;
+    Store.commit({ meta: true });
+    if (from === 'pick') { UI.exPart = d.p; UI.exQuery = ''; Sheet.open(addExSheet); }
+    else Sheet.close();
+    Toast.show(`<span>「${U.esc(name)}」を${PARTS[d.p]}に移しました</span>`);
+  },
+  testSound() { Sound.prime().then(() => { Sound.beep(); if (!Sound.ready()) Toast.show('<span>この環境では音を鳴らせませんでした</span>'); }); },
   pickEx(d) {
     const name = (d.name || '').trim().slice(0, 40);
     const s = Model.get(UI.addSid); if (!name || !s) return;
     Sheet.close();
-    if (!LIBMAP.has(name) && !Store.meta.custom[name] && !Q.stats().ex.has(name)) { Store.meta.custom[name] = 'other'; Store.commit({ meta: true, silent: true }); }
+    let isNew = false;
+    if (!LIBMAP.has(name) && !Store.meta.custom[name] && !Q.stats().ex.has(name)) {
+      Store.meta.custom[name] = PARTS[d.part] ? d.part : 'other'; isNew = true;
+      Store.commit({ meta: true, silent: true });
+    }
     const e = Model.addExercise(s.id, name);
+    if (isNew) Toast.show(`<span>「${U.esc(name)}」を${PARTS[Lib.part(name)]}に追加しました</span>`);
     UI.exQuery = '';
     requestAnimationFrame(() => {
       const card = document.getElementById('ex-' + e.id);
@@ -2374,7 +2479,10 @@ const Actions = {
   },
   statEx(d) { UI.statEx = d.name; App.render(); },
 
-  toggle(d) { Store.settings[d.k] = !Store.settings[d.k]; Store.commit({ meta: true }); Wake.sync(); },
+  toggle(d) {
+    Store.settings[d.k] = !Store.settings[d.k]; Store.commit({ meta: true }); Wake.sync();
+    if (d.k === 'restSound') { Rest.disarm(); Rest.rearm(); }
+  },
   setRest(d) { Store.settings.restSec = Number(d.v); Store.commit({ meta: true }); },
   setStep(d) { Store.settings.step = Number(d.v); Store.commit({ meta: true }); },
 
@@ -2487,7 +2595,8 @@ document.addEventListener('keydown', e => {
     const ql = q.toLowerCase();
     const names = allExerciseNames();
     const hit = names.includes(q) ? q : names.find(n => n.toLowerCase().includes(ql) || Lib.en(n).toLowerCase().includes(ql));
-    Actions.pickEx({ name: hit || q });
+    if (hit) Actions.pickEx({ name: hit });
+    else { t.blur(); const pp = $('.part-pick'); if (pp) { pp.classList.remove('shake'); void pp.offsetWidth; pp.classList.add('shake'); } }
   }
 });
 document.addEventListener('focusin', e => { if (e.target.dataset && e.target.dataset.draft) setTimeout(() => { try { e.target.select(); } catch {} }, 0); });
@@ -2501,7 +2610,14 @@ document.addEventListener('pointerout', e => {
   const from = e.target.closest && e.target.closest('.hit'), to = e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest('.hit');
   if (from && !to) Charts.hideAll();
 });
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { App.render(); Wake.sync(); } });
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') { App.render(); Wake.sync(); Rest.rearm(); }
+  else Rest.disarm();
+});
+const primeSound = () => Sound.prime();
+document.addEventListener('click', primeSound, true);
+document.addEventListener('touchend', primeSound, { capture: true, passive: true });
+Sound.onReady = () => Rest.rearm();
 let rsz = 0;
 window.addEventListener('resize', () => { clearTimeout(rsz); rsz = setTimeout(() => Charts.mount(App.view), 150); });
 window.addEventListener('storage', e => { if (e.key === LS.data && !isTyping()) { Store.load(); App.render(); } });
