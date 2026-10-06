@@ -3,7 +3,7 @@
    - The page itself is fetched from the network first (always revalidated, so updates
      arrive right away), falling back to the cached copy after 2.5 s or when offline.
    - version.json is never cached: the app uses it to check for updates. */
-const CACHE = 'kintore-diary-v6';
+const CACHE = 'kintore-diary-v7';
 const SHELL = [
   './',
   './index.html',
@@ -61,10 +61,11 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Icons, manifest and web fonts: cached copy first, refreshed in the background
+  // Icons, manifest, web fonts and the (version-pinned) sync library: cached copy first
   const cacheable = url.origin === self.location.origin
     || url.hostname === 'fonts.googleapis.com'
-    || url.hostname === 'fonts.gstatic.com';
+    || url.hostname === 'fonts.gstatic.com'
+    || (url.hostname === 'cdn.jsdelivr.net' && url.pathname.startsWith('/npm/firebase@'));
   if (!cacheable) return;
   event.respondWith(
     caches.match(req).then((hit) => {

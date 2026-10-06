@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="筋トレ日記">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<script>window.KINTORE_VERSION = '20261006-2222';</script>
+<script>window.KINTORE_VERSION = '20261006-2243';</script>
 <style>
 :root{color-scheme:light;padding-top:env(safe-area-inset-top,0px)}
 body{margin:0}
@@ -352,6 +352,7 @@ small{font-size:inherit}
 .sg-link svg{width:14px;height:14px}
 .danger-t{color:var(--rec)}
 .g-row > svg{width:16px;height:16px;color:var(--muted);flex:none}
+.form-err{font-size:13.5px;color:var(--rec);padding:12px 4px 0;line-height:1.5}
 .pick-hint{font-size:12.5px;color:var(--muted);padding:12px 4px 0}
 .part-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
 .part-opt{min-height:58px;border-radius:16px;background:var(--card);box-shadow:var(--shadow);font-size:16px;font-weight:600;text-align:center;transition:transform .16s var(--ease)}
@@ -776,15 +777,17 @@ const Model = {
 /* Optional cloud copy: each signed-in viewer's private subtree on claude.ai.
    One document per month ("m2026-10") plus one "meta" document. Newer updatedAt wins. */
 const Cloud = {
-  col: null, status: 'off', pending: new Set(), metaDirty: false, timer: 0, busy: false,
+  col: null, kind: null, status: 'off', ready: false, unsub: null, retry: null,
+  pending: new Set(), metaDirty: false, timer: 0, busy: false,
   month: s => 'm' + s.date.slice(0, 7),
   label() {
     if (this.status === 'off') return Store.localOK ? 'この端末に保存しています' : 'この環境では保存できません。閉じると記録が消えます';
-    if (this.status === 'syncing') return 'このブラウザ＋あなた専用のクラウド領域（同期中）';
-    if (this.status === 'error') return 'クラウドに同期できませんでした。このブラウザには保存されています';
-    return 'このブラウザ＋あなた専用のクラウド領域（同期済み）';
+    if (this.status === 'syncing') return 'クラウドと同期しています…';
+    if (this.status === 'error') return 'クラウドにつながりません。この端末には保存されています';
+    return 'クラウドと同期済み';
   },
   setStatus(s) { this.status = s; if (Sheet.fn === settingsSheet) Sheet.refresh(); },
+  /* claude.ai page: each viewer's private store */
   async init() {
     const c = window.claude;
     if (!c || typeof c.use !== 'function') return;
@@ -794,20 +797,52 @@ const Cloud = {
     let uid = null;
     try { uid = await user.id(); } catch {}
     if (!uid) return;
-    try { this.col = db.collection('data/users/' + uid); } catch { this.col = null; return; }
+    let col; try { col = db.collection('data/users/' + uid); } catch { return; }
+    this.attach(col, 'claude');
+  },
+  attach(col, kind) {
+    this.detach(true);
+    this.col = col; this.kind = kind; this.ready = false;
     this.setStatus('syncing');
+    this.sync();
+  },
+  /* pull everything, merge (newer edit wins), push what the server lacks, then listen */
+  async sync() {
+    const col = this.col; if (!col) return;
+    if (this.ready) this.setStatus('syncing');
     try {
-      const snap = await this.col.limit(1000).get();
+      const snap = this.kind === 'firebase' ? await col.get({ source: 'server' }) : await col.limit(1000).get();
+      if (col !== this.col) return;
       const r = this.merge(snap.docs, true);
       r.push.forEach(m => this.pending.add(m));
       if (r.pushMeta) this.metaDirty = true;
       if (r.changed) { Store.rev++; Store.persist(); Store.emit(true); }
+      this.ready = true;
       await this.flush();
-      this.col.limit(1000).onSnapshot(qs => {
-        const m = this.merge(qs.docs, false);
-        if (m.changed) { Store.rev++; Store.persist(); Store.emit(true); }
-      }, () => {});
-    } catch { this.setStatus('error'); }
+      if (!this.unsub && col === this.col) {
+        const q = this.kind === 'firebase' ? col : col.limit(1000);
+        this.unsub = q.onSnapshot(qs => {
+          if (col !== this.col) return;
+          const m = this.merge(qs.docs, false);
+          if (m.changed) { Store.rev++; Store.persist(); Store.emit(true); }
+        }, () => {});
+      }
+    } catch {
+      if (col !== this.col) return;
+      this.setStatus('error');
+      if (!this.retry) {
+        this.retry = () => { window.removeEventListener('online', this.retry); this.retry = null; this.sync(); };
+        window.addEventListener('online', this.retry);
+      }
+    }
+  },
+  detach(quiet) {
+    if (this.unsub) { try { this.unsub(); } catch {} }
+    if (this.retry) window.removeEventListener('online', this.retry);
+    clearTimeout(this.timer);
+    this.unsub = null; this.retry = null; this.col = null; this.kind = null; this.ready = false;
+    this.pending.clear(); this.metaDirty = false;
+    if (!quiet) this.setStatus('off');
   },
   merge(docs, collect) {
     const st = Store.state;
@@ -837,11 +872,12 @@ const Cloud = {
     if (!this.col) return;
     for (const id of ids) { const s = Store.state.sessions[id]; if (s) this.pending.add(this.month(s)); }
     if (meta) this.metaDirty = true;
+    if (!this.ready) return; // sent after the first sync
     clearTimeout(this.timer);
     this.timer = setTimeout(() => this.flush(), 700);
   },
   async flush() {
-    if (!this.col) return;
+    if (!this.col || !this.ready) return;
     if (this.busy) { clearTimeout(this.timer); this.timer = setTimeout(() => this.flush(), 700); return; }
     if (!this.pending.size && !this.metaDirty) { this.setStatus('synced'); return; }
     this.busy = true; this.setStatus('syncing');
@@ -863,7 +899,12 @@ const Cloud = {
   },
   async write(id, body) {
     for (let a = 0; a < 2; a++) {
-      try { await this.col.doc(id).set(U.clone(body)); return true; }
+      try {
+        const ref = this.col.doc(id);
+        // Firebase merges into the stored month, so sessions from other devices are never dropped
+        await (this.kind === 'firebase' ? ref.set(U.clone(body), { merge: true }) : ref.set(U.clone(body)));
+        return true;
+      }
       catch (e) {
         if (e?.code !== 'unavailable' || a) return false;
         await new Promise(r => setTimeout(r, 600 + Math.random() * 600));
@@ -975,6 +1016,75 @@ const Q = {
     this._st = { count: all.length, month, week, total, avg, sets, streak, longest, ex, improved };
     this._srev = Store.rev;
     return this._st;
+  },
+};
+
+/* Sync for the home-screen app: Firebase (login + Firestore). Loaded only when needed. */
+const FB = {
+  cfg: window.KINTORE_FIREBASE || null, ready: null, user: null, listening: false,
+  key: 'kintore-diary.sync', ver: '12.19.0',
+  email() {
+    if (this.user) return this.user.email || '';
+    try { return (JSON.parse(lsGet(this.key) || 'null') || {}).email || ''; } catch { return ''; }
+  },
+  load() {
+    if (this.ready) return this.ready;
+    const base = `https://cdn.jsdelivr.net/npm/firebase@${this.ver}/`;
+    const add = f => new Promise((res, rej) => {
+      const el = document.createElement('script');
+      el.src = base + f; el.onload = res; el.onerror = () => rej(new Error('load ' + f));
+      document.head.appendChild(el);
+    });
+    this.ready = add('firebase-app-compat.js')
+      .then(() => Promise.all([add('firebase-auth-compat.js'), add('firebase-firestore-compat.js')]))
+      .then(() => {
+        const fb = window.firebase;
+        if (!fb.apps.length) fb.initializeApp(this.cfg);
+        if (!this.listening) { this.listening = true; fb.auth().onAuthStateChanged(u => this.onUser(u)); }
+        return fb;
+      })
+      .catch(e => { this.ready = null; throw e; });
+    return this.ready;
+  },
+  /* at launch: reconnect when this device was logged in before */
+  start() { if (this.cfg && this.email()) this.load().catch(() => Cloud.setStatus('error')); },
+  onUser(u) {
+    this.user = u || null;
+    if (u) {
+      lsSet(this.key, JSON.stringify({ email: u.email || '' }));
+      if (Cloud.kind !== 'firebase') Cloud.attach(window.firebase.firestore().collection('users').doc(u.uid).collection('data'), 'firebase');
+    } else {
+      lsSet(this.key, '');
+      if (Cloud.kind === 'firebase') Cloud.detach();
+    }
+    if (Sheet.fn === settingsSheet) Sheet.refresh();
+  },
+  async signIn(email, pass, create) {
+    const a = (await this.load()).auth();
+    return create ? a.createUserWithEmailAndPassword(email, pass) : a.signInWithEmailAndPassword(email, pass);
+  },
+  async signOut() {
+    lsSet(this.key, ''); this.user = null; Cloud.detach();
+    try { await (await this.load()).auth().signOut(); } catch {}
+  },
+  async reset(email) { return (await this.load()).auth().sendPasswordResetEmail(email); },
+  errText(e) {
+    const c = (e && e.code) || '';
+    if (/load /.test(e && e.message || '')) return '通信できませんでした。電波のある場所でもう一度お試しください';
+    return ({
+      'auth/invalid-email': 'メールアドレスの形が正しくありません',
+      'auth/missing-email': 'メールアドレスを入力してください',
+      'auth/missing-password': 'パスワードを入力してください',
+      'auth/weak-password': 'パスワードは6文字以上にしてください',
+      'auth/email-already-in-use': 'このメールアドレスは登録済みです。「ログイン」を押してください',
+      'auth/invalid-credential': 'メールアドレスかパスワードが違います',
+      'auth/invalid-login-credentials': 'メールアドレスかパスワードが違います',
+      'auth/wrong-password': 'メールアドレスかパスワードが違います',
+      'auth/user-not-found': 'このメールアドレスは登録されていません。「新しく登録」を押してください',
+      'auth/too-many-requests': '試した回数が多すぎます。しばらく待ってからお試しください',
+      'auth/network-request-failed': '通信できませんでした。電波のある場所でもう一度お試しください',
+      'auth/operation-not-allowed': 'Firebaseで「メール / パスワード」のログインが有効になっていません',
+    })[c] || `うまくいきませんでした（${c || 'unknown'}）`;
   },
 };
 
@@ -1493,6 +1603,22 @@ function partSheet() {
   <div class="part-grid">${Object.keys(PARTS).map(p => `<button class="part-opt${p === cur ? ' on' : ''}" data-act="setPart" data-p="${p}" aria-pressed="${p === cur}">${PARTS[p]}</button>`).join('')}</div>
   ${from === 'pick' ? `<button class="btn btn-quiet" style="margin-top:12px" data-act="guideBack">一覧に戻る</button>` : ''}`;
 }
+function syncSheet() {
+  const u = UI.sync;
+  return `<div class="sheet-h"><div><p class="eyebrow">Sync</p><h2>ログイン / 新しく登録</h2></div>
+    <button class="icon-btn" data-act="closeSheet" aria-label="閉じる">${I.x}</button></div>
+  <p class="muted" style="padding:0 4px 16px">同じメールアドレスでログインすると、スマホとPCで記録が同期されます。はじめてのときは「新しく登録」を押してください。</p>
+  <label class="flabel" for="sgEmail">メールアドレス</label>
+  <input id="sgEmail" class="text-in" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" value="${U.esc(u.email)}" enterkeyhint="next">
+  <label class="flabel" for="sgPass" style="display:block;margin-top:14px">パスワード（6文字以上）</label>
+  <input id="sgPass" class="text-in" type="password" autocomplete="current-password" value="${U.esc(u.pass)}" enterkeyhint="go">
+  ${u.err ? `<p class="form-err" role="alert">${U.esc(u.err)}</p>` : ''}
+  <div class="stack g-actions">
+    <button class="btn btn-primary" data-act="syncIn" data-mode="login" ${u.busy ? 'disabled' : ''}>${u.busy === 'login' ? 'ログインしています…' : 'ログイン'}</button>
+    <button class="btn btn-soft" data-act="syncIn" data-mode="signup" ${u.busy ? 'disabled' : ''}>${u.busy === 'signup' ? '登録しています…' : '新しく登録'}</button>
+    <button class="btn btn-quiet" data-act="syncReset">パスワードを忘れたとき</button>
+  </div>`;
+}
 function menusSheet() {
   const ms = Menus.list();
   return `<div class="sheet-h"><div><p class="eyebrow">My menu</p><h2>マイメニュー</h2></div>
@@ -1550,7 +1676,15 @@ function settingsSheet() {
   const st = Store.settings;
   const sw = (k, label) => `<button class="switch" role="switch" aria-checked="${!!st[k]}" data-act="toggle" data-k="${k}" aria-label="${label}"></button>`;
   const seg = (vals, cur, act) => `<div class="seg">${vals.map(v => `<button class="${cur === v ? 'on' : ''}" data-act="${act}" data-v="${v}">${v}</button>`).join('')}</div>`;
+  const syncGroup = !FB.cfg ? '' : `<p class="group-l">同期</p>
+  <div class="group">${FB.email()
+    ? `<div class="g-row"><div><p class="g-t">${U.esc(FB.email())}</p><p class="g-s">${Cloud.label()}</p></div></div>
+    <button class="g-row g-btn" data-act="syncNow">今すぐ同期</button>
+    <button class="g-row g-btn danger" data-act="syncOut">ログアウト</button>`
+    : `<button class="g-row g-btn" data-act="syncOpen"><span><span class="g-t">ログイン / 新しく登録</span><span class="g-s">スマホとPCで記録を同期できます</span></span>${I.chevRs}</button>`}
+  </div>`;
   return `<div class="sheet-h"><h2>設定</h2><button class="icon-btn" data-act="closeSheet" aria-label="閉じる">${I.x}</button></div>
+  ${syncGroup}
   <p class="group-l">休憩タイマー</p>
   <div class="group">
     <div class="g-row"><div><p class="g-t">セット記録後に自動で開始</p><p class="g-s">記録ボタンを押すと休憩タイマーが動きます</p></div>${sw('restAuto', '自動で開始')}</div>
@@ -2101,6 +2235,31 @@ const Actions = {
     else Sheet.close();
     Toast.show(`<span>「${U.esc(name)}」を${PARTS[d.p]}に移しました</span>`);
   },
+  syncOpen() { UI.sync = { email: FB.email(), pass: '', err: '', busy: false }; Sheet.open(syncSheet); },
+  async syncIn(d) {
+    const u = UI.sync; if (!u || u.busy) return;
+    const email = (u.email || '').trim(), pass = u.pass || '';
+    if (!email) { u.err = 'メールアドレスを入力してください'; Sheet.refresh(); return; }
+    if (pass.length < 6) { u.err = 'パスワードは6文字以上で入力してください'; Sheet.refresh(); return; }
+    u.busy = d.mode; u.err = ''; Sheet.refresh();
+    try {
+      await FB.signIn(email, pass, d.mode === 'signup');
+      UI.sync = null; Sheet.close();
+      Toast.show(`<span>${d.mode === 'signup' ? '登録しました' : 'ログインしました'}。記録を同期しています</span>`, 3200);
+    } catch (e) {
+      if (!UI.sync) return;
+      UI.sync.busy = false; UI.sync.err = FB.errText(e); Sheet.refresh();
+    }
+  },
+  async syncReset() {
+    const u = UI.sync; if (!u) return;
+    const email = (u.email || '').trim();
+    if (!email) { u.err = 'メールアドレスを入力してから押してください'; Sheet.refresh(); return; }
+    try { await FB.reset(email); u.err = ''; Sheet.refresh(); Toast.show('<span>パスワード再設定のメールを送りました</span>', 3600); }
+    catch (e) { u.err = FB.errText(e); Sheet.refresh(); }
+  },
+  async syncOut() { await FB.signOut(); Sheet.refresh(); Toast.show('<span>ログアウトしました。この端末の記録はそのまま残ります</span>', 3200); },
+  syncNow() { if (Cloud.col) Cloud.sync(); else FB.start(); },
   appCheck() { Updater.check(true); },
   appUpdate() { Updater.apply(); },
   testSound() { Sound.prime().then(() => { Sound.beep(); if (!Sound.ready()) Toast.show('<span>この環境では音を鳴らせませんでした</span>'); }); },
@@ -2328,6 +2487,7 @@ document.addEventListener('input', e => {
     const l = $('#exlist'); if (l) { l.innerHTML = exListHTML(); }
   } else if (t.id === 'endMemo') UI.endMemo = t.value;
   else if (t.id === 'mnName' && UI.mEdit) UI.mEdit.name = t.value;
+  else if ((t.id === 'sgEmail' || t.id === 'sgPass') && UI.sync) UI.sync[t.id === 'sgEmail' ? 'email' : 'pass'] = t.value;
   else if (t.id === 'mnq' && UI.mEdit) { UI.mEdit.q = t.value; const l = $('#mnlist'); if (l) l.innerHTML = menuPickHTML(); }
 });
 document.addEventListener('change', e => {
@@ -2343,6 +2503,10 @@ document.addEventListener('keydown', e => {
     e.preventDefault();
     if (t.dataset.draft === 'w') { const r = document.getElementById('r-' + t.dataset.ex); if (r) r.focus(); }
     else Actions.logSet(t.dataset);
+  } else if (t.id === 'sgEmail') {
+    e.preventDefault(); const pw = $('#sgPass'); if (pw) pw.focus();
+  } else if (t.id === 'sgPass') {
+    e.preventDefault(); t.blur(); Actions.syncIn({ mode: 'login' });
   } else if (t.id === 'mnName') {
     e.preventDefault(); t.blur();
   } else if (t.id === 'mnq') {
@@ -2394,6 +2558,7 @@ function boot() {
   setInterval(tick, 500);
   Wake.sync();
   Cloud.init();
+  FB.start();
   setTimeout(() => Updater.check(false), 2500);
   if (window.claude && typeof window.claude.use === 'function') window.claude.use('downloads').then(d => { Caps.downloads = d; }).catch(() => {});
   if (location.hash === '#calendar' || location.hash === '#stats') App.go(location.hash.slice(1));
