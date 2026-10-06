@@ -3,7 +3,7 @@
    - The page itself is fetched from the network first (always revalidated, so updates
      arrive right away), falling back to the cached copy after 2.5 s or when offline.
    - version.json is never cached: the app uses it to check for updates. */
-const CACHE = 'kintore-diary-v8';
+const CACHE = 'kintore-diary-v9';
 const SHELL = [
   './',
   './index.html',

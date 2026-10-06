@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="筋トレ日記">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<script>window.KINTORE_VERSION = '20261006-2257'; window.KINTORE_FIREBASE = {"apiKey": "AIzaSyD8C-cmnF12VJThPhKZv6JbJGbzb8iENGk", "authDomain": "kintore-82613.firebaseapp.com", "projectId": "kintore-82613", "storageBucket": "kintore-82613.firebasestorage.app", "messagingSenderId": "156878101173", "appId": "1:156878101173:web:3c4a96afe1832a79c57cfc"};</script>
+<script>window.KINTORE_VERSION = '20261006-2347'; window.KINTORE_FIREBASE = {"apiKey": "AIzaSyD8C-cmnF12VJThPhKZv6JbJGbzb8iENGk", "authDomain": "kintore-82613.firebaseapp.com", "projectId": "kintore-82613", "storageBucket": "kintore-82613.firebasestorage.app", "messagingSenderId": "156878101173", "appId": "1:156878101173:web:3c4a96afe1832a79c57cfc"};</script>
 <style>
 :root{color-scheme:light;padding-top:env(safe-area-inset-top,0px)}
 body{margin:0}
@@ -324,8 +324,8 @@ small{font-size:inherit}
 .suggest .two{grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr)}
 .copy-h{display:flex;align-items:center;justify-content:space-between;padding:6px 4px 0}
 .copy .copy-h .eyebrow{padding:0}
-.mo.mk .mo-t{display:flex;align-items:center;gap:6px}
-.mo.mk .mo-t svg{width:18px;height:18px}
+.mo.mo-make .mo-t{display:flex;align-items:center;gap:6px}
+.mo.mo-make .mo-t svg{width:18px;height:18px}
 .text-in{display:block;width:100%;height:50px;border-radius:15px;border:0;background:var(--fill);padding:0 16px;font-size:16px;outline:none;margin-top:6px}
 .text-in:focus{box-shadow:inset 0 0 0 1.5px var(--fg)}
 .sel-card{padding:2px 12px 2px 16px}
@@ -1387,7 +1387,7 @@ function restRowHTML() {
 
 function myMenusHTML(s) {
   const menus = Menus.list();
-  if (!menus.length) return `<div class="copy"><button class="mo small mk" data-act="menuNew" data-from="live">
+  if (!menus.length) return `<div class="copy"><button class="mo small mo-make" data-act="menuNew" data-from="live">
       <span class="mo-t">${I.plus}マイメニューを作る</span>
       <span class="mo-l">よくやる種目をまとめて保存すると、次からワンタップでそろいます</span></button></div>`;
   return `<div class="copy">
