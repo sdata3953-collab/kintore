@@ -321,6 +321,36 @@ small{font-size:inherit}
 .sg-d{font-size:12px;color:var(--muted);margin-top:2px}
 .suggest .btn{min-height:50px;font-size:15px;white-space:nowrap}
 .suggest .two{grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr)}
+.copy-h{display:flex;align-items:center;justify-content:space-between;padding:6px 4px 0}
+.copy .copy-h .eyebrow{padding:0}
+.mo.mk .mo-t{display:flex;align-items:center;gap:6px}
+.mo.mk .mo-t svg{width:18px;height:18px}
+.text-in{display:block;width:100%;height:50px;border-radius:15px;border:0;background:var(--fill);padding:0 16px;font-size:16px;outline:none;margin-top:6px}
+.text-in:focus{box-shadow:inset 0 0 0 1.5px var(--fg)}
+.sel-card{padding:2px 12px 2px 16px}
+.sel-list{list-style:none;padding:0;margin:0}
+.sel-list li{display:grid;grid-template-columns:20px minmax(0,1fr) 36px 36px;align-items:center;gap:6px;min-height:50px;border-bottom:1px solid var(--line)}
+.sel-list li:last-child{border-bottom:0}
+.sel-n{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.sel-t{font-size:15px;font-weight:500;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sel-b{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;color:var(--muted)}
+.sel-b svg{width:16px;height:16px}
+.sel-b:active{background:var(--fill)}
+.sel-b:disabled{opacity:.25}
+.sel-empty{font-size:13.5px;color:var(--muted);padding:14px 0}
+.mrow{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;width:100%;text-align:left;padding:11px 0;border-bottom:1px solid var(--line)}
+.mrow:last-child{border-bottom:0}
+.mrow-t{display:grid;gap:1px;min-width:0}
+.mrow-t b{font-size:16px;font-weight:500}
+.mrow-t small{font-size:12px;color:var(--muted);line-height:1.5}
+.ck{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--fill);color:var(--fg-2);transition:background-color .15s}
+.ck svg{width:15px;height:15px}
+.mrow.on .ck{background:var(--inv-bg);color:var(--inv-fg)}
+.menu-chips{flex-wrap:wrap}
+.sg-link{justify-self:start;display:inline-flex;align-items:center;gap:2px;font-size:13px;color:var(--fg-2);padding:2px 0}
+.sg-link svg{width:14px;height:14px}
+.danger-t{color:var(--rec)}
+.g-row > svg{width:16px;height:16px;color:var(--muted);flex:none}
 .pick-hint{font-size:12.5px;color:var(--muted);padding:12px 4px 0}
 .part-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
 .part-opt{min-height:58px;border-radius:16px;background:var(--card);box-shadow:var(--shadow);font-size:16px;font-weight:600;text-align:center;transition:transform .16s var(--ease)}
@@ -571,6 +601,8 @@ const I = {
   chevR: sv('<path d="M9 5l7 7-7 7"/>', 2),
   chevLs: sv('<path d="M14 6l-6 6 6 6"/>', 2),
   chevRs: sv('<path d="M10 6l6 6-6 6"/>', 2),
+  check: sv('<path d="M5 12.5l4.5 4.5L19 7.5"/>', 2.2),
+  up: sv('<path d="M6 15l6-6 6 6"/>', 2),
   copy: sv('<rect x="8.5" y="8.5" width="11" height="11" rx="2.5"/><path d="M15.5 8.5V7a2.5 2.5 0 0 0-2.5-2.5H7A2.5 2.5 0 0 0 4.5 7v6A2.5 2.5 0 0 0 7 15.5h1.5"/>'),
 };
 
@@ -657,7 +689,13 @@ const Guide = {
    ============================================================ */
 const LS = { data: 'kintore-diary.v1', rest: 'kintore-diary.rest' };
 const DEFAULT_SETTINGS = { restAuto: true, restSec: 90, step: 2.5, wake: false, restSound: true };
-const normMeta = m => ({ activeId: m?.activeId ?? null, settings: { ...DEFAULT_SETTINGS, ...(m?.settings || {}) }, custom: { ...(m?.custom || {}) }, updatedAt: m?.updatedAt || 0 });
+const normMeta = m => ({
+  activeId: m?.activeId ?? null,
+  settings: { ...DEFAULT_SETTINGS, ...(m?.settings || {}) },
+  custom: { ...(m?.custom || {}) },
+  menus: Array.isArray(m?.menus) ? m.menus.filter(x => x && x.id && Array.isArray(x.items)).map(x => ({ id: x.id, name: String(x.name || ''), items: x.items.map(String) })) : [],
+  updatedAt: m?.updatedAt || 0,
+});
 const blankState = () => ({ v: 1, sessions: {}, meta: normMeta(null) });
 
 const Store = {
@@ -817,7 +855,7 @@ const Cloud = {
       if (this.metaDirty) {
         this.metaDirty = false;
         const mt = Store.meta;
-        if (!(await this.write('meta', { activeId: mt.activeId, settings: mt.settings, custom: mt.custom, updatedAt: mt.updatedAt }))) { this.metaDirty = true; ok = false; }
+        if (!(await this.write('meta', { activeId: mt.activeId, settings: mt.settings, custom: mt.custom, menus: mt.menus, updatedAt: mt.updatedAt }))) { this.metaDirty = true; ok = false; }
       }
     } finally { this.busy = false; }
     this.setStatus(ok ? 'synced' : 'error');
@@ -939,26 +977,57 @@ const Q = {
   },
 };
 
-/* "今日は筋トレどうしますか？" — suggests the menu done longest ago among recent ones */
+/* My menus: saved sets of exercises, e.g. 腕の日 = バーベルカール, ハンマーカール, … */
+const Menus = {
+  list() { return Store.meta.menus; },
+  get(id) { return Store.meta.menus.find(m => m.id === id); },
+  label(m) { return m.name || [...new Set(m.items.map(n => PARTS[Lib.part(n)]))].join('・') || 'メニュー'; },
+  same(names) {
+    const k = [...new Set(names)].sort().join('|');
+    return Store.meta.menus.some(m => [...new Set(m.items)].sort().join('|') === k);
+  },
+  /* the latest finished session that included at least half of the menu */
+  lastDone(m) {
+    const need = Math.max(1, Math.ceil(m.items.length / 2)), set = new Set(m.items), all = Q.all();
+    for (let i = all.length - 1; i >= 0; i--) {
+      const s = all[i]; if (!s.end) continue;
+      let c = 0; for (const e of s.exercises) if (set.has(e.name)) c++;
+      if (c >= need) return s;
+    }
+    return null;
+  },
+  addTo(s, names) {
+    const have = new Set(s.exercises.map(e => e.name)), add = [...new Set(names)].filter(n => !have.has(n));
+    s.exercises.push(...add.map(n => ({ id: U.id(), name: n, sets: [], memo: '' })));
+    if (add.length) Store.commit({ sessions: [s.id] });
+    return add.length;
+  },
+};
+
+/* "今日は筋トレどうしますか？" — suggests the saved menu (or recent menu) done longest ago */
 const Suggest = {
   key: 'kintore-diary.restday',
   skipped() { return lsGet(this.key) === U.key(Date.now()); },
   skip() { lsSet(this.key, U.key(Date.now())); },
   unskip() { lsSet(this.key, ''); },
   get() {
-    const done = Q.all().filter(s => s.end && s.exercises.length);
-    if (!done.length) return null;
+    const done = Q.all().filter(s => s.end && s.exercises.length), menus = Menus.list();
+    if (!done.length && !menus.length) return null;
     const today0 = U.day0(Date.now());
-    const last = done[done.length - 1];
-    const gap = Math.round((today0 - U.day0(last.start)) / 864e5);
-    if (gap < 1) return null;
+    const last = done.length ? done[done.length - 1] : null;
+    const gap = last ? Math.round((today0 - U.day0(last.start)) / 864e5) : null;
+    if (last && gap < 1) return null;
+    const days = new Set(Q.all().map(s => s.date));
+    let streak = 0, d = U.addDays(today0, -1);
+    while (days.has(U.key(d))) { streak++; d = U.addDays(d, -1); }
+    if (menus.length) {
+      const ranked = menus.map(m => ({ m, s: Menus.lastDone(m) })).sort((a, b) => (a.s ? a.s.start : 0) - (b.s ? b.s.start : 0));
+      return { last, gap, streak, menu: ranked[0].m, menuLast: ranked[0].s };
+    }
     const since = Date.now() - 42 * 864e5, byTitle = new Map();
     for (const s of done) if (s.start >= since) byTitle.set(Q.title(s), s);
     const cands = [...byTitle.values()].sort((a, b) => a.start - b.start);
     const pick = cands.length > 1 ? cands[0] : last;
-    const days = new Set(Q.all().map(s => s.date));
-    let streak = 0, d = U.addDays(today0, -1);
-    while (days.has(U.key(d))) { streak++; d = U.addDays(d, -1); }
     return { last, gap, pick, streak };
   },
 };
@@ -1165,12 +1234,24 @@ function restRowHTML() {
   </div>`;
 }
 
+function myMenusHTML(s) {
+  const menus = Menus.list();
+  if (!menus.length) return `<div class="copy"><button class="mo small mk" data-act="menuNew" data-from="live">
+      <span class="mo-t">${I.plus}マイメニューを作る</span>
+      <span class="mo-l">よくやる種目をまとめて保存すると、次からワンタップでそろいます</span></button></div>`;
+  return `<div class="copy">
+    <div class="copy-h"><p class="eyebrow">My menu</p><button class="link-btn" data-act="menus">編集</button></div>
+    ${menus.map(m => `<button class="mo small" data-act="useMenu" data-id="${m.id}" data-sid="${s.id}">
+      <span class="mo-h"><span class="mo-t">${U.esc(Menus.label(m))}</span><span class="mo-d">${m.items.length}種目</span></span>
+      <span class="mo-l">${m.items.map(U.esc).join(' · ')}</span></button>`).join('')}
+  </div>`;
+}
 function copyMenuHTML(s) {
   const ms = Q.menus(s);
-  if (!ms.length) return `<p class="empty-ex">「種目を追加」から始めましょう。<br>次回からは前回の記録が目安として表示されます。</p>`;
+  if (!ms.length) return myMenusHTML(s) + (Menus.list().length ? '' : `<p class="empty-ex">「種目を追加」から始めましょう。<br>次回からは前回の記録が目安として表示されます。</p>`);
   const [first, ...rest] = ms;
   const list = o => o.exercises.map(e => U.esc(e.name)).join(' · ');
-  return `<div class="copy">
+  return myMenusHTML(s) + `<div class="copy">
     <p class="eyebrow">Last menu</p>
     <button class="mo" data-act="copyMenu" data-from="${first.id}" data-sid="${s.id}">
       <span class="mo-h"><span class="mo-t">${Q.title(first)}</span><span class="mo-d">${U.md(first.start)}（${U.wd(first.start)}）</span></span>
@@ -1246,6 +1327,7 @@ function editorHTML(s, live) {
   if (!s.exercises.length) h += copyMenuHTML(s);
   h += s.exercises.map(e => exCardHTML(s, e)).join('');
   h += `<button class="btn btn-soft btn-add" data-act="addEx" data-sid="${s.id}">${I.plus}<span>種目を追加</span></button>`;
+  if (s.exercises.length && !Menus.same(s.exercises.map(e => e.name))) h += `<button class="btn btn-quiet" data-act="menuFromSession" data-sid="${s.id}">この種目をマイメニューに保存</button>`;
   return h;
 }
 
@@ -1336,7 +1418,6 @@ function newExRow(q) {
 function exListHTML() {
   const s = Model.get(UI.addSid); if (!s) return '';
   const have = new Set(s.exercises.map(e => e.name));
-  const st = Q.stats();
   const names = allExerciseNames();
   const q = UI.exQuery.trim();
   if (q) {
@@ -1348,10 +1429,10 @@ function exListHTML() {
       ${hits.map(n => pickRow(n, have, s)).join('')}
     </div>`;
   }
-  const recent = [...st.ex.values()].sort((a, b) => b.history.at(-1).t - a.history.at(-1).t).slice(0, 6).map(r => r.name);
+  const menus = Menus.list();
   const parts = Object.keys(PARTS).filter(p => p !== 'other' || names.some(n => Lib.part(n) === 'other'));
   const inPart = names.filter(n => Lib.part(n) === UI.exPart);
-  return `${recent.length ? `<p class="group-l">最近の種目</p><div class="pick-list">${recent.map(n => pickRow(n, have, s)).join('')}</div>` : ''}
+  return `${menus.length ? `<p class="group-l">マイメニューからまとめて追加</p><div class="chips menu-chips">${menus.map(m => `<button class="chip" data-act="useMenu" data-id="${m.id}" data-sid="${s.id}">${U.esc(Menus.label(m))}</button>`).join('')}</div>` : ''}
     <div class="chips part-tabs" role="tablist">${parts.map(p => `<button class="chip${p === UI.exPart ? ' on' : ''}" data-act="exPart" data-p="${p}" role="tab" aria-selected="${p === UI.exPart}">${PARTS[p]}</button>`).join('')}</div>
     <div class="pick-list" style="margin-top:10px">${inPart.map(n => pickRow(n, have, s)).join('') || '<p class="muted" style="padding:14px 0">この部位の種目はまだありません</p>'}</div>
     ${names.some(isCustom) ? '' : `<p class="pick-hint">リストにない種目は、上の検索欄に名前を入れると追加できます</p>`}`;
@@ -1379,6 +1460,53 @@ function partSheet() {
   <div class="part-grid">${Object.keys(PARTS).map(p => `<button class="part-opt${p === cur ? ' on' : ''}" data-act="setPart" data-p="${p}" aria-pressed="${p === cur}">${PARTS[p]}</button>`).join('')}</div>
   ${from === 'pick' ? `<button class="btn btn-quiet" style="margin-top:12px" data-act="guideBack">一覧に戻る</button>` : ''}`;
 }
+function menusSheet() {
+  const ms = Menus.list();
+  return `<div class="sheet-h"><div><p class="eyebrow">My menu</p><h2>マイメニュー</h2></div>
+    <button class="icon-btn" data-act="closeSheet" aria-label="閉じる">${I.x}</button></div>
+  <p class="muted" style="padding:0 4px 14px">よくやる種目のセットを保存しておくと、トレーニングを始めたときにワンタップでそろいます。</p>
+  ${ms.length ? `<div class="pick-list">${ms.map(m => `<button class="mrow" data-act="menuEdit" data-id="${m.id}">
+      <span class="mrow-t"><b>${U.esc(Menus.label(m))}</b><small>${m.items.map(U.esc).join(' · ')}</small></span><span class="chev">${I.chevR}</span></button>`).join('')}</div>` : ''}
+  <button class="btn btn-primary" style="margin-top:14px" data-act="menuNew" data-from="list">${I.plus}<span>新しいメニューを作る</span></button>`;
+}
+function menuPickHTML() {
+  const m = UI.mEdit, on = new Set(m.items), names = allExerciseNames(), q = m.q.trim();
+  const row = n => `<button class="mrow${on.has(n) ? ' on' : ''}" data-act="menuToggle" data-name="${U.esc(n)}" aria-pressed="${on.has(n)}">
+    <span class="mrow-t"><b>${U.esc(n)}</b>${Lib.en(n) ? `<small>${U.esc(Lib.en(n))}</small>` : ''}</span><span class="ck">${on.has(n) ? I.check : I.plus}</span></button>`;
+  if (q) {
+    const ql = q.toLowerCase();
+    const hits = names.filter(n => n.toLowerCase().includes(ql) || Lib.en(n).toLowerCase().includes(ql));
+    const newRow = names.includes(q) ? '' : `<div class="pick"><div class="pick-new">
+      <p class="pick-n">「${U.esc(q)}」を新しく追加</p><p class="pick-s">部位を選ぶとメニューに入ります</p>
+      <div class="part-pick" role="group" aria-label="部位">${Object.keys(PARTS).map(p => `<button class="chip" data-act="menuNewEx" data-name="${U.esc(q)}" data-part="${p}">${PARTS[p]}</button>`).join('')}</div></div></div>`;
+    return `<div class="pick-list" style="margin-top:12px">${newRow}${hits.map(row).join('')}</div>`;
+  }
+  const parts = Object.keys(PARTS).filter(p => p !== 'other' || names.some(n => Lib.part(n) === 'other'));
+  return `<div class="chips part-tabs" role="tablist">${parts.map(p => `<button class="chip${p === m.part ? ' on' : ''}" data-act="menuPart" data-p="${p}" role="tab" aria-selected="${p === m.part}">${PARTS[p]}</button>`).join('')}</div>
+    <div class="pick-list" style="margin-top:10px">${names.filter(n => Lib.part(n) === m.part).map(row).join('') || '<p class="muted" style="padding:14px 0">この部位の種目はまだありません</p>'}</div>`;
+}
+function menuEditSheet() {
+  const m = UI.mEdit, n = m.items.length;
+  const sel = n ? `<ol class="sel-list">${m.items.map((x, i) => `<li><span class="sel-n">${i + 1}</span><span class="sel-t">${U.esc(x)}</span>
+      <button class="sel-b" data-act="menuMove" data-i="${i}" ${i === 0 ? 'disabled' : ''} aria-label="${U.esc(x)}を上へ">${I.up}</button>
+      <button class="sel-b" data-act="menuDrop" data-i="${i}" aria-label="${U.esc(x)}をメニューから外す">${I.x}</button></li>`).join('')}</ol>`
+    : `<p class="sel-empty">下の一覧から種目を選んでください</p>`;
+  return `<div class="sheet-h"><div><p class="eyebrow">My menu</p><h2>${m.id ? 'メニューを編集' : 'メニューを作る'}</h2></div>
+    <button class="icon-btn" data-act="closeSheet" aria-label="閉じる">${I.x}</button></div>
+  <label class="flabel" for="mnName">名前</label>
+  <input id="mnName" class="text-in" value="${U.esc(m.name)}" placeholder="例：腕の日" maxlength="20" autocomplete="off" enterkeyhint="done">
+  <p class="group-l">このメニューの種目（${n}）</p>
+  <div class="card sel-card">${sel}</div>
+  <p class="group-l">種目を選ぶ</p>
+  <div class="search"><input id="mnq" type="search" placeholder="種目名で検索、または新しく追加" value="${U.esc(m.q)}" autocomplete="off" enterkeyhint="done" aria-label="種目を検索"></div>
+  <div id="mnlist">${menuPickHTML()}</div>
+  <div class="stack g-actions">
+    <button class="btn btn-primary" data-act="menuSave" ${n ? '' : 'disabled'}>保存する</button>
+    ${!m.id ? '' : m.confirm
+      ? `<p class="confirm-t">このメニューを削除しますか？ トレーニングの記録は消えません。</p><div class="two"><button class="btn btn-soft" data-act="menuDelCancel">キャンセル</button><button class="btn btn-danger" data-act="menuDel">削除する</button></div>`
+      : `<button class="btn btn-quiet danger-t" data-act="menuDelAsk">このメニューを削除</button>`}
+  </div>`;
+}
 function addExSheet() {
   return `<div class="sheet-h"><h2>種目を追加</h2><button class="icon-btn" data-act="closeSheet" aria-label="閉じる">${I.x}</button></div>
   <div class="search"><input id="exq" type="search" placeholder="種目名で検索、または新しく追加" value="${U.esc(UI.exQuery)}" autocomplete="off" enterkeyhint="done" aria-label="種目を検索"></div>
@@ -1399,6 +1527,7 @@ function settingsSheet() {
   </div>
   <p class="group-l">記録</p>
   <div class="group">
+    <button class="g-row g-btn" data-act="menus"><span><span class="g-t">マイメニュー</span><span class="g-s">${Menus.list().length ? `${Menus.list().length}件保存しています` : 'よくやる種目のセットを保存できます'}</span></span>${I.chevRs}</button>
     <div class="g-row"><p class="g-t">重量の刻み（kg）</p>${seg([1, 1.25, 2.5, 5], st.step, 'setStep')}</div>
     <div class="g-row"><div><p class="g-t">トレーニング中は画面を消さない</p><p class="g-s">対応しているブラウザのみ</p></div>${sw('wake', '画面を消さない')}</div>
   </div>
@@ -1549,22 +1678,28 @@ const Views = {
   },
   suggest(g) {
     if (Suggest.skipped()) return `<div class="notice" style="margin-top:18px"><span>今日は休みにしました</span><button class="notice-btn" data-act="unskip">取り消す</button></div>`;
-    const { last, gap, pick, streak } = g;
-    const ago = Math.round((U.day0(Date.now()) - U.day0(pick.start)) / 864e5);
-    const lastTxt = gap === 1 ? `昨日は${Q.title(last)}をやりました。` : `前回は${U.md(last.start)}の${Q.title(last)}。${gap}日あいています。`;
+    const { last, gap, pick, streak, menu, menuLast } = g;
+    const ago = t => Math.round((U.day0(Date.now()) - U.day0(t)) / 864e5);
+    const lastTxt = !last ? '' : gap === 1 ? `昨日は${Q.title(last)}をやりました。` : `前回は${U.md(last.start)}の${Q.title(last)}。${gap}日あいています。`;
+    const restTxt = streak >= 2 ? `${streak}日続けてトレーニングしているので、今日は休んでもOKです。` : '';
+    const name = menu ? Menus.label(menu) : Q.title(pick);
+    const items = menu ? menu.items : pick.exercises.map(e => e.name);
+    const when = menu ? (menuLast ? `最後にやったのは${U.md(menuLast.start)}（${ago(menuLast.start)}日前）` : 'まだこのメニューの記録はありません')
+      : `最後にやったのは${U.md(pick.start)}（${ago(pick.start)}日前）`;
     return `<section class="section"><div class="card suggest">
       <p class="eyebrow">Today’s suggestion</p>
-      <p class="sg-t">${lastTxt}${streak >= 2 ? `<br>${streak}日続けてトレーニングしているので、今日は休んでもOKです。` : ''}</p>
+      ${lastTxt || restTxt ? `<p class="sg-t">${lastTxt}${lastTxt && restTxt ? '<br>' : ''}${restTxt}</p>` : ''}
       <div class="sg-pick">
-        <span class="sg-l">今日のおすすめ</span>
-        <b class="sg-n">${Q.title(pick)}</b>
-        <span class="sg-s">${pick.exercises.map(e => U.esc(e.name)).join(' · ')}</span>
-        <span class="sg-d">最後にやったのは${U.md(pick.start)}（${ago}日前）</span>
+        <span class="sg-l">${menu ? 'マイメニューからおすすめ' : '今日のおすすめ'}</span>
+        <b class="sg-n">${U.esc(name)}</b>
+        <span class="sg-s">${items.map(U.esc).join(' · ')}</span>
+        <span class="sg-d">${when}</span>
       </div>
       <div class="two">
         <button class="btn btn-soft" data-act="skipToday">今日は休む</button>
-        <button class="btn btn-primary" data-act="startWith" data-from="${pick.id}">このメニューで開始</button>
+        <button class="btn btn-primary" data-act="startWith" ${menu ? `data-menu="${menu.id}"` : `data-from="${pick.id}"`}>このメニューで開始</button>
       </div>
+      ${Menus.list().length ? '' : `<button class="sg-link" data-act="menus">よくやる種目をマイメニューに保存する${I.chevRs}</button>`}
     </div></section>`;
   },
   liveHero(s) {
@@ -1859,13 +1994,63 @@ const Actions = {
   guide(d) { UI.guide = { name: d.name, from: d.from || 'card' }; Sheet.open(guideSheet); },
   guideBack() { Sheet.open(addExSheet); },
   startWith(d) {
-    const from = Model.get(d.from);
+    const menu = d.menu ? Menus.get(d.menu) : null, from = d.from ? Model.get(d.from) : null;
     Actions.start();
-    const s = Q.active(); if (!s || !from) return;
-    const have = new Set(s.exercises.map(e => e.name));
-    s.exercises.push(...from.exercises.filter(e => !have.has(e.name)).map(e => ({ id: U.id(), name: e.name, sets: [], memo: '' })));
-    Store.commit({ sessions: [s.id] });
-    Toast.show(`<span>${U.hm(s.start)} 入館 · ${Q.title(from)}のメニューを用意しました</span>`);
+    const s = Q.active(); if (!s || (!menu && !from)) return;
+    Menus.addTo(s, menu ? menu.items : from.exercises.map(e => e.name));
+    Toast.show(`<span>${U.hm(s.start)} 入館 · ${U.esc(menu ? Menus.label(menu) : Q.title(from))}のメニューを用意しました</span>`);
+  },
+  useMenu(d) {
+    const m = Menus.get(d.id), s = Model.get(d.sid) || Q.active(); if (!m || !s) return;
+    if (Sheet.fn) Sheet.close();
+    const n = Menus.addTo(s, m.items);
+    Toast.show(n ? `<span>「${U.esc(Menus.label(m))}」の${n}種目を追加しました</span>` : '<span>このメニューの種目はすべて追加済みです</span>');
+  },
+  menus() { Sheet.open(menusSheet); },
+  menuNew(d) {
+    UI.mEdit = { id: null, name: '', items: [], q: '', part: 'chest', from: d.from || 'list', confirm: false };
+    Sheet.open(menuEditSheet);
+  },
+  menuFromSession(d) {
+    const s = Model.get(d.sid); if (!s) return;
+    const items = s.exercises.map(e => e.name), title = Q.title(s);
+    UI.mEdit = { id: null, name: title === 'トレーニング' ? '' : title, items, q: '', part: Lib.part(items[0]), from: 'live', confirm: false };
+    Sheet.open(menuEditSheet);
+  },
+  menuEdit(d) {
+    const m = Menus.get(d.id); if (!m) return;
+    UI.mEdit = { id: m.id, name: m.name, items: [...m.items], q: '', part: Lib.part(m.items[0]), from: 'list', confirm: false };
+    Sheet.open(menuEditSheet);
+  },
+  menuToggle(d) { const it = UI.mEdit.items, i = it.indexOf(d.name); if (i >= 0) it.splice(i, 1); else it.push(d.name); Sheet.refresh(); },
+  menuDrop(d) { UI.mEdit.items.splice(Number(d.i), 1); Sheet.refresh(); },
+  menuMove(d) { const i = Number(d.i), it = UI.mEdit.items; if (i > 0) [it[i - 1], it[i]] = [it[i], it[i - 1]]; Sheet.refresh(); },
+  menuPart(d) { UI.mEdit.part = d.p; const l = $('#mnlist'); if (l) l.innerHTML = menuPickHTML(); },
+  menuNewEx(d) {
+    const name = (d.name || '').trim().slice(0, 40); if (!name) return;
+    if (!LIBMAP.has(name) && !Store.meta.custom[name]) { Store.meta.custom[name] = PARTS[d.part] ? d.part : 'other'; Store.commit({ meta: true, silent: true }); }
+    if (!UI.mEdit.items.includes(name)) UI.mEdit.items.push(name);
+    UI.mEdit.q = ''; UI.mEdit.part = Lib.part(name);
+    Sheet.refresh();
+  },
+  menuSave() {
+    const m = UI.mEdit; if (!m || !m.items.length) return;
+    const name = m.name.trim().slice(0, 20);
+    const t = m.id && Menus.get(m.id);
+    if (t) { t.name = name; t.items = [...m.items]; }
+    else Store.meta.menus.push({ id: U.id(), name, items: [...m.items] });
+    const label = Menus.label({ name, items: m.items });
+    Store.commit({ meta: true });
+    if (m.from === 'live') Sheet.close(); else Sheet.open(menusSheet);
+    Toast.show(`<span>「${U.esc(label)}」を保存しました</span>`);
+  },
+  menuDelAsk() { UI.mEdit.confirm = true; Sheet.refresh(); },
+  menuDelCancel() { UI.mEdit.confirm = false; Sheet.refresh(); },
+  menuDel() {
+    Store.meta.menus = Store.meta.menus.filter(x => x.id !== UI.mEdit.id);
+    Store.commit({ meta: true });
+    Sheet.open(menusSheet);
+    Toast.show('<span>メニューを削除しました</span>');
   },
   skipToday() { Suggest.skip(); App.render(); Toast.show('<span>今日はゆっくり休みましょう</span>'); },
   unskip() { Suggest.unskip(); App.render(); },
@@ -2060,6 +2245,7 @@ const Actions = {
           if (!cur || (s.updatedAt || 0) > (cur.updatedAt || 0)) { Store.state.sessions[id] = { exercises: [], memo: '', ...s }; ids.push(id); }
         }
         if (data.meta && data.meta.custom) Object.assign(Store.meta.custom, data.meta.custom);
+        if (data.meta && Array.isArray(data.meta.menus)) for (const m of normMeta(data.meta).menus) if (!Store.meta.menus.some(x => x.id === m.id)) Store.meta.menus.push(m);
         Store.commit({ sessions: ids, meta: true });
         Toast.show(`<span>${ids.length}件の記録を読み込みました</span>`);
       } catch { Toast.show('<span>このファイルは読み込めませんでした</span>'); }
@@ -2101,6 +2287,8 @@ document.addEventListener('input', e => {
     UI.exQuery = t.value;
     const l = $('#exlist'); if (l) { l.innerHTML = exListHTML(); }
   } else if (t.id === 'endMemo') UI.endMemo = t.value;
+  else if (t.id === 'mnName' && UI.mEdit) UI.mEdit.name = t.value;
+  else if (t.id === 'mnq' && UI.mEdit) { UI.mEdit.q = t.value; const l = $('#mnlist'); if (l) l.innerHTML = menuPickHTML(); }
 });
 document.addEventListener('change', e => {
   const t = e.target;
@@ -2115,6 +2303,15 @@ document.addEventListener('keydown', e => {
     e.preventDefault();
     if (t.dataset.draft === 'w') { const r = document.getElementById('r-' + t.dataset.ex); if (r) r.focus(); }
     else Actions.logSet(t.dataset);
+  } else if (t.id === 'mnName') {
+    e.preventDefault(); t.blur();
+  } else if (t.id === 'mnq') {
+    e.preventDefault();
+    const q = (UI.mEdit?.q || '').trim(); if (!q) return;
+    const ql = q.toLowerCase(), names = allExerciseNames();
+    const hit = names.includes(q) ? q : names.find(n => n.toLowerCase().includes(ql) || Lib.en(n).toLowerCase().includes(ql));
+    if (hit) { if (!UI.mEdit.items.includes(hit)) UI.mEdit.items.push(hit); UI.mEdit.q = ''; Sheet.refresh(); }
+    else { t.blur(); const pp = $('#mnlist .part-pick'); if (pp) { pp.classList.remove('shake'); void pp.offsetWidth; pp.classList.add('shake'); } }
   } else if (t.id === 'exq') {
     e.preventDefault();
     const q = UI.exQuery.trim(); if (!q) return;
