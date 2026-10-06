@@ -44,9 +44,6 @@ img{max-width:100%}
   --bar:#BCC0C7;
   --thumb-off:#FFFFFF;
   --glass:rgba(242,243,245,.84);
-  --fig-bg:#F5F6F7;
-  --fig-far:#9BA0A8;
-  --fig-eq:#C9CDD3;
   --scrim:rgba(14,15,17,.30);
   --shadow:0 1px 1px rgba(14,15,17,.03),0 6px 22px rgba(14,15,17,.06);
   --pop-shadow:0 12px 32px rgba(14,15,17,.18);
@@ -60,14 +57,14 @@ img{max-width:100%}
   :root:not([data-theme="light"]){
     --bg:#060708;--card:#141518;--fill:#222428;--fill-2:#1A1C1F;--fg:#F2F3F5;--fg-2:#C7CAD0;--muted:#8C9199;
     --line:rgba(255,255,255,.08);--inv-bg:#F2F3F5;--inv-fg:#0E0F11;--rec:#FF5C61;--on-rec:#FFFFFF;--pr:#DDB466;
-    --pr-wash:rgba(221,180,102,.14);--bar:#43474E;--thumb-off:#5B6068;--glass:rgba(6,7,8,.8);--scrim:rgba(0,0,0,.58);--fig-bg:#1A1C1F;--fig-far:#5F646C;--fig-eq:#3A3D43;
+    --pr-wash:rgba(221,180,102,.14);--bar:#43474E;--thumb-off:#5B6068;--glass:rgba(6,7,8,.8);--scrim:rgba(0,0,0,.58);
     --shadow:0 0 0 1px rgba(255,255,255,.045);--pop-shadow:0 12px 32px rgba(0,0,0,.5);color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
   --bg:#060708;--card:#141518;--fill:#222428;--fill-2:#1A1C1F;--fg:#F2F3F5;--fg-2:#C7CAD0;--muted:#8C9199;
   --line:rgba(255,255,255,.08);--inv-bg:#F2F3F5;--inv-fg:#0E0F11;--rec:#FF5C61;--on-rec:#FFFFFF;--pr:#DDB466;
-  --pr-wash:rgba(221,180,102,.14);--bar:#43474E;--thumb-off:#5B6068;--glass:rgba(6,7,8,.8);--scrim:rgba(0,0,0,.58);--fig-bg:#1A1C1F;--fig-far:#5F646C;--fig-eq:#3A3D43;
+  --pr-wash:rgba(221,180,102,.14);--bar:#43474E;--thumb-off:#5B6068;--glass:rgba(6,7,8,.8);--scrim:rgba(0,0,0,.58);
   --shadow:0 0 0 1px rgba(255,255,255,.045);--pop-shadow:0 12px 32px rgba(0,0,0,.5);color-scheme:dark;
 }
 
@@ -186,36 +183,11 @@ small{font-size:inherit}
 .empty-ex{padding:20px 6px 4px;font-size:14px;color:var(--muted);text-align:center}
 
 .ex{background:var(--card);border-radius:var(--r-card);box-shadow:var(--shadow);padding:18px 16px 10px;display:grid;gap:14px;scroll-margin-top:24px}
-.ex-h{display:grid;grid-template-columns:84px minmax(0,1fr);gap:14px;align-items:center}
-.ex-h.nofig{grid-template-columns:minmax(0,1fr)}
-.ex-fig{display:block;width:84px;border-radius:14px;transition:transform .16s var(--ease)}
-.ex-fig:active{transform:scale(.97)}
-.ex-ttl{display:grid;gap:1px;min-width:0;justify-items:start}
+.ex-h{display:grid;gap:1px;min-width:0;justify-items:start}
 .ex-guide{display:inline-flex;align-items:center;gap:1px;font-size:12.5px;color:var(--fg-2);padding:5px 0 0}
 .ex-guide svg{width:14px;height:14px}
 .ex-en{font-family:var(--mono);font-size:10.5px;letter-spacing:.15em;color:var(--muted);text-transform:uppercase}
 .ex-name{font-size:19px;font-weight:600;letter-spacing:-.01em;line-height:1.3;margin-top:1px}
-/* exercise figures */
-.fig{display:block;width:100%;height:auto;aspect-ratio:120/100;background:var(--fig-bg);border-radius:inherit}
-.fig .fg,.fig .ol,.fig .far{fill:none;stroke-linecap:round;stroke-linejoin:round}
-.fig .fg{stroke:var(--fg)}
-.fig .ol{stroke:var(--fig-bg)}
-.fig .far{stroke:var(--fig-far)}
-.fig .hd{fill:var(--fg);stroke:var(--fig-bg);stroke-width:2}
-.fig .tor{fill:var(--fg);stroke:var(--fg);stroke-width:3;stroke-linejoin:round}
-.fig .eq{stroke:var(--fig-eq);stroke-linecap:round;fill:none}
-.fig .eqf{fill:var(--fig-eq)}
-.fig .fl{stroke:var(--line);stroke-width:1}
-.fig .pl{fill:var(--fg-2);stroke:var(--fig-bg);stroke-width:2}
-.fig .hub{fill:var(--fig-bg)}
-.fig .dbh,.fig .dbw{stroke:var(--fg-2);stroke-linecap:round;fill:none}
-.fig .dbf{fill:var(--fg-2)}
-.fig .cb{stroke:var(--muted);stroke-width:1}
-.fig-empty{display:block;width:100%;aspect-ratio:120/100;background:var(--fig-bg);border-radius:inherit}
-.guide-fig{max-width:360px;margin:0 auto;border-radius:22px}
-.frames{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:360px;margin:12px auto 0}
-.frame{display:grid;gap:5px;border-radius:14px}
-.frame span{font-size:11.5px;color:var(--muted);text-align:center}
 .g-sec{display:grid;gap:10px;margin-top:22px}
 .g-sec h3{font-size:13px;color:var(--muted);font-weight:500;padding:0 4px}
 .muscles{display:flex;flex-wrap:wrap;gap:6px}
@@ -325,8 +297,9 @@ small{font-size:inherit}
 .search input:focus{box-shadow:inset 0 0 0 1.5px var(--fg)}
 .group-l{font-size:12px;color:var(--muted);margin:20px 4px 8px}
 .pick-list{background:var(--card);border-radius:18px;box-shadow:var(--shadow);padding:0 14px}
-.pick{display:grid;grid-template-columns:56px minmax(0,1fr);align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--line)}
-.pick-fig{display:block;width:56px;border-radius:11px}
+.pick{display:grid;padding:6px 0;border-bottom:1px solid var(--line)}
+.pick-part{justify-self:start;display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--fg-2);padding:2px 0 6px}
+.pick-part b{font-weight:600;color:var(--fg);background:var(--fill);border-radius:6px;padding:1px 7px}
 .pick-main{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:1px 12px;width:100%;text-align:left;padding:4px 0;min-height:48px}
 .pick:last-child{border-bottom:0}
 .pick-n{font-size:16px;font-weight:500}
@@ -335,15 +308,19 @@ small{font-size:inherit}
 .pl-d{font-size:11.5px;color:var(--muted);margin-right:2px;white-space:nowrap}
 .pl-c{font-family:var(--mono);font-size:12px;line-height:1.5;color:var(--fg);background:var(--fill);border-radius:7px;padding:1px 6px;font-variant-numeric:tabular-nums;white-space:nowrap}
 .pl-m{font-size:11.5px;color:var(--muted)}
-.part-box{display:grid;place-items:center;align-content:center;gap:1px;width:100%;aspect-ratio:120/100;background:var(--fig-bg);border-radius:inherit}
-.part-box b{font-size:16px;font-weight:600;color:var(--fg)}
-.part-box small{font-size:9.5px;color:var(--muted);letter-spacing:.02em}
-.part-box.new{color:var(--muted)}
-.part-box.new svg{width:20px;height:20px}
 .pick-new{display:grid;gap:2px;min-width:0;padding:4px 0}
 .part-pick{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .part-pick .chip{height:32px;padding:0 12px}
 .g-btn .g-t,.g-btn .g-s{display:block}
+.suggest{display:grid;gap:12px}
+.sg-t{font-size:14px;color:var(--fg-2);line-height:1.6}
+.sg-pick{display:grid;gap:2px;padding:12px 14px;border-radius:14px;background:var(--fill-2)}
+.sg-l{font-size:12px;color:var(--muted)}
+.sg-n{font-size:21px;font-weight:600;letter-spacing:-.01em;line-height:1.3}
+.sg-s{font-size:13px;color:var(--fg-2);line-height:1.6}
+.sg-d{font-size:12px;color:var(--muted);margin-top:2px}
+.suggest .btn{min-height:50px;font-size:15px;white-space:nowrap}
+.suggest .two{grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr)}
 .pick-hint{font-size:12.5px;color:var(--muted);padding:12px 4px 0}
 .part-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
 .part-opt{min-height:58px;border-radius:16px;background:var(--card);box-shadow:var(--shadow);font-size:16px;font-weight:600;text-align:center;transition:transform .16s var(--ease)}
@@ -624,461 +601,8 @@ const Lib = {
 };
 
 /* ============================================================
-   2b. Exercise figures & how-to notes
+   2b. How-to notes
    ============================================================ */
-/* ============================================================
-   Exercise figures: original pictogram figures, two poses each,
-   animated between start (A) and finish (B).
-   Side view faces right. Coordinates live in a 120 x 100 box, floor at y=96.
-   ============================================================ */
-const Fig = (() => {
-  const RAD = Math.PI / 180;
-  const P = (p, a, l) => [p[0] + Math.cos(a * RAD) * l, p[1] + Math.sin(a * RAD) * l];
-  const ANG = (a, b) => Math.atan2(b[1] - a[1], b[0] - a[0]) / RAD;
-  const r1 = n => Math.round(n * 10) / 10;
-  const pt = p => `${r1(p[0])},${r1(p[1])}`;
-  function ik(root, target, a, b, bend) {
-    const dx = target[0] - root[0], dy = target[1] - root[1];
-    const base = Math.atan2(dy, dx) / RAD;
-    const d = Math.min(Math.max(Math.hypot(dx, dy), Math.abs(a - b) + 0.05), a + b - 0.05);
-    const c = Math.acos(Math.max(-1, Math.min(1, (a * a + d * d - b * b) / (2 * a * d)))) / RAD;
-    return [P(root, base + (bend || 1) * c, a), P(root, base, d)];
-  }
-  const mx = (p, cx) => [2 * cx - p[0], p[1]];
-
-  /* ---- pose solvers ---- */
-  function arm(J, root, p, key, mirror, cx) {
-    const ua = 15 * (p.ual ?? 1), fa = 14 * (p.fal ?? 1);
-    let e, w;
-    if (p[key.w]) {
-      const tgt = mirror ? mx(p[key.w], cx) : p[key.w];
-      [e, w] = ik(root, tgt, ua, fa, (mirror ? -1 : 1) * (p[key.eb] ?? 1));
-    } else {
-      const a = p[key.a] || [90, 90];
-      const a0 = mirror ? 180 - a[0] : a[0], a1 = mirror ? 180 - a[1] : a[1];
-      e = P(root, a0, ua); w = P(e, a1, fa);
-    }
-    return [e, w];
-  }
-  function leg(root, p, key, mirror, cx) {
-    const th = 20 * (p.thl ?? 1), sh = 20 * (p.shl ?? 1);
-    if (p[key.k]) {
-      const tgt = mirror ? mx(p[key.k], cx) : p[key.k];
-      return ik(root, tgt, th, sh, (mirror ? -1 : 1) * (p[key.kb] ?? 1));
-    }
-    const l = p[key.l] || [90, 90];
-    const l0 = mirror ? 180 - l[0] : l[0], l1 = mirror ? 180 - l[1] : l[1];
-    const k = P(root, l0, th);
-    return [k, P(k, l1, sh)];
-  }
-  function side(p) {
-    const J = { view: 's', h: p.h, tA: p.t };
-    J.d = [Math.cos(p.t * RAD), Math.sin(p.t * RAD)];
-    J.nf = [-J.d[1], J.d[0]];
-    J.n = P(p.h, p.t, 28); J.s = P(p.h, p.t, 25); J.c = P(J.n, p.t + (p.hd || 0), 8);
-    [J.e, J.w] = arm(J, J.s, p, { w: 'w', eb: 'eb', a: 'a' });
-    if (p.w2 || p.a2) [J.e2, J.w2] = arm(J, J.s, { ...p, ual: p.ual2 ?? 1, fal: p.fal2 ?? 1 }, { w: 'w2', eb: 'eb2', a: 'a2' });
-    [J.k, J.a] = leg(p.h, p, { k: 'k', kb: 'kb', l: 'l' });
-    J.toe = P(J.a, p.ft ?? 0, 7);
-    if (p.k2 || p.l2) { [J.k2, J.a2] = leg(p.h, { ...p, thl: p.thl2 ?? 1, shl: p.shl2 ?? 1 }, { k: 'k2', kb: 'kb2', l: 'l2' }); J.toe2 = P(J.a2, p.ft2 ?? 0, 7); }
-    J.faA = ANG(J.e, J.w); J.shA = ANG(J.k, J.a);
-    return J;
-  }
-  function front(p) {
-    const cx = p.h[0], J = { view: 'f', h: p.h };
-    J.n = [cx, p.h[1] - 28 * (p.tl ?? 1)];
-    J.c = [cx, J.n[1] - (p.hy ?? 8)];
-    J.sr = [cx + 9, J.n[1] + 3]; J.sl = [cx - 9, J.n[1] + 3];
-    J.hr = [cx + 5, p.h[1]]; J.hl = [cx - 5, p.h[1]];
-    [J.er, J.wr] = arm(J, J.sr, p, { w: 'w', eb: 'eb', a: 'a' }, false, cx);
-    [J.el, J.wl] = arm(J, J.sl, p, { w: 'w', eb: 'eb', a: 'a' }, true, cx);
-    [J.kr, J.ar] = leg(J.hr, p, { k: 'k', kb: 'kb', l: 'l' }, false, cx);
-    [J.kl, J.al] = leg(J.hl, p, { k: 'k', kb: 'kb', l: 'l' }, true, cx);
-    const ft = p.ft ?? 25;
-    J.tr = P(J.ar, ft, 5); J.tl = P(J.al, 180 - ft, 5);
-    return J;
-  }
-
-  /* ---- interpolation (numbers and arrays of numbers, same shape) ---- */
-  function lerp(a, b, t) {
-    if (typeof a === 'number') return a + ((b ?? a) - a) * t;
-    if (Array.isArray(a)) return a.map((v, i) => lerp(v, b ? b[i] : v, t));
-    if (a && typeof a === 'object') { const o = {}; for (const k in a) o[k] = lerp(a[k], b ? b[k] : undefined, t); return o; }
-    return a;
-  }
-
-  /* ---- drawing ---- */
-  const ln = (cls, a, b, w) => `<line class="${cls}" x1="${r1(a[0])}" y1="${r1(a[1])}" x2="${r1(b[0])}" y2="${r1(b[1])}"${w ? ` stroke-width="${w}"` : ''}/>`;
-  const pl = (cls, pts, w) => `<polyline class="${cls}" points="${pts.map(pt).join(' ')}"${w ? ` stroke-width="${w}"` : ''}/>`;
-  const outlined = (pts, w) => pl('ol', pts, w + 3.4) + pl('fg', pts, w);
-  const E = {
-    floor: () => `<line class="fl" x1="6" y1="96.5" x2="114" y2="96.5"/>`,
-    pad: (a, b, w = 5) => ln('eq', a, b, w),
-    post: (a, b) => ln('eq', a, b, 2.4),
-    rect: (x, y, w, h, r = 2) => `<rect class="eqf" x="${x}" y="${y}" width="${w}" height="${h}" rx="${r}"/>`,
-    plate: (p, r = 8) => `<circle class="pl" cx="${r1(p[0])}" cy="${r1(p[1])}" r="${r}"/><circle class="hub" cx="${r1(p[0])}" cy="${r1(p[1])}" r="1.6"/>`,
-    db: (p, r = 4.4) => `<circle class="pl" cx="${r1(p[0])}" cy="${r1(p[1])}" r="${r}"/>`,
-    dbs: (p, a, len = 12) => {
-      const h = len / 2, A = P(p, a, h), B = P(p, a + 180, h), A2 = P(p, a, h - 3.2), B2 = P(p, a + 180, h - 3.2);
-      return ln('ol', A, B, 9) + ln('dbh', A2, B2, 2.6) + ln('dbw', A, A2, 6) + ln('dbw', B, B2, 6);
-    },
-    handle: (p, a, len = 7) => ln('dbw', P(p, a, len / 2), P(p, a + 180, len / 2), 3.2),
-    cable: (from, to) => ln('cb', from, to) + `<circle class="eqf" cx="${r1(from[0])}" cy="${r1(from[1])}" r="2.8"/>`,
-    barF: (wl, wr, ext = 26) => {
-      const y = (wl[1] + wr[1]) / 2, x1 = Math.min(wl[0], wr[0]) - ext, x2 = Math.max(wl[0], wr[0]) + ext;
-      return ln('dbh', [x1, y], [x2, y], 2.6) + `<rect class="dbf" x="${r1(x1 - 1)}" y="${r1(y - 8)}" width="4.5" height="16" rx="1.5"/><rect class="dbf" x="${r1(x2 - 3.5)}" y="${r1(y - 8)}" width="4.5" height="16" rx="1.5"/>`;
-    },
-    roller: p => `<circle class="pl" cx="${r1(p[0])}" cy="${r1(p[1])}" r="5"/><circle class="hub" cx="${r1(p[0])}" cy="${r1(p[1])}" r="1.5"/>`,
-  };
-
-  function body(J, ex) {
-    let s = '';
-    if (J.view === 's') {
-      if (J.w2) s += pl('far', [J.s, J.e2, J.w2], 5.6);
-      if (J.a2) s += pl('far', [J.h, J.k2, J.a2, J.toe2], 5.8);
-      s += outlined([J.h, J.k, J.a, J.toe], 6.2);
-      if (ex.armBack) s += pl('fg', [J.s, J.e, J.w], 5.8);
-      s += ln('fg', J.h, J.n, 9);
-      s += `<circle class="hd" cx="${r1(J.c[0])}" cy="${r1(J.c[1])}" r="6.5"/>`;
-      if (!ex.armBack) s += outlined([J.s, J.e, J.w], 5.8);
-    } else {
-      s += pl('fg', [J.hl, J.kl, J.al, J.tl], 6.2) + pl('fg', [J.hr, J.kr, J.ar, J.tr], 6.2);
-      s += `<polygon class="tor" points="${[J.sl, J.sr, J.hr, J.hl].map(pt).join(' ')}"/>`;
-      s += outlined([J.sl, J.el, J.wl], 5.8) + outlined([J.sr, J.er, J.wr], 5.8);
-      s += `<circle class="hd" cx="${r1(J.c[0])}" cy="${r1(J.c[1])}" r="6.5"/>`;
-    }
-    return s;
-  }
-  function frame(ex, t) {
-    const p = lerp(ex.A, ex.B, t);
-    const J = ex.v === 'f' ? front(p) : side(p);
-    const [back, fr] = ex.eq ? ex.eq(J, E) : ['', ''];
-    return back + body(J, ex) + (fr || '');
-  }
-  const vb = ex => (ex.vb || [0, 0, 120, 100]).join(' ');
-
-  return { P, ANG, E, frame, vb, side, front, lerp };
-})();
-
-/* Helpers for writing poses */
-const FH = {
-  RAD: Math.PI / 180,
-  // point on/around the torso: `along` from hip, `out` in front of the chest
-  chest(h, t, along, out) {
-    const r = t * FH.RAD, d = [Math.cos(r), Math.sin(r)], n = [-d[1], d[0]];
-    return [h[0] + d[0] * along + n[0] * out, h[1] + d[1] * along + n[1] * out];
-  },
-  hipFromShoulder(s, t) { const r = t * FH.RAD; return [s[0] - 25 * Math.cos(r), s[1] - 25 * Math.sin(r)]; },
-};
-
-/* ------------------------------------------------------------
-   The 40 exercises. A = start, B = finish.
-   eq(J, E) returns [behind-figure markup, in-front markup].
-   ------------------------------------------------------------ */
-const FIGS = (() => {
-  const C = FH.chest, HS = FH.hipFromShoulder;
-  const flatBench = E => E.floor() + E.rect(26, 61.6, 64, 4.4) + E.post([33, 66], [33, 96]) + E.post([83, 66], [83, 96]);
-  const benchLike = (tool, wa, wb) => ({
-    v: 's',
-    A: { h: [80, 57], t: 180, k: [95, 91.5], kb: -1, w: wa, eb: 1, ual: 0.5 },
-    B: { h: [80, 57], t: 180, k: [95, 91.5], kb: -1, w: wb, eb: 1, ual: 1 },
-    eq: (J, E) => [flatBench(E), tool === 'bar' ? E.plate(J.w) : E.db(J.w, 5)],
-  });
-  const incline = (tool) => {
-    const h = [76, 66], t = -140, s = C(h, t, 25, 0);
-    return {
-      v: 's',
-      A: { h, t, k: [97, 91.5], kb: -1, w: C(h, t, 25, tool === 'bar' ? 7 : 5), eb: 1, ual: 0.5 },
-      B: { h, t, k: [97, 91.5], kb: -1, w: [s[0] + 3, s[1] - 27.6], eb: 1, ual: 1 },
-      eq: (J, E) => [E.floor() + E.pad(C(h, t, -2, -5.5), C(h, t, 34, -5.5), 5) + E.pad([66, 71], [88, 71], 5) + E.post([74, 73], [74, 96]) + E.post([60, 64], [60, 96]),
-        tool === 'bar' ? E.plate(J.w) : E.db(J.w, 5)],
-    };
-  };
-  const standCurl = (tool) => ({
-    v: 's',
-    A: { h: [56, 52], t: -90, k: [58, 91.5], kb: 1, a: [92, 80] },
-    B: { h: [56, 52], t: -90, k: [58, 91.5], kb: 1, a: [86, -58] },
-    eq: (J, E) => [E.floor(), tool === 'bar' ? E.plate(J.w) : tool === 'db' ? E.db(J.w) : E.dbs(J.w, J.faA + 90)],
-  });
-
-  const F = {};
-
-  /* ---------------- chest ---------------- */
-  F['ベンチプレス'] = benchLike('bar', [58.5, 49.5], [57, 29]);
-  F['ナローベンチプレス'] = benchLike('bar', [61.5, 50], [60, 29.5]);
-  F['ダンベルプレス'] = benchLike('db', [58, 51.5], [57, 29]);
-  F['インクラインベンチプレス'] = incline('bar');
-  F['インクラインダンベルプレス'] = incline('db');
-  F['ダンベルフライ'] = {
-    v: 'f',
-    A: { h: [60, 64], w: [96, 42], eb: -1, ual: 1, fal: 1, l: [96, 92], shl: 0.6 },
-    B: { h: [60, 64], w: [64, 44], eb: -1, ual: 0.45, fal: 0.45, l: [96, 92], shl: 0.6 },
-    eq: (J, E) => [E.rect(48, 17, 24, 52, 5), E.dbs(J.wl, 90, 11) + E.dbs(J.wr, 90, 11)],
-  };
-  F['ペックフライ'] = {
-    v: 'f',
-    A: { h: [60, 66], w: [95, 40], eb: -1, l: [80, 92], thl: 0.35 },
-    B: { h: [60, 66], w: [64, 46], eb: -1, ual: 0.5, fal: 0.5, l: [80, 92], thl: 0.35 },
-    eq: (J, E) => [E.floor() + E.rect(47, 22, 26, 46, 5) + E.rect(42, 66, 36, 5, 2) + E.post([60, 71], [60, 96]),
-      E.handle(J.wl, 90, 9) + E.handle(J.wr, 90, 9)],
-  };
-  F['チェストプレス'] = {
-    v: 's',
-    A: { h: [50, 72], t: -94, l: [0, 90], w: [59, 50], eb: 1, ual: 0.55 },
-    B: { h: [50, 72], t: -94, l: [0, 90], w: [77, 49], eb: 1, ual: 1 },
-    eq: (J, E) => [E.floor() + E.pad([44, 72], [42, 40], 5) + E.pad([38, 77], [64, 77], 5) + E.post([50, 79], [50, 96]), E.handle(J.w, 90, 9)],
-  };
-  F['ケーブルクロスオーバー'] = {
-    v: 'f',
-    A: { h: [60, 52], a: [-28, -22], l: [86, 90] },
-    B: { h: [60, 52], a: [112, 100], l: [86, 90] },
-    eq: (J, E) => [E.floor() + E.cable([112, 5], J.wr) + E.cable([8, 5], J.wl), ''],
-  };
-  F['ディップス'] = (() => {
-    const sa = [61, 21.5], ta = -80, sb = [55, 37], tb = -68;
-    return {
-      v: 's',
-      A: { h: HS(sa, ta), t: ta, w: [62, 50], eb: -1, l: [100, 150] },
-      B: { h: HS(sb, tb), t: tb, w: [62, 50], eb: -1, l: [108, 158] },
-      eq: (J, E) => [E.floor() + E.post([46, 52], [46, 96]) + E.post([80, 52], [80, 96]) + E.pad([40, 52.5], [86, 52.5], 3.5), ''],
-    };
-  })();
-
-  /* ---------------- back ---------------- */
-  F['デッドリフト'] = (() => {
-    const sa = [63, 58], ta = -35;
-    return {
-      v: 's',
-      A: { h: HS(sa, ta), t: ta, k: [58, 91.5], kb: -1, w: [63.5, 87], eb: 1 },
-      B: { h: [56, 52], t: -92, k: [58, 91.5], kb: -1, w: [57.5, 56], eb: 1 },
-      eq: (J, E) => [E.floor(), E.plate(J.w, 9)],
-    };
-  })();
-  F['ルーマニアンデッドリフト'] = {
-    v: 's',
-    A: { h: [56, 52], t: -92, k: [58, 91.5], kb: -1, w: [57.5, 56], eb: 1 },
-    B: { h: [42, 55], t: -24, k: [58, 91.5], kb: -1, w: [64.8, 73.5], eb: 1 },
-    eq: (J, E) => [E.floor(), E.plate(J.w, 8)],
-  };
-  F['ラットプルダウン'] = {
-    v: 'f',
-    A: { h: [60, 66], a: [-62, -66], l: [80, 92], thl: 0.35 },
-    B: { h: [60, 66], a: [62, -82], l: [80, 92], thl: 0.35 },
-    eq: (J, E) => {
-      const y = (J.wl[1] + J.wr[1]) / 2;
-      return [E.floor() + E.rect(42, 66, 36, 5, 2) + E.post([60, 71], [60, 96]) + E.cable([60, 1], [60, y]),
-        E.pad([J.wl[0] - 9, y], [J.wr[0] + 9, y], 3)];
-    },
-  };
-  F['懸垂'] = {
-    v: 'f',
-    A: { h: [60, 67], w: [80, 15], eb: 1, l: [92, 100], thl: 0.8, shl: 0.55 },
-    B: { h: [60, 44.5], w: [80, 15], eb: 1, l: [92, 100], thl: 0.8, shl: 0.55 },
-    eq: (J, E) => [E.pad([16, 15], [104, 15], 3.5), ''],
-  };
-  F['ベントオーバーロウ'] = {
-    v: 's',
-    A: { h: [44, 56], t: -22, k: [57, 91.5], kb: -1, w: [67.5, 75], eb: -1 },
-    B: { h: [44, 56], t: -22, k: [57, 91.5], kb: -1, w: [57, 60], eb: -1 },
-    eq: (J, E) => [E.floor(), E.plate(J.w, 8)],
-  };
-  F['ワンハンドロウ'] = (() => {
-    const h = [34, 57], t = -18;
-    const base = { h, t, k: [50, 92], kb: -1, l2: [92, 180], ft2: 180, w2: [60, 77], eb2: 1 };
-    return {
-      v: 's',
-      A: { ...base, w: [58.5, 77], eb: -1 },
-      B: { ...base, w: [43, 62], eb: -1 },
-      eq: (J, E) => [E.floor() + E.rect(8, 80, 64, 4.4) + E.post([14, 84], [14, 96]) + E.post([66, 84], [66, 96]), E.dbs(J.w, 0, 11)],
-    };
-  })();
-  F['シーテッドロウ'] = {
-    v: 's',
-    A: { h: [48, 72], t: -66, k: [86, 80], kb: -1, ft: -80, w: [86, 62], eb: -1 },
-    B: { h: [48, 72], t: -96, k: [86, 80], kb: -1, ft: -80, w: [60, 66], eb: -1 },
-    eq: (J, E) => [E.floor() + E.rect(30, 76.5, 34, 19.5, 3) + E.pad([90.5, 68], [90.5, 90], 4) + E.post([92, 90], [92, 96]) + E.cable([108, 66], J.w),
-      E.handle(J.w, 90, 8)],
-  };
-  F['Tバーロウ'] = (() => {
-    const h = [42, 55], t = -32;
-    return {
-      v: 's',
-      A: { h, t, k: [56, 91.5], kb: -1, w: [64, 71], eb: -1 },
-      B: { h, t, k: [56, 91.5], kb: -1, w: [63, 52.5], eb: -1 },
-      eq: (J, E) => {
-        const piv = [8, 93], a = Fig.ANG(piv, J.w), end = Fig.P(J.w, a, 7);
-        return [E.floor() + E.pad(piv, end, 2.6), E.plate(end, 8.5)];
-      },
-    };
-  })();
-  F['バックエクステンション'] = (() => {
-    const h = [56, 50];
-    return {
-      v: 's',
-      A: { h, t: 80, k: [27, 77], kb: 1, ft: 100, w: C(h, 80, 19, 5), eb: -1, ual: 0.7, fal: 0.9 },
-      B: { h, t: -43, k: [27, 77], kb: 1, ft: 100, w: C(h, -43, 19, 5), eb: -1, ual: 0.7, fal: 0.9 },
-      eq: (J, E) => [E.floor() + E.post([24, 74], [30, 96]) + E.post([58, 60], [64, 96]) + E.pad([54.6, 58.8], [62.7, 51.3], 6) + `<circle class="eqf" cx="24" cy="72" r="4"/>`, ''],
-    };
-  })();
-
-  /* ---------------- legs ---------------- */
-  F['スクワット'] = (() => {
-    const ha = [56, 52], ta = -88, hb = [41, 73], tb = -52;
-    const plate = (h, t) => C(h, t, 24, -7.5);
-    return {
-      v: 's',
-      A: { h: ha, t: ta, k: [58, 91.5], kb: -1, w: plate(ha, ta), eb: 1 },
-      B: { h: hb, t: tb, k: [58, 91.5], kb: -1, w: plate(hb, tb), eb: 1 },
-      eq: (J, E) => [E.floor(), E.plate(J.w, 8)],
-    };
-  })();
-  F['レッグプレス'] = (() => {
-    const h = [46, 74], t = -155, u = [0.707, -0.707], v = [0.707, 0.707];
-    const base = { h, t, kb: 1, ft: -135, w: [52, 79] };
-    return {
-      v: 's',
-      A: { ...base, k: [62, 56] },
-      B: { ...base, k: [73, 46] },
-      eq: (J, E) => {
-        const c = [J.a[0] + u[0] * 4.5 - v[0] * 3, J.a[1] + u[1] * 4.5 - v[1] * 3];
-        return [E.floor() + E.post([46, 96], [104, 38]) + E.pad(C(h, t, -3, -5.5), C(h, t, 34, -5.5), 5) + E.post([42, 80], [42, 96]) + E.pad([c[0] - v[0] * 11, c[1] - v[1] * 11], [c[0] + v[0] * 11, c[1] + v[1] * 11], 4), ''];
-      },
-    };
-  })();
-  F['ブルガリアンスクワット'] = {
-    v: 's',
-    A: { h: [51, 55], t: -86, k: [67, 91.5], kb: -1, k2: [27, 70], kb2: -1, ft2: 172, a: [91, 90] },
-    B: { h: [47, 70], t: -78, k: [67, 91.5], kb: -1, k2: [27, 70], kb2: -1, ft2: 172, a: [94, 90] },
-    eq: (J, E) => [E.floor() + E.rect(8, 73.5, 26, 4.4) + E.post([14, 78], [14, 96]) + E.post([29, 78], [29, 96]), E.db(J.w, 4.2)],
-  };
-  F['レッグエクステンション'] = {
-    v: 's',
-    A: { h: [44, 66], t: -95, l: [0, 95], ft: 5, w: [47, 71], eb: 1 },
-    B: { h: [44, 66], t: -95, l: [0, -6], ft: -84, w: [47, 71], eb: 1 },
-    eq: (J, E) => {
-      const r = Fig.P(J.a, J.shA - 90, 5);
-      return [E.floor() + E.pad([38.5, 70], [35.5, 38], 5) + E.pad([32, 71], [66, 71], 5) + E.post([48, 73], [48, 96]),
-        `<circle class="eqf" cx="${r[0].toFixed(1)}" cy="${r[1].toFixed(1)}" r="4"/>`];
-    },
-  };
-  F['レッグカール'] = {
-    v: 's',
-    A: { h: [56, 57.5], t: 0, hd: 18, l: [180, 182], ft: 92, w: [86, 76], eb: -1 },
-    B: { h: [56, 57.5], t: 0, hd: 18, l: [180, 265], ft: 175, w: [86, 76], eb: -1 },
-    eq: (J, E) => {
-      const r = Fig.P(J.a, J.shA + 90, 5);
-      return [E.floor() + E.rect(34, 62, 66, 4.4) + E.post([40, 66], [40, 96]) + E.post([94, 66], [94, 96]),
-        `<circle class="eqf" cx="${r[0].toFixed(1)}" cy="${r[1].toFixed(1)}" r="4"/>`];
-    },
-  };
-  F['ヒップスラスト'] = (() => {
-    const s = [27, 60];
-    const ha = Fig.P(s, 42, 25), hb = Fig.P(s, 0, 25);
-    const plate = h => [h[0] + 2, h[1] - 6.5];
-    return {
-      v: 's',
-      A: { h: ha, t: 222, hd: 0, k: [74, 91.5], kb: -1, w: plate(ha), eb: 1 },
-      B: { h: hb, t: 180, hd: 30, k: [74, 91.5], kb: -1, w: plate(hb), eb: 1 },
-      eq: (J, E) => [E.floor() + E.rect(4, 64.5, 25, 4.4) + E.post([10, 69], [10, 96]) + E.post([24, 69], [24, 96]), E.plate(J.w, 8)],
-    };
-  })();
-  F['カーフレイズ'] = {
-    v: 's',
-    A: { h: [59, 51.5], t: -90, k: [60.5, 90.6], kb: -1, ft: -22, a: [92, 90] },
-    B: { h: [61.5, 43], t: -90, k: [63, 82.3], kb: -1, ft: 55, a: [92, 90] },
-    eq: (J, E) => [E.floor() + E.rect(62, 91, 32, 5.5, 1.5), E.db(J.w, 4.2)],
-  };
-
-  /* ---------------- shoulders ---------------- */
-  F['ショルダープレス'] = {
-    v: 'f',
-    A: { h: [60, 68], w: [86, 31], eb: 1, l: [80, 92], thl: 0.35 },
-    B: { h: [60, 68], w: [74, 15], eb: 1, l: [80, 92], thl: 0.35 },
-    eq: (J, E) => [E.floor() + E.rect(48, 20, 24, 50, 5) + E.rect(42, 68, 36, 5, 2) + E.post([60, 73], [60, 96]), E.dbs(J.wl, 0, 12) + E.dbs(J.wr, 0, 12)],
-  };
-  F['サイドレイズ'] = {
-    v: 'f',
-    A: { h: [60, 52], a: [84, 86], l: [86, 90] },
-    B: { h: [60, 52], a: [-4, 4], l: [86, 90] },
-    eq: (J, E) => [E.floor(), E.db(J.wl) + E.db(J.wr)],
-  };
-  F['リアデルトフライ'] = {
-    v: 'f',
-    A: { h: [60, 62], tl: 0.45, hy: -2, a: [86, 89], l: [80, 98], thl: 0.55 },
-    B: { h: [60, 62], tl: 0.45, hy: -2, a: [-6, 4], l: [80, 98], thl: 0.55 },
-    eq: (J, E) => [E.floor(), E.db(J.wl) + E.db(J.wr)],
-  };
-  F['フェイスプル'] = {
-    v: 's',
-    A: { h: [54, 52], t: -93, k: [57, 91.5], kb: -1, w: [81, 27], eb: -1 },
-    B: { h: [54, 52], t: -95, k: [57, 91.5], kb: -1, w: [61, 18], eb: -1 },
-    eq: (J, E) => [E.floor() + E.cable([112, 26], J.w), E.handle(J.w, 90, 7)],
-  };
-  F['アップライトロウ'] = {
-    v: 'f',
-    A: { h: [60, 52], w: [66, 55], eb: 1, l: [86, 90] },
-    B: { h: [60, 52], w: [66, 22], eb: 1, l: [86, 90] },
-    eq: (J, E) => [E.floor(), E.barF(J.wl, J.wr, 24)],
-  };
-
-  /* ---------------- arms ---------------- */
-  F['バーベルカール'] = standCurl('bar');
-  F['ダンベルカール'] = standCurl('db');
-  F['ハンマーカール'] = standCurl('dbs');
-  F['トライセプスプレスダウン'] = {
-    v: 's',
-    A: { h: [54, 52], t: -82, k: [57, 91.5], kb: -1, a: [97, -28] },
-    B: { h: [54, 52], t: -82, k: [57, 91.5], kb: -1, a: [97, 84] },
-    eq: (J, E) => [E.floor() + E.cable([74, 3], J.w), E.handle(J.w, 0, 7)],
-  };
-  F['フレンチプレス'] = {
-    v: 's',
-    A: { h: [52, 72], t: -90, l: [0, 90], a: [-98, 122] },
-    B: { h: [52, 72], t: -90, l: [0, 90], a: [-98, -92] },
-    eq: (J, E) => [E.floor() + E.rect(34, 76.5, 32, 4.4) + E.post([40, 81], [40, 96]) + E.post([60, 81], [60, 96]), E.dbs(J.w, J.faA, 12)],
-  };
-
-  /* ---------------- core ---------------- */
-  F['アブローラー'] = (() => {
-    const knee = [40, 91.5];
-    const ha = Fig.P(knee, -95, 20), hb = Fig.P(knee, -18, 20);
-    return {
-      v: 's',
-      A: { h: ha, t: -25, l: [85, 180], ft: 172, w: [62, 88.5], eb: 1 },
-      B: { h: hb, t: -6, l: [162, 180], ft: 172, w: [109, 88.5], eb: 1 },
-      eq: (J, E) => [E.floor(), E.roller([J.w[0], 91])],
-    };
-  })();
-  F['クランチ'] = (() => {
-    const h = [64, 91.5];
-    return {
-      v: 's',
-      A: { h, t: 180, hd: 12, k: [88, 92], kb: -1, w: C(h, 180, 18, 4.5), eb: 1, ual: 0.7, fal: 0.85 },
-      B: { h, t: 212, hd: 22, k: [88, 92], kb: -1, w: C(h, 212, 18, 4.5), eb: 1, ual: 0.7, fal: 0.85 },
-      eq: (J, E) => [E.floor(), ''],
-    };
-  })();
-  F['ハンギングレッグレイズ'] = {
-    v: 's', vb: [0, -2, 120, 110], armBack: true,
-    A: { h: [58, 56], t: -91, l: [93, 96], ft: 82, a: [-90, -90] },
-    B: { h: [55, 56], t: -98, l: [-2, -2], ft: -70, a: [-84, -88] },
-    eq: (J, E) => [E.pad([30, 2.5], [92, 2.5], 3), ''],
-  };
-  F['ケーブルクランチ'] = (() => {
-    const knee = [50, 91.5], h = [50, 71.5];
-    return {
-      v: 's',
-      A: { h, t: -78, l: [90, 180], ft: 172, w: C(h, -78, 30, 6), eb: -1, ual: 0.8 },
-      B: { h, t: 12, l: [90, 180], ft: 172, w: C(h, 12, 30, 6), eb: -1, ual: 0.8 },
-      eq: (J, E) => [E.floor() + E.cable([98, 2], J.w), E.handle(J.w, J.tA + 90, 7)],
-    };
-  })();
-
-  // which pose the still thumbnails use (default: finish)
-  for (const n of ['デッドリフト', 'ダンベルフライ', 'ペックフライ', 'ケーブルクロスオーバー', 'フレンチプレス']) F[n].thumb = 0;
-  return F;
-})();
-
 /* Short how-to for each library exercise: main muscles and two form points. */
 const GUIDE = {
   'ベンチプレス': ['大胸筋', '三角筋（前部）', '上腕三頭筋', '肩甲骨を寄せて胸を張ったまま下ろす', 'バーは胸の下あたりに下ろし、真上に押し上げる'],
@@ -1127,49 +651,6 @@ const Guide = {
   get(name) { const g = GUIDE[name]; return g ? { muscles: g.slice(0, -2), points: g.slice(-2) } : null; },
 };
 
-/* Renders figures into <svg data-fig> elements and animates the ones marked data-anim. */
-function figSVG(name, anim, t) {
-  const ex = FIGS[name]; if (!ex) return '<i class="fig-empty"></i>';
-  const still = t ?? ex.thumb ?? 1;
-  return `<svg class="fig" viewBox="${Fig.vb(ex)}" data-fig="${U.esc(name)}"${anim ? ' data-anim=""' : ` data-t="${still}"`} role="img" aria-label="${U.esc(name)}の動き"></svg>`;
-}
-const Figs = {
-  live: new Set(), raf: 0, last: 0, lastT: -1,
-  reduced: (() => { try { return matchMedia('(prefers-reduced-motion: reduce)'); } catch { return { matches: false }; } })(),
-  mount(root) {
-    root.querySelectorAll('svg[data-fig]:not([data-ready])').forEach(el => {
-      const ex = FIGS[el.dataset.fig]; if (!ex) return;
-      el.dataset.ready = '1';
-      const anim = el.hasAttribute('data-anim') && !this.reduced.matches;
-      el.innerHTML = Fig.frame(ex, anim ? this.phase(performance.now()) : Number(el.dataset.t ?? ex.thumb ?? 1));
-      if (anim) this.live.add(el);
-    });
-    if (this.live.size && !this.raf) this.raf = requestAnimationFrame(this.loop);
-  },
-  /* 3.4 s loop: hold start, move, hold finish, return */
-  phase(ts) {
-    const c = ts % 3400, ease = x => 0.5 - Math.cos(Math.PI * x) / 2;
-    if (c < 600) return 0;
-    if (c < 1700) return ease((c - 600) / 1100);
-    if (c < 2400) return 1;
-    return 1 - ease((c - 2400) / 1000);
-  },
-  loop: ts => {
-    const F = Figs;
-    F.raf = 0;
-    for (const el of F.live) if (!el.isConnected) F.live.delete(el);
-    if (!F.live.size) return;
-    if (ts - F.last >= 33) {
-      F.last = ts;
-      const t = F.phase(ts);
-      if (Math.abs(t - F.lastT) > 0.002) {
-        F.lastT = t;
-        for (const el of F.live) el.innerHTML = Fig.frame(FIGS[el.dataset.fig], t);
-      }
-    }
-    F.raf = requestAnimationFrame(F.loop);
-  },
-};
 
 /* ============================================================
    3. Store — localStorage first, private cloud copy when available
@@ -1458,6 +939,30 @@ const Q = {
   },
 };
 
+/* "今日は筋トレどうしますか？" — suggests the menu done longest ago among recent ones */
+const Suggest = {
+  key: 'kintore-diary.restday',
+  skipped() { return lsGet(this.key) === U.key(Date.now()); },
+  skip() { lsSet(this.key, U.key(Date.now())); },
+  unskip() { lsSet(this.key, ''); },
+  get() {
+    const done = Q.all().filter(s => s.end && s.exercises.length);
+    if (!done.length) return null;
+    const today0 = U.day0(Date.now());
+    const last = done[done.length - 1];
+    const gap = Math.round((today0 - U.day0(last.start)) / 864e5);
+    if (gap < 1) return null;
+    const since = Date.now() - 42 * 864e5, byTitle = new Map();
+    for (const s of done) if (s.start >= since) byTitle.set(Q.title(s), s);
+    const cands = [...byTitle.values()].sort((a, b) => a.start - b.start);
+    const pick = cands.length > 1 ? cands[0] : last;
+    const days = new Set(Q.all().map(s => s.date));
+    let streak = 0, d = U.addDays(today0, -1);
+    while (days.has(U.key(d))) { streak++; d = U.addDays(d, -1); }
+    return { last, gap, pick, streak };
+  },
+};
+
 /* ============================================================
    5. UI primitives: sheet, toast, rest timer, sound, wake lock
    ============================================================ */
@@ -1483,7 +988,6 @@ const Sheet = {
   open(fn) {
     this.fn = fn; clearTimeout(this.t);
     this.panel.innerHTML = '<div class="grab"></div>' + fn();
-    Figs.mount(this.panel);
     this.panel.scrollTop = 0;
     this.root.hidden = false;
     document.body.classList.add('no-scroll');
@@ -1493,7 +997,6 @@ const Sheet = {
     if (!this.fn || this.root.hidden) return;
     const st = this.panel.scrollTop;
     this.panel.innerHTML = '<div class="grab"></div>' + this.fn();
-    Figs.mount(this.panel);
     this.panel.scrollTop = st;
   },
   close() {
@@ -1704,14 +1207,11 @@ function exCardHTML(s, e) {
   const target = prev?.e.sets[n];
   const memoShown = UI.memoOpen.has(e.id) || !!e.memo;
   return `<article class="ex" id="ex-${e.id}">
-    <header class="ex-h${FIGS[e.name] ? '' : ' nofig'}">
-      ${FIGS[e.name] ? `<button class="ex-fig" data-act="guide" data-name="${U.esc(e.name)}" aria-label="${U.esc(e.name)}の動きとポイントを見る">${figSVG(e.name, true)}</button>` : ''}
-      <div class="ex-ttl">
-        <p class="ex-en">${PARTS[Lib.part(e.name)]}${en ? ` · ${U.esc(en)}` : ''}</p>
-        <h3 class="ex-name">${U.esc(e.name)}</h3>
-        ${FIGS[e.name] ? `<button class="ex-guide" data-act="guide" data-name="${U.esc(e.name)}">動きとポイント${I.chevRs}</button>`
-          : isCustom(e.name) ? `<button class="ex-guide" data-act="partAsk" data-name="${U.esc(e.name)}">部位を変更${I.chevRs}</button>` : ''}
-      </div>
+    <header class="ex-h">
+      <p class="ex-en">${PARTS[Lib.part(e.name)]}${en ? ` · ${U.esc(en)}` : ''}</p>
+      <h3 class="ex-name">${U.esc(e.name)}</h3>
+      ${GUIDE[e.name] ? `<button class="ex-guide" data-act="guide" data-name="${U.esc(e.name)}">効く部位とポイント${I.chevRs}</button>`
+        : isCustom(e.name) ? `<button class="ex-guide" data-act="partAsk" data-name="${U.esc(e.name)}">部位を変更${I.chevRs}</button>` : ''}
     </header>
     ${prevBlock}
     ${n ? `<ol class="sets">${rows}</ol>` : ''}
@@ -1817,17 +1317,15 @@ function lastLine(n, s) {
 }
 const isCustom = n => !LIBMAP.has(n);
 function pickRow(n, have, s) {
-  const fig = FIGS[n]
-    ? `<button class="pick-fig" data-act="guide" data-from="pick" data-name="${U.esc(n)}" aria-label="${U.esc(n)}の動きを見る">${figSVG(n, false)}</button>`
-    : `<button class="pick-fig" data-act="partAsk" data-from="pick" data-name="${U.esc(n)}" aria-label="${U.esc(n)}の部位を変更"><span class="part-box"><b>${PARTS[Lib.part(n)]}</b><small>部位を変更</small></span></button>`;
-  return `<div class="pick">${fig}<button class="pick-main" data-act="pickEx" data-name="${U.esc(n)}" ${have.has(n) ? 'disabled' : ''}>
+  const part = isCustom(n)
+    ? `<button class="pick-part" data-act="partAsk" data-from="pick" data-name="${U.esc(n)}"><b>${PARTS[Lib.part(n)]}</b>部位を変更</button>` : '';
+  return `<div class="pick"><button class="pick-main" data-act="pickEx" data-name="${U.esc(n)}" ${have.has(n) ? 'disabled' : ''}>
     <span class="pick-n">${U.esc(n)}</span>${lastLine(n, s)}
     ${have.has(n) ? '<span class="pick-on">追加済み</span>' : `<span class="pi">${I.plus}</span>`}
-  </button></div>`;
+  </button>${part}</div>`;
 }
 function newExRow(q) {
   return `<div class="pick">
-    <span class="pick-fig"><span class="part-box new">${I.plus}</span></span>
     <div class="pick-new">
       <p class="pick-n">「${U.esc(q)}」を新しく追加</p>
       <p class="pick-s">部位を選ぶと、そのタブに追加されます</p>
@@ -1869,12 +1367,7 @@ function guideSheet() {
   } else actions = `<div class="g-actions"><button class="btn btn-soft" data-act="closeSheet">閉じる</button></div>`;
   return `<div class="sheet-h"><div><p class="eyebrow">${PARTS[Lib.part(name)]}${en ? ` · ${U.esc(en)}` : ''}</p><h2>${U.esc(name)}</h2></div>
     <button class="icon-btn" data-act="closeSheet" aria-label="閉じる">${I.x}</button></div>
-  <div class="guide-fig">${figSVG(name, true)}</div>
-  <div class="frames">
-    <div class="frame">${figSVG(name, false, 0)}<span>スタート</span></div>
-    <div class="frame">${figSVG(name, false, 1)}<span>フィニッシュ</span></div>
-  </div>
-  ${g ? `<section class="g-sec"><h3>主に効く部位</h3><div class="muscles">${g.muscles.map(m => `<span class="mchip">${U.esc(m)}</span>`).join('')}</div></section>
+  ${g ? `<section class="g-sec" style="margin-top:4px"><h3>主に効く部位</h3><div class="muscles">${g.muscles.map(m => `<span class="mchip">${U.esc(m)}</span>`).join('')}</div></section>
   <section class="g-sec"><h3>ポイント</h3><ul class="points">${g.points.map(t => `<li>${U.esc(t)}</li>`).join('')}</ul></section>` : ''}
   ${actions}`;
 }
@@ -2037,19 +1530,42 @@ const Views = {
       return h;
     }
     const todays = Q.onDate(U.key(now)).filter(x => x.end);
-    h += todays.length ? this.doneHero(todays) : this.idleHero(now);
-    h += this.summary(todays.length > 0);
+    const sg = todays.length ? null : Suggest.get();
+    h += todays.length ? this.doneHero(todays) : this.idleHero(now, sg);
+    if (sg) h += this.suggest(sg);
+    h += this.summary(todays.length > 0 || !!sg);
     return h;
   },
-  idleHero(now) {
+  idleHero(now, sg) {
+    const status = !sg ? 'まだトレーニングを開始していません' : Suggest.skipped() ? '今日は休みの日です' : '今日は筋トレどうしますか？';
     return `<section class="hero">
       <p class="hero-date" data-tick="date">${U.dateLong(now)}</p>
       <h1 class="greet" data-tick="greet">${U.greet(now).toUpperCase()}</h1>
-      <p class="status">まだトレーニングを開始していません</p>
+      <p class="status">${status}</p>
       <div class="clock" data-tick="now">${U.hm(now)}</div>
       <p class="clock-cap">開始を押すと、この時刻が入館時間として記録されます</p>
       <button class="btn btn-primary btn-xl hero-cta" data-act="start">トレーニング開始</button>
     </section>`;
+  },
+  suggest(g) {
+    if (Suggest.skipped()) return `<div class="notice" style="margin-top:18px"><span>今日は休みにしました</span><button class="notice-btn" data-act="unskip">取り消す</button></div>`;
+    const { last, gap, pick, streak } = g;
+    const ago = Math.round((U.day0(Date.now()) - U.day0(pick.start)) / 864e5);
+    const lastTxt = gap === 1 ? `昨日は${Q.title(last)}をやりました。` : `前回は${U.md(last.start)}の${Q.title(last)}。${gap}日あいています。`;
+    return `<section class="section"><div class="card suggest">
+      <p class="eyebrow">Today’s suggestion</p>
+      <p class="sg-t">${lastTxt}${streak >= 2 ? `<br>${streak}日続けてトレーニングしているので、今日は休んでもOKです。` : ''}</p>
+      <div class="sg-pick">
+        <span class="sg-l">今日のおすすめ</span>
+        <b class="sg-n">${Q.title(pick)}</b>
+        <span class="sg-s">${pick.exercises.map(e => U.esc(e.name)).join(' · ')}</span>
+        <span class="sg-d">最後にやったのは${U.md(pick.start)}（${ago}日前）</span>
+      </div>
+      <div class="two">
+        <button class="btn btn-soft" data-act="skipToday">今日は休む</button>
+        <button class="btn btn-primary" data-act="startWith" data-from="${pick.id}">このメニューで開始</button>
+      </div>
+    </div></section>`;
   },
   liveHero(s) {
     const now = Date.now(), lastAt = Q.lastSetAt(s);
@@ -2221,7 +1737,6 @@ const App = {
     const t = UI.tab;
     this.view.innerHTML = t === 'today' ? Views.today() : t === 'calendar' ? Views.calendar() : t === 'stats' ? Views.stats() : Views.edit();
     Charts.mount(this.view);
-    Figs.mount(this.view);
     this.paintTabs();
     Sheet.refresh();
     tick(true);
@@ -2340,9 +1855,20 @@ const Actions = {
   },
 
   addEx(d) { UI.addSid = d.sid; UI.exQuery = ''; Sheet.open(addExSheet); },
-  exPart(d) { UI.exPart = d.p; const l = $('#exlist'); if (l) { l.innerHTML = exListHTML(); Figs.mount(l); } },
+  exPart(d) { UI.exPart = d.p; const l = $('#exlist'); if (l) { l.innerHTML = exListHTML(); } },
   guide(d) { UI.guide = { name: d.name, from: d.from || 'card' }; Sheet.open(guideSheet); },
   guideBack() { Sheet.open(addExSheet); },
+  startWith(d) {
+    const from = Model.get(d.from);
+    Actions.start();
+    const s = Q.active(); if (!s || !from) return;
+    const have = new Set(s.exercises.map(e => e.name));
+    s.exercises.push(...from.exercises.filter(e => !have.has(e.name)).map(e => ({ id: U.id(), name: e.name, sets: [], memo: '' })));
+    Store.commit({ sessions: [s.id] });
+    Toast.show(`<span>${U.hm(s.start)} 入館 · ${Q.title(from)}のメニューを用意しました</span>`);
+  },
+  skipToday() { Suggest.skip(); App.render(); Toast.show('<span>今日はゆっくり休みましょう</span>'); },
+  unskip() { Suggest.unskip(); App.render(); },
   partAsk(d) { UI.partFor = { name: d.name, from: d.from || 'card' }; Sheet.open(partSheet); },
   setPart(d) {
     const { name, from } = UI.partFor || {}; if (!name || !PARTS[d.p]) return;
@@ -2573,7 +2099,7 @@ document.addEventListener('input', e => {
     memoTimer = setTimeout(() => Store.commit({ sessions: [f.s.id], silent: true }), 600);
   } else if (t.id === 'exq') {
     UI.exQuery = t.value;
-    const l = $('#exlist'); if (l) { l.innerHTML = exListHTML(); Figs.mount(l); }
+    const l = $('#exlist'); if (l) { l.innerHTML = exListHTML(); }
   } else if (t.id === 'endMemo') UI.endMemo = t.value;
 });
 document.addEventListener('change', e => {
