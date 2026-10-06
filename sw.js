@@ -1,8 +1,9 @@
 /* 筋トレ日記 service worker
    - App shell is cached so the app opens even with no signal in the gym.
-   - The page itself is fetched from the network first (to pick up updates),
-     falling back to the cached copy after 2.5 seconds or when offline. */
-const CACHE = 'kintore-diary-v5';
+   - The page itself is fetched from the network first (always revalidated, so updates
+     arrive right away), falling back to the cached copy after 2.5 s or when offline.
+   - version.json is never cached: the app uses it to check for updates. */
+const CACHE = 'kintore-diary-v6';
 const SHELL = [
   './',
   './index.html',
@@ -13,7 +14,11 @@ const SHELL = [
 ];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
+  event.waitUntil(
+    caches.open(CACHE)
+      .then((c) => c.addAll(SHELL.map((u) => new Request(u, { cache: 'reload' }))))
+      .then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener('activate', (event) => {
@@ -29,9 +34,12 @@ self.addEventListener('fetch', (event) => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
 
-  // The page: network first, cached copy when slow or offline
+  // update checks always go to the network
+  if (url.origin === self.location.origin && url.pathname.endsWith('/version.json')) return;
+
+  // The page: network first (revalidated), cached copy when slow or offline
   if (req.mode === 'navigate') {
-    const net = fetch(req).then((res) => {
+    const net = fetch(url.origin + url.pathname, { cache: 'no-cache', credentials: 'same-origin' }).then((res) => {
       if (res.ok) {
         const copy = res.clone();
         caches.open(CACHE).then((c) => c.put('./index.html', copy));
