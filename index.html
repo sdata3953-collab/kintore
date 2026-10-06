@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="筋トレ日記">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<script>window.KINTORE_VERSION = '20261006-2347'; window.KINTORE_FIREBASE = {"apiKey": "AIzaSyD8C-cmnF12VJThPhKZv6JbJGbzb8iENGk", "authDomain": "kintore-82613.firebaseapp.com", "projectId": "kintore-82613", "storageBucket": "kintore-82613.firebasestorage.app", "messagingSenderId": "156878101173", "appId": "1:156878101173:web:3c4a96afe1832a79c57cfc"};</script>
+<script>window.KINTORE_VERSION = '20261006-2351'; window.KINTORE_FIREBASE = {"apiKey": "AIzaSyD8C-cmnF12VJThPhKZv6JbJGbzb8iENGk", "authDomain": "kintore-82613.firebaseapp.com", "projectId": "kintore-82613", "storageBucket": "kintore-82613.firebasestorage.app", "messagingSenderId": "156878101173", "appId": "1:156878101173:web:3c4a96afe1832a79c57cfc"};</script>
 <style>
 :root{color-scheme:light;padding-top:env(safe-area-inset-top,0px)}
 body{margin:0}
@@ -353,6 +353,26 @@ small{font-size:inherit}
 .danger-t{color:var(--rec)}
 .g-row > svg{width:16px;height:16px;color:var(--muted);flex:none}
 .form-err{font-size:13.5px;color:var(--rec);padding:12px 4px 0;line-height:1.5}
+.fun{display:grid;gap:4px}
+.fun-h{display:flex;align-items:center;gap:8px}
+.fun-l{font-size:13px;color:var(--muted)}
+.fun-tag{font-size:10.5px;color:var(--fg-2);background:var(--fill);border-radius:6px;padding:1px 7px}
+.fun-v{font-size:40px;font-weight:600;letter-spacing:-.025em;line-height:1.15;font-variant-numeric:tabular-nums}
+.fun-v small{font-size:.42em;color:var(--muted);font-weight:500;margin-left:4px;letter-spacing:0}
+.fun-s{font-size:12.5px;color:var(--muted);margin-top:8px}
+.eq-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:4px}
+.eq-grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.eq-c{display:grid;gap:2px;padding:10px 12px;border-radius:14px;background:var(--fill-2);min-width:0}
+.eq-n{font-size:11.5px;color:var(--muted);line-height:1.4}
+.eq-v{font-size:22px;font-weight:600;letter-spacing:-.01em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.eq-v small{font-size:12px;color:var(--fg-2);font-weight:500;margin-left:2px}
+.fun-foot{display:flex;flex-wrap:wrap;gap:4px 18px;font-size:12.5px;color:var(--muted);margin-top:10px}
+.fun-foot b{color:var(--fg);font-weight:600;margin:0 3px 0 6px;font-variant-numeric:tabular-nums}
+.fun-note{font-size:11.5px;color:var(--muted);line-height:1.6;margin-top:6px}
+.fun-link{font-size:11.5px;color:var(--fg-2);text-decoration:underline;text-underline-offset:2px;margin-left:4px}
+.kcal-line{font-size:13px;color:var(--fg-2);margin-top:2px}
+.mini-in{flex:none;width:92px;height:40px;border:0;border-radius:12px;background:var(--fill);padding:0 12px;text-align:right;font-size:17px;font-weight:600;font-variant-numeric:tabular-nums;outline:none;-moz-appearance:textfield}
+.mini-in:focus{box-shadow:inset 0 0 0 1.5px var(--fg)}
 .pick-hint{font-size:12.5px;color:var(--muted);padding:12px 4px 0}
 .part-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
 .part-opt{min-height:58px;border-radius:16px;background:var(--card);box-shadow:var(--shadow);font-size:16px;font-weight:600;text-align:center;transition:transform .16s var(--ease)}
@@ -690,7 +710,7 @@ const Guide = {
    3. Store — localStorage first, private cloud copy when available
    ============================================================ */
 const LS = { data: 'kintore-diary.v1', rest: 'kintore-diary.rest' };
-const DEFAULT_SETTINGS = { restAuto: true, restSec: 90, step: 2.5, wake: false, restSound: true };
+const DEFAULT_SETTINGS = { restAuto: true, restSec: 90, step: 2.5, wake: false, restSound: true, bodyW: 60 };
 const normMeta = m => ({
   activeId: m?.activeId ?? null,
   settings: { ...DEFAULT_SETTINGS, ...(m?.settings || {}) },
@@ -1017,7 +1037,13 @@ const Q = {
       .filter(r => r.history.length > 1 && r.history.at(-1).top > r.history.at(-2).top)
       .map(r => ({ name: r.name, from: r.history.at(-2).top, to: r.history.at(-1).top, t: r.history.at(-1).t }))
       .sort((a, b) => b.t - a.t);
-    this._st = { count: all.length, month, week, total, avg, sets, streak, longest, ex, improved };
+    const inMonth = s => s.date.startsWith(ym);
+    const kcalTotal = ended.reduce((a, s) => a + Fun.kcal(s), 0);
+    const kcalMonth = ended.filter(inMonth).reduce((a, s) => a + Fun.kcal(s), 0);
+    const kcalAvg = ended.length ? kcalTotal / ended.length : 0;
+    const volTotal = all.reduce((a, s) => a + this.volume(s), 0);
+    const volMonth = all.filter(inMonth).reduce((a, s) => a + this.volume(s), 0);
+    this._st = { count: all.length, month, week, total, avg, sets, streak, longest, ex, improved, kcalTotal, kcalMonth, kcalAvg, volTotal, volMonth };
     this._srev = Store.rev;
     return this._st;
   },
@@ -1090,6 +1116,22 @@ const FB = {
       'auth/operation-not-allowed': 'Firebaseで「メール / パスワード」のログインが有効になっていません',
     })[c] || `うまくいきませんでした（${c || 'unknown'}）`;
   },
+};
+
+/* Fun numbers: estimated calories and total weight lifted.
+   Calories = METs × body weight (kg) × hours × 1.05; a gym session including rests is taken as 3.5 METs. */
+const Fun = {
+  MET: 3.5,
+  weight() { const w = Number(Store.settings.bodyW); return w >= 20 && w <= 250 ? w : 60; },
+  kcal(s) { return s.end ? Fun.MET * Fun.weight() * ((s.end - s.start) / 3600e3) * 1.05 : 0; },
+  foods: [['おにぎり', 180, '個'], ['ケーキ', 350, '個'], ['ラーメン', 500, '杯']],
+  things: [['柴犬', 10, '匹'], ['ピアノ', 250, '台'], ['軽自動車', 1000, '台'], ['ゾウ', 6000, '頭'], ['新幹線1両', 40000, '両'], ['ジャンボ機', 180000, '機']],
+  /* the two biggest things the total is worth at least one of */
+  pickThings(kg) {
+    let i = 0; while (i + 1 < Fun.things.length && kg / Fun.things[i + 1][1] >= 1) i++;
+    return i === 0 ? [Fun.things[0], Fun.things[1]] : [Fun.things[i - 1], Fun.things[i]];
+  },
+  num(x) { return x >= 10 ? U.n(x) : String(Math.round(x * 10) / 10); },
 };
 
 /* My menus: saved sets of exercises, e.g. 腕の日 = バーベルカール, ハンマーカール, … */
@@ -1503,7 +1545,7 @@ function sessionDetailHTML(s) {
       <div><span>退館</span><b>${live ? '—' : U.hm(s.end)}</b></div>
       <div><span>滞在</span><b>${live ? '計測中' : U.durS(s.end - s.start)}</b></div>
     </div>
-    <div class="dt-meta"><span>種目<b>${s.exercises.length}</b></span><span>セット<b>${Q.sets(s)}</b></span><span>ボリューム<b>${fmt.volTxt(Q.volume(s))}</b></span>${s.sample ? '<span class="tag">サンプル</span>' : ''}</div>
+    <div class="dt-meta"><span>種目<b>${s.exercises.length}</b></span><span>セット<b>${Q.sets(s)}</b></span><span>ボリューム<b>${fmt.volTxt(Q.volume(s))}</b></span>${s.end ? `<span>消費<b>約${U.n(Fun.kcal(s))}kcal</b></span>` : ''}${s.sample ? '<span class="tag">サンプル</span>' : ''}</div>
     ${exs ? `<div class="dt-list">${exs}</div>` : ''}
     ${s.memo ? `<p class="dt-memo">${U.esc(s.memo)}</p>` : ''}
     ${actions}
@@ -1704,6 +1746,7 @@ function settingsSheet() {
   <div class="group">
     <button class="g-row g-btn" data-act="menus"><span><span class="g-t">マイメニュー</span><span class="g-s">${Menus.list().length ? `${Menus.list().length}件保存しています` : 'よくやる種目のセットを保存できます'}</span></span>${I.chevRs}</button>
     <div class="g-row"><p class="g-t">重量の刻み（kg）</p>${seg([1, 1.25, 2.5, 5], st.step, 'setStep')}</div>
+    <div class="g-row"><div><p class="g-t">体重（kg）</p><p class="g-s">消費カロリーのめやすに使います</p></div><input id="bodyW" class="mini-in" type="number" inputmode="decimal" min="20" max="250" step="0.1" value="${Fun.num(Fun.weight())}" aria-label="体重（kg）"></div>
     <div class="g-row"><div><p class="g-t">トレーニング中は画面を消さない</p><p class="g-s">対応しているブラウザのみ</p></div>${sw('wake', '画面を消さない')}</div>
   </div>
   ${Updater.v ? `<p class="group-l">アプリ</p>
@@ -1908,6 +1951,7 @@ const Views = {
       <p class="eyebrow" style="margin-top:8px">Today’s Workout</p>
       <div class="done-range">${U.hm(first.start)}<span>—</span>${U.hm(last.end)}</div>
       <div class="done-dur">${U.durH(total)}</div>
+      <p class="kcal-line">消費カロリー 約${U.n(todays.reduce((a, x) => a + Fun.kcal(x), 0))}kcal（めやす）</p>
       ${prs ? `<p class="pr-line"><span class="badge-pr">NEW PR</span>${prs}種目で自己ベストを更新</p>` : ''}
       <div class="tiles">
         <div class="tile"><span class="tile-l">種目</span><span class="tile-v">${names.size}<small>種目</small></span></div>
@@ -1988,6 +2032,28 @@ const Views = {
       </section>`;
   },
 
+  funCards(st) {
+    const eq = (n, v, u) => `<span class="eq-c"><span class="eq-n">${n}</span><span class="eq-v">${Fun.num(v)}<small>${u}</small></span></span>`;
+    const things = Fun.pickThings(st.volTotal);
+    return `<section class="section">
+      <p class="sec-l">おまけの数字</p>
+      <div class="card fun">
+        <div class="fun-h"><span class="fun-l">今月の消費カロリー</span><span class="fun-tag">めやす</span></div>
+        <p class="fun-v">${U.n(st.kcalMonth)}<small>kcal</small></p>
+        ${st.kcalMonth >= 1 ? `<p class="fun-s">食べ物にすると…</p>
+        <div class="eq-grid">${Fun.foods.map(([n, k, u]) => eq(n, st.kcalMonth / k, u)).join('')}</div>` : `<p class="fun-s">今月のトレーニングが終わると、ここに表示されます</p>`}
+        <div class="fun-foot"><span>累計<b>${U.n(st.kcalTotal)}</b>kcal</span><span>1回あたり<b>${U.n(st.kcalAvg)}</b>kcal</span></div>
+        <p class="fun-note">体重${Fun.num(Fun.weight())}kg × 3.5メッツ（休憩込みの筋トレ）× トレーニング時間 × 1.05 で計算しています。<button class="fun-link" data-act="settings">体重を変える</button></p>
+      </div>
+      <div class="card fun">
+        <div class="fun-h"><span class="fun-l">これまでに持ち上げた重さ</span></div>
+        <p class="fun-v">${fmt.volH(st.volTotal)}</p>
+        <p class="fun-s">ということは…</p>
+        <div class="eq-grid two">${things.map(([n, k, u]) => eq(`${n}（約${k >= 1000 ? k / 1000 + 't' : k + 'kg'}）`, st.volTotal / k, u)).join('')}</div>
+        <div class="fun-foot"><span>今月<b>${fmt.volTxt(st.volMonth)}</b></span><span>重量×回数の合計</span></div>
+      </div>
+    </section>`;
+  },
   stats() {
     const st = Q.stats();
     let h = `<header class="page-h"><h1>統計</h1></header>` + sampleNotice();
@@ -2004,6 +2070,7 @@ const Views = {
       <div class="tile"><span class="tile-l">総時間</span><span class="tile-v">${st.total ? totH : '—'}</span></div>
       <div class="tile"><span class="tile-l">総セット</span><span class="tile-v">${U.n(st.sets)}</span></div>
     </div>
+    ${this.funCards(st)}
     <section class="section">
       <div class="card chart-card"><div class="cc-h"><h3>週ごとのトレーニング</h3><span class="cc-s">直近12週 · 回数</span></div><div class="chart" data-chart="weekly"></div></div>
       <div class="card chart-card"><div class="cc-h"><h3>トレーニング時間</h3><span class="cc-s">直近12回</span></div><div class="chart" data-chart="duration"></div>
@@ -2502,6 +2569,11 @@ document.addEventListener('change', e => {
   const t = e.target;
   if (t.id === 'edStart' || t.id === 'edEnd') Actions.editTime();
   else if (t.id === 'importFile') Actions.importFile(t);
+  else if (t.id === 'bodyW') {
+    const v = parseFloat(String(t.value).replace(',', '.'));
+    if (v >= 20 && v <= 250) { Store.settings.bodyW = Math.round(v * 10) / 10; Store.commit({ meta: true }); Toast.show(`<span>体重を${Fun.num(Store.settings.bodyW)}kgにしました</span>`); }
+    else { t.value = Fun.num(Fun.weight()); Toast.show('<span>体重は20〜250kgの間で入力してください</span>'); }
+  }
 });
 document.addEventListener('keydown', e => {
   const t = e.target;
