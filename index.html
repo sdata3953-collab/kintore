@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="筋トレ日記">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<script>window.KINTORE_VERSION = '20261008-1610'; window.KINTORE_FIREBASE = {"apiKey": "AIzaSyD8C-cmnF12VJThPhKZv6JbJGbzb8iENGk", "authDomain": "kintore-82613.firebaseapp.com", "projectId": "kintore-82613", "storageBucket": "kintore-82613.firebasestorage.app", "messagingSenderId": "156878101173", "appId": "1:156878101173:web:3c4a96afe1832a79c57cfc"};</script>
+<script>window.KINTORE_VERSION = '20261008-1635'; window.KINTORE_FIREBASE = {"apiKey": "AIzaSyD8C-cmnF12VJThPhKZv6JbJGbzb8iENGk", "authDomain": "kintore-82613.firebaseapp.com", "projectId": "kintore-82613", "storageBucket": "kintore-82613.firebasestorage.app", "messagingSenderId": "156878101173", "appId": "1:156878101173:web:3c4a96afe1832a79c57cfc"};</script>
 <style>
 :root{color-scheme:light;padding-top:env(safe-area-inset-top,0px)}
 body{margin:0}
@@ -397,21 +397,55 @@ small{font-size:inherit}
 .kcal-line{font-size:13px;color:var(--fg-2);margin-top:2px}
 .mini-in{flex:none;width:92px;height:40px;border:0;border-radius:12px;background:var(--fill);padding:0 12px;text-align:right;font-size:17px;font-weight:600;font-variant-numeric:tabular-nums;outline:none;-moz-appearance:textfield}
 .mini-in:focus{box-shadow:inset 0 0 0 1.5px var(--fg)}
-.app:has(.home){padding-bottom:calc(74px + env(safe-area-inset-bottom,0px))}
-.home{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
-  min-height:calc(100vh - 132px);min-height:calc(100svh - 132px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));padding-bottom:6vh}
-.home-date{font-size:16px;font-weight:500;color:var(--fg-2);letter-spacing:.02em}
-.home-clock{font-size:clamp(84px,27vw,128px);font-weight:200;letter-spacing:-.05em;line-height:1;font-variant-numeric:tabular-nums;margin:2px -.05em 0 0}
-.home-cta{margin-top:30px;min-height:80px;border-radius:24px;font-size:20px;letter-spacing:.04em;
-  background:linear-gradient(180deg,color-mix(in srgb,var(--inv-bg) 84%,#fff 16%),var(--inv-bg) 55%);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 18px 36px -18px rgba(0,0,0,.5)}
-.home-cta:active{transform:scale(.98)}
-.home-foot{margin-top:18px}
-.sg-pill{display:inline-flex;align-items:center;gap:10px;height:46px;padding:0 14px 0 18px;border-radius:999px;background:var(--card);box-shadow:var(--shadow);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);font-size:14.5px;transition:transform .16s var(--ease)}
-.sg-pill:active{transform:scale(.97)}
-.sg-pill-l{font-size:12.5px;color:var(--muted)}
-.sg-pill b{font-weight:600}
-.sg-pill svg{width:14px;height:14px;color:var(--muted)}
+/* today, idle: a poster-style hero and rows of posters you swipe sideways */
+.app:has(.nf){padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))}
+.nf-top .brand{font-size:21px;font-weight:800;letter-spacing:-.01em;color:var(--rec)}
+.nf-hero{position:relative;isolation:isolate;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;text-align:center;
+  min-height:min(64vh,560px);min-height:min(64svh,560px);margin-top:4px;padding:28px 16px 16px;border-radius:18px;color:#fff;background:#08090B;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.08),0 28px 50px -26px rgba(0,0,0,.55)}
+.nf-hero::before{content:"";position:absolute;inset:0;z-index:-2;background:
+  radial-gradient(95% 60% at 50% 6%,color-mix(in srgb,var(--t1) 72%,transparent),transparent 72%),
+  radial-gradient(70% 45% at 100% 58%,color-mix(in srgb,var(--t2) 42%,transparent),transparent 70%),
+  linear-gradient(180deg,color-mix(in srgb,var(--t1) 34%,#08090B),#08090B 72%)}
+.nf-hero::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,transparent 28%,rgba(0,0,0,.5) 60%,rgba(0,0,0,.86))}
+.nf-mark{position:absolute;z-index:-1;top:-3%;left:50%;transform:translateX(-50%);font-size:min(82vw,420px);font-weight:900;line-height:1;letter-spacing:-.06em;color:rgba(255,255,255,.09);white-space:nowrap;pointer-events:none;user-select:none}
+.nf-mark.w2{font-size:min(56vw,290px)}
+.nf-date{font-size:14px;font-weight:600;color:rgba(255,255,255,.8);letter-spacing:.04em}
+.nf-clock{font-size:clamp(76px,24vw,112px);font-weight:700;letter-spacing:-.045em;line-height:.95;font-variant-numeric:tabular-nums;margin:4px -.045em 12px 0;text-shadow:0 8px 30px rgba(0,0,0,.35)}
+.nf-tags{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;row-gap:4px;font-size:13.5px;font-weight:500;color:rgba(255,255,255,.9);margin-bottom:16px;max-width:100%}
+.nf-tags span+span::before{content:"";display:inline-block;width:4px;height:4px;border-radius:50%;background:currentColor;opacity:.55;margin:0 10px;vertical-align:middle}
+.nf-btns{display:grid;grid-template-columns:1.65fr 1fr;gap:10px;width:100%}
+.nf-btns.one{grid-template-columns:1fr}
+.nf-btn{display:flex;align-items:center;justify-content:center;gap:8px;height:56px;border-radius:12px;font-size:16.5px;font-weight:700;white-space:nowrap;transition:transform .16s var(--ease)}
+.nf-btn:active{transform:scale(.97)}
+.nf-btn svg{width:20px;height:20px;flex:none}
+.nf-btn-1{background:#fff;color:#0A0A0B}
+.nf-btn-2{background:rgba(255,255,255,.2);color:#fff;-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
+.nf-sec{margin-top:26px}
+.nf-sec h2{font-size:17px;font-weight:700;letter-spacing:-.01em;margin:0 0 10px}
+.nf-row{display:flex;gap:9px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;margin:0 -20px;padding:2px 20px 6px;scroll-padding-inline:20px;scrollbar-width:none}
+.nf-row::-webkit-scrollbar{display:none}
+.nf-row>*{flex:none;scroll-snap-align:start}
+.nf-poster,.nf-rank-card{position:relative;isolation:isolate;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;text-align:left;color:#fff;
+  width:112px;aspect-ratio:2/3;border-radius:10px;padding:10px;background:#0F1013;box-shadow:inset 0 0 0 1px rgba(255,255,255,.07)}
+.nf-poster::before,.nf-rank-card::before{content:"";position:absolute;inset:0;z-index:-1;
+  background:radial-gradient(140% 85% at 0% 0%,color-mix(in srgb,var(--t1) 88%,transparent),transparent 72%),radial-gradient(120% 75% at 100% 100%,color-mix(in srgb,var(--t2) 62%,transparent),transparent 70%),#0F1013}
+.nf-poster{transition:transform .16s var(--ease)}
+.nf-poster:active,.nf-rank:active{transform:scale(.96)}
+.nf-p-top{font-size:11.5px;font-weight:600;opacity:.85;font-variant-numeric:tabular-nums}
+.nf-p-title{display:grid;font-weight:900;line-height:1;letter-spacing:-.03em;margin-bottom:6px;white-space:nowrap}
+.nf-p-title.wrap{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;white-space:normal;line-height:1.15;letter-spacing:-.01em}
+.nf-p-meta{display:block;font-size:11px;opacity:.85;font-variant-numeric:tabular-nums}
+.nf-p-meta b{font-weight:700;font-size:12.5px;margin-right:1px}
+.nf-add{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;width:112px;aspect-ratio:2/3;border-radius:10px;background:var(--fill);color:var(--fg-2);font-size:12.5px;font-weight:600;text-align:center;box-shadow:inset 0 0 0 1.5px var(--line);transition:transform .16s var(--ease)}
+.nf-add:active{transform:scale(.96)}
+.nf-add svg{width:26px;height:26px}
+.nf-rank{display:flex;align-items:flex-end;text-align:left;transition:transform .16s var(--ease)}
+.nf-rank-n{font-size:124px;font-weight:900;line-height:.74;letter-spacing:-.09em;color:transparent;-webkit-text-stroke:2px color-mix(in srgb,var(--fg) 42%,transparent);margin-right:-12px;font-variant-numeric:tabular-nums}
+.nf-rank-card{width:100px}
+.nf-rank-name{display:block;font-size:13.5px;font-weight:700;line-height:1.25;margin-bottom:6px}
+.nf-rank-best{display:block;font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.nf-rank-best b{font-size:17px;font-weight:800;margin-right:1px}
 .pick-hint{font-size:12.5px;color:var(--muted);padding:12px 4px 0}
 .part-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
 .part-opt{min-height:58px;border-radius:16px;background:var(--card);box-shadow:var(--shadow);font-size:16px;font-weight:600;text-align:center;transition:transform .16s var(--ease)}
@@ -675,6 +709,9 @@ const I = {
   chevRs: sv('<path d="M10 6l6 6-6 6"/>', 2),
   check: sv('<path d="M5 12.5l4.5 4.5L19 7.5"/>', 2.2),
   up: sv('<path d="M6 15l6-6 6 6"/>', 2),
+  play: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.9v14.2c0 .8.9 1.3 1.6.9l11-7.1a1.05 1.05 0 0 0 0-1.8l-11-7.1C7.9 3.6 7 4.1 7 4.9z"/></svg>',
+  info: sv('<circle cx="12" cy="12" r="9"/><path d="M12 11v5.5M12 7.7v.1"/>', 2),
+  undo: sv('<path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>', 2),
   copy: sv('<rect x="8.5" y="8.5" width="11" height="11" rx="2.5"/><path d="M15.5 8.5V7a2.5 2.5 0 0 0-2.5-2.5H7A2.5 2.5 0 0 0 4.5 7v6A2.5 2.5 0 0 0 7 15.5h1.5"/>'),
 };
 
@@ -1746,6 +1783,21 @@ function howtoSheet() {
     <button class="btn btn-quiet" data-act="sampleAdd">サンプルデータで試してみる</button>
   </div>`;
 }
+function menuPeekSheet(id) {
+  const m = Menus.get(id); if (!m) return `<p class="muted">このメニューは削除されました</p>`;
+  const last = Menus.lastDone(m);
+  return `<div class="sheet-h"><div><p class="eyebrow">My menu</p><h2>${U.esc(Menus.label(m))}</h2></div>
+    <button class="icon-btn" data-act="closeSheet" aria-label="閉じる">${I.x}</button></div>
+  <div class="card suggest"><div class="sg-pick">
+    <span class="sg-l">${m.items.length}種目</span>
+    <span class="sg-s">${m.items.map(U.esc).join(' · ')}</span>
+    <span class="sg-d">${last ? `最後にやったのは${U.md(last.start)}` : 'まだこのメニューの記録はありません'}</span>
+  </div>
+  <div class="two">
+    <button class="btn btn-soft" data-act="menuEdit" data-id="${m.id}">編集</button>
+    <button class="btn btn-primary" data-act="startWith" data-menu="${m.id}">このメニューで開始</button>
+  </div></div>`;
+}
 function menusSheet() {
   const ms = Menus.list();
   return `<div class="sheet-h"><div><p class="eyebrow">My menu</p><h2>マイメニュー</h2></div>
@@ -1947,10 +1999,29 @@ const Charts = {
 /* ============================================================
    7. Views
    ============================================================ */
+/* posters: dark cards tinted by body part, with the part names set big */
+const Poster = {
+  tint: { chest: '#B4232C', back: '#2456B8', legs: '#1F8A5B', shoulders: '#C77D16', arms: '#7445B5', core: '#11818C', other: '#4A4F5A' },
+  parts(names) { const ps = [...new Set(names.map(n => Lib.part(n)))], k = ps.filter(p => p !== 'other'); return k.length ? k : ['other']; },
+  style(parts) { const a = this.tint[parts[0]] || this.tint.other, b = this.tint[parts[1]] || a; return `--t1:${a};--t2:${b}`; },
+  text(t, lines = [t]) {
+    const n = Math.max(...lines.map(x => [...x].length));
+    if (lines.length === 1 && n > 5) return `<span class="nf-p-title wrap" style="font-size:${n > 10 ? 16 : 19}px">${U.esc(t)}</span>`;
+    const fs = Math.max(17, Math.min(52, Math.floor(86 / n), Math.floor(104 / lines.length)));
+    return `<span class="nf-p-title" style="font-size:${fs}px">${lines.map(x => `<span>${U.esc(x)}</span>`).join('')}</span>`;
+  },
+  title(parts) {
+    if (parts[0] === 'other') return this.text(PARTS.other);
+    const ls = parts.slice(0, 3).map(p => PARTS[p]);
+    if (parts.length > 3) ls[2] += '…';
+    return this.text('', ls);
+  },
+};
+
 const Views = {
   today() {
     const now = Date.now(), s = Q.active();
-    let h = `<div class="topbar"><span class="brand">${s ? '筋トレ日記' : ''}</span><button class="icon-btn" data-act="settings" aria-label="設定">${I.sliders}</button></div>`;
+    let h = `<div class="topbar${s ? '' : ' nf-top'}"><span class="brand">筋トレ日記</span><button class="icon-btn" data-act="settings" aria-label="設定">${I.sliders}</button></div>`;
     h += storageNotice();
     if (s) {
       h += this.liveHero(s);
@@ -1959,20 +2030,70 @@ const Views = {
       return h;
     }
     const todays = Q.onDate(U.key(now)).filter(x => x.end);
-    if (todays.length) return h + this.doneHero(todays);
+    if (todays.length) return h + this.doneHero(todays) + `<div class="nf">${this.nfRows()}</div>`;
     return h + this.home(now, Suggest.get());
   },
+  /* idle: a poster-style hero (date, clock, start) with rows of posters below */
   home(now, sg) {
-    let pill = '';
-    if (sg && Suggest.skipped()) pill = `<button class="sg-pill" data-act="unskip"><span class="sg-pill-l">今日は休みの日</span><b>取り消す</b></button>`;
-    else if (sg) pill = `<button class="sg-pill" data-act="sgOpen"><span class="sg-pill-l">今日のおすすめ</span><b>${U.esc(sg.menu ? Menus.label(sg.menu) : Q.title(sg.pick))}</b>${I.chevRs}</button>`;
-    else if (!Q.all().length) pill = `<button class="sg-pill" data-act="howto"><span class="sg-pill-l">はじめての方へ</span><b>使い方</b>${I.chevRs}</button>`;
-    return `<section class="home">
-      <p class="home-date" data-tick="date">${U.dateLong(now)}</p>
-      <div class="home-clock" data-tick="now">${U.hm(now)}</div>
-      <button class="btn btn-primary home-cta" data-act="start">トレーニング開始</button>
-      ${pill ? `<div class="home-foot">${pill}</div>` : ''}
+    const all = Q.all(), skipped = !!(sg && Suggest.skipped());
+    const names = sg ? (sg.menu ? sg.menu.items : sg.pick.exercises.map(e => e.name)) : [];
+    const parts = names.length ? Poster.parts(names) : null;
+    const mark = parts && parts[0] !== 'other' ? PARTS[parts[0]] : U.wd(now);
+    let tags = [], second = '';
+    if (skipped) {
+      tags = ['今日は休みの日'];
+      second = `<button class="nf-btn nf-btn-2" data-act="unskip">${I.undo}<span>取り消す</span></button>`;
+    } else if (sg) {
+      tags = [sg.menu ? Menus.label(sg.menu) : Q.title(sg.pick), sg.gap == null ? '' : sg.gap === 1 ? '前回は昨日' : `前回から${sg.gap}日`, `${names.length}種目`];
+      second = `<button class="nf-btn nf-btn-2" data-act="sgOpen">${I.info}<span>おすすめ</span></button>`;
+    } else if (!all.length) {
+      tags = ['開始を押すと入館時刻を記録'];
+      second = `<button class="nf-btn nf-btn-2" data-act="howto">${I.info}<span>使い方</span></button>`;
+    } else tags = ['開始を押すと入館時刻を記録'];
+    return `<section class="nf">
+      <div class="nf-hero" style="${Poster.style(parts || ['other'])}">
+        <span class="nf-mark${mark.length > 1 ? ' w2' : ''}" aria-hidden="true">${U.esc(mark)}</span>
+        <p class="nf-date" data-tick="date">${U.dateLong(now)}</p>
+        <div class="nf-clock" data-tick="now">${U.hm(now)}</div>
+        <p class="nf-tags">${tags.filter(Boolean).map(t => `<span>${U.esc(t)}</span>`).join('')}</p>
+        <div class="nf-btns${second ? '' : ' one'}">
+          <button class="nf-btn nf-btn-1" data-act="start">${I.play}<span>トレーニング開始</span></button>${second}
+        </div>
+      </div>
+      ${this.nfRows()}
     </section>`;
+  },
+  nfRows() {
+    const done = Q.all().filter(s => s.end && s.exercises.length);
+    const row = (title, inner) => `<section class="nf-sec"><h2>${title}</h2><div class="nf-row">${inner}</div></section>`;
+    if (!done.length) {
+      const steps = [['1', ['開始を', '押す'], 'chest'], ['2', ['セットを', '記録'], 'back'], ['3', ['帰るとき', '終了'], 'legs']];
+      return row('はじめての方へ', steps.map(([n, ls, p]) => `<button class="nf-poster" style="${Poster.style([p])}" data-act="howto">
+          <span class="nf-p-top">STEP ${n}</span><span>${Poster.text('', ls)}</span></button>`).join('')
+        + `<button class="nf-add" data-act="sampleAdd">${I.plus}<span>サンプルで<br>試してみる</span></button>`);
+    }
+    let h = row('最近のトレーニング', done.slice(-10).reverse().map(s => {
+      const parts = Poster.parts(s.exercises.map(e => e.name));
+      return `<button class="nf-poster" style="${Poster.style(parts)}" data-act="openDay" data-k="${s.date}" aria-label="${U.md(s.start)} ${U.esc(Q.title(s))}">
+        <span class="nf-p-top">${U.mdS(s.start)}（${U.wd(s.start)}）</span>
+        <span>${Poster.title(parts)}<span class="nf-p-meta"><b>${U.mins(s.end - s.start)}</b>分 <b>${Q.sets(s)}</b>セット</span></span></button>`;
+    }).join(''));
+    const top = [...Q.stats().ex.values()].sort((a, b) => b.count - a.count || b.bestAt - a.bestAt).slice(0, 10);
+    if (top.length >= 2) h += row('よくやる種目ランキング', top.map((r, i) => {
+      const best = r.best > 0 ? `<b>${U.w(r.best)}</b>kg×${r.bestReps}` : `自重×<b>${r.bestReps}</b>`;
+      return `<button class="nf-rank" data-act="exStat" data-name="${U.esc(r.name)}" aria-label="${i + 1}位 ${U.esc(r.name)}">
+        <span class="nf-rank-n" aria-hidden="true">${i + 1}</span>
+        <span class="nf-rank-card" style="${Poster.style([Lib.part(r.name)])}"><span class="nf-p-top">${r.count}回</span>
+          <span><span class="nf-rank-name">${U.esc(r.name)}</span><span class="nf-p-meta">ベスト</span><span class="nf-rank-best">${best}</span></span></span></button>`;
+    }).join(''));
+    const ms = Menus.list();
+    h += row('マイメニュー', ms.map(m => {
+      const parts = Poster.parts(m.items), last = Menus.lastDone(m);
+      return `<button class="nf-poster" style="${Poster.style(parts)}" data-act="menuPeek" data-id="${m.id}" aria-label="${U.esc(Menus.label(m))}">
+        <span class="nf-p-top">${last ? `前回 ${U.mdS(last.start)}` : 'まだやってない'}</span>
+        <span>${m.name ? Poster.text(m.name) : Poster.title(parts)}<span class="nf-p-meta"><b>${m.items.length}</b>種目</span></span></button>`;
+    }).join('') + `<button class="nf-add" data-act="menuNew" data-from="home">${I.plus}<span>メニューを<br>作る</span></button>`);
+    return h;
   },
   idleHero(now, sg) {
     const status = !sg ? 'まだトレーニングを開始していません' : Suggest.skipped() ? '今日は休みの日です' : '今日は筋トレどうしますか？';
@@ -2342,6 +2463,8 @@ const Actions = {
     Toast.show(n ? `<span>「${U.esc(Menus.label(m))}」の${n}種目を追加しました</span>` : '<span>このメニューの種目はすべて追加済みです</span>');
   },
   menus() { Sheet.open(menusSheet); },
+  menuPeek(d) { Sheet.open(() => menuPeekSheet(d.id)); },
+  exStat(d) { UI.statEx = d.name; App.go('stats'); requestAnimationFrame(() => $('.chart-card')?.scrollIntoView({ block: 'center' })); },
   menuNew(d) {
     UI.mEdit = { id: null, name: '', items: [], q: '', part: 'chest', from: d.from || 'list', confirm: false };
     Sheet.open(menuEditSheet);
@@ -2376,7 +2499,7 @@ const Actions = {
     else Store.meta.menus.push({ id: U.id(), name, items: [...m.items] });
     const label = Menus.label({ name, items: m.items });
     Store.commit({ meta: true });
-    if (m.from === 'live') Sheet.close(); else Sheet.open(menusSheet);
+    if (m.from === 'live' || m.from === 'home') Sheet.close(); else Sheet.open(menusSheet);
     Toast.show(`<span>「${U.esc(label)}」を保存しました</span>`);
   },
   menuDelAsk() { UI.mEdit.confirm = true; Sheet.refresh(); },
