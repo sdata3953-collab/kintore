@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="筋トレ日記">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<script>window.KINTORE_VERSION = '20261006-2351'; window.KINTORE_FIREBASE = {"apiKey": "AIzaSyD8C-cmnF12VJThPhKZv6JbJGbzb8iENGk", "authDomain": "kintore-82613.firebaseapp.com", "projectId": "kintore-82613", "storageBucket": "kintore-82613.firebasestorage.app", "messagingSenderId": "156878101173", "appId": "1:156878101173:web:3c4a96afe1832a79c57cfc"};</script>
+<script>window.KINTORE_VERSION = '20261008-1529'; window.KINTORE_FIREBASE = {"apiKey": "AIzaSyD8C-cmnF12VJThPhKZv6JbJGbzb8iENGk", "authDomain": "kintore-82613.firebaseapp.com", "projectId": "kintore-82613", "storageBucket": "kintore-82613.firebasestorage.app", "messagingSenderId": "156878101173", "appId": "1:156878101173:web:3c4a96afe1832a79c57cfc"};</script>
 <style>
 :root{color-scheme:light;padding-top:env(safe-area-inset-top,0px)}
 body{margin:0}
@@ -229,6 +229,18 @@ small{font-size:inherit}
 .stepper:focus-within{box-shadow:inset 0 0 0 1.5px var(--fg)}
 .stepper button{height:100%;font-size:24px;line-height:1;color:var(--fg-2);text-align:center;border-radius:var(--r-ctl)}
 .stepper button:active{color:var(--fg);background:color-mix(in srgb,var(--fg) 6%,transparent)}
+.entry .field{grid-template-columns:minmax(0,1fr);align-content:start}
+@media (max-width:400px){
+  .entry .stepper{grid-template-columns:36px minmax(0,1fr) 36px}
+  .entry .stepper input{font-size:21px}
+}
+.lb-row{display:flex;min-width:0;align-items:center;gap:6px;height:38px;margin-top:6px;padding:0 14px;border-radius:12px;background:var(--fill-2);cursor:text;transition:box-shadow .2s}
+.lb-row:focus-within,.lb-row.is-src{box-shadow:inset 0 0 0 1.5px var(--fg)}
+.lb-in{flex:1;width:100%;min-width:0;border:0;background:transparent;text-align:center;font-size:17px;font-weight:600;font-variant-numeric:tabular-nums;padding:0;outline:none;color:var(--fg)}
+.lb-in::placeholder{color:var(--muted);font-weight:400}
+.lb-u{font-size:12.5px;color:var(--muted);font-family:var(--mono)}
+.stepper.is-derived input{color:var(--fg-2)}
+.set-v small.conv,.dt-sets small.conv{font-size:11.5px;color:var(--muted);font-weight:400;margin-left:8px;letter-spacing:0}
 .stepper input{width:100%;min-width:0;border:0;background:transparent;text-align:center;font-size:24px;font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:-.01em;padding:0;outline:none;-moz-appearance:textfield}
 .stepper input::placeholder{color:var(--muted);font-weight:400}
 .btn-log{grid-column:1/-1;min-height:54px;border-radius:16px;background:var(--inv-bg);color:var(--inv-fg);font-weight:600;font-size:16px;text-align:center;transition:transform .16s var(--ease)}
@@ -604,12 +616,23 @@ const U = {
   clone: o => JSON.parse(JSON.stringify(o)),
   dateLong(t) { return `${U.md(t)} ${U.wd(t)}曜日`; },
 };
+/* pounds: weights are stored in kg; a set entered in pounds also keeps `lb` so it reads like the machine */
+const LBKG = 0.45359237;
+const Unit = {
+  toLb: kg => kg / LBKG,
+  toKg: lb => lb * LBKG,
+  r1: n => String(Math.round(n * 10) / 10),
+  num: v => parseFloat(String(v ?? '').replace(',', '.')),
+};
 const fmt = {
   volTxt: v => v >= 1000 ? `${(v / 1000).toFixed(1)}t` : `${U.n(v)}kg`,
   volH: v => v >= 1000 ? `${(v / 1000).toFixed(1)}<small>t</small>` : `${U.n(v)}<small>kg</small>`,
-  setH: x => x.w > 0 ? `${U.w(x.w)}<small>kg</small><span class="x">×</span>${x.r}` : `<span class="bw">自重</span><span class="x">×</span>${x.r}`,
-  setT: x => x.w > 0 ? `${U.w(x.w)}kg × ${x.r}` : `自重 × ${x.r}`,
-  chip: x => `${x.w > 0 ? U.w(x.w) : '自重'}×${x.r}`,
+  setH: x => x.lb > 0 ? `${U.w(x.lb)}<small>lb</small><span class="x">×</span>${x.r}`
+    : x.w > 0 ? `${U.w(x.w)}<small>kg</small><span class="x">×</span>${x.r}` : `<span class="bw">自重</span><span class="x">×</span>${x.r}`,
+  setT: x => x.lb > 0 ? `${U.w(x.lb)}lb × ${x.r}` : x.w > 0 ? `${U.w(x.w)}kg × ${x.r}` : `自重 × ${x.r}`,
+  chip: x => x.lb > 0 ? `${U.w(x.lb)}lb×${x.r}` : `${x.w > 0 ? U.w(x.w) : '自重'}×${x.r}`,
+  /* the other unit, for a small note next to a set */
+  conv: x => !(x.w > 0) ? '' : x.lb > 0 ? `${Unit.r1(x.w)}kg` : `${Unit.r1(Unit.toLb(x.w))}lb`,
 };
 const lsGet = k => { try { return localStorage.getItem(k); } catch { return null; } };
 const lsSet = (k, v) => { try { localStorage.setItem(k, v); return true; } catch { return false; } };
@@ -1203,7 +1226,9 @@ const Drafts = {
   get(s, e, prev) {
     if (this.m.has(e.id)) return this.m.get(e.id);
     const last = e.sets[e.sets.length - 1] || prev?.e.sets[0];
-    const d = { w: last ? U.w(last.w) : '', r: last ? String(last.r) : '' };
+    const d = { w: last ? U.w(last.w) : '', r: last ? String(last.r) : '', l: '', src: 'kg' };
+    if (last && last.lb > 0) { d.l = U.w(last.lb); d.w = Unit.r1(last.w); d.src = 'lb'; }
+    else if (last && last.w > 0) d.l = Unit.r1(Unit.toLb(last.w));
     this.m.set(e.id, d);
     return d;
   },
@@ -1470,10 +1495,13 @@ function exCardHTML(s, e) {
   const rows = e.sets.map((x, i) => {
     const p = prev?.e.sets[i];
     let up = '';
-    if (p) { if (x.w > p.w) up = `+${U.w(x.w - p.w)}kg`; else if (x.w === p.w && x.r > p.r) up = `+${x.r - p.r}回`; }
+    if (p) {
+      if (x.w > p.w) up = x.lb > 0 && p.lb > 0 ? `+${U.w(x.lb - p.lb)}lb` : `+${U.w(x.w - p.w)}kg`;
+      else if (x.w === p.w && x.r > p.r) up = `+${x.r - p.r}回`;
+    }
     return `<li class="set${UI.flash === `${e.id}:${i}` ? ' is-new' : ''}">
       <span class="set-n">${i + 1}</span>
-      <span class="set-v">${fmt.setH(x)}</span>
+      <span class="set-v">${fmt.setH(x)}${fmt.conv(x) ? `<small class="conv">${fmt.conv(x)}</small>` : ''}</span>
       <span class="set-tags">${up ? `<span class="up">↑ ${up}</span>` : ''}${prs[i] ? '<span class="badge-pr">PR</span>' : ''}</span>
       <button class="set-del" data-act="delSet" data-sid="${s.id}" data-ex="${e.id}" data-i="${i}" aria-label="${i + 1}セット目を削除">${I.x}</button>
     </li>`;
@@ -1492,11 +1520,15 @@ function exCardHTML(s, e) {
     <div class="entry">
       ${target ? `<p class="target">前回の${n + 1}セット目<b>${fmt.setT(target)}</b></p>` : ''}
       <div class="field"><span class="flabel">重量 kg</span>
-        <div class="stepper">
+        <div class="stepper${d.src === 'kg' ? '' : ' is-derived'}">
           <button data-act="step" data-ex="${e.id}" data-k="w" data-d="-1" aria-label="重量を減らす">−</button>
-          <input id="w-${e.id}" data-draft="w" data-ex="${e.id}" data-sid="${s.id}" inputmode="decimal" enterkeyhint="next" autocomplete="off" value="${U.esc(d.w)}" placeholder="0" aria-label="${U.esc(e.name)}の重量">
+          <input id="w-${e.id}" data-draft="w" data-ex="${e.id}" data-sid="${s.id}" inputmode="decimal" enterkeyhint="next" autocomplete="off" value="${U.esc(d.w)}" placeholder="0" aria-label="${U.esc(e.name)}の重量（kg）">
           <button data-act="step" data-ex="${e.id}" data-k="w" data-d="1" aria-label="重量を増やす">+</button>
         </div>
+        <label class="lb-row${d.src === 'lb' ? ' is-src' : ''}" for="l-${e.id}">
+          <input id="l-${e.id}" class="lb-in" size="4" data-draft="l" data-ex="${e.id}" data-sid="${s.id}" inputmode="decimal" enterkeyhint="next" autocomplete="off" value="${U.esc(d.l)}" placeholder="0" aria-label="${U.esc(e.name)}の重量（ポンド）">
+          <span class="lb-u">lb</span>
+        </label>
       </div>
       <div class="field"><span class="flabel">回数</span>
         <div class="stepper">
@@ -1530,7 +1562,7 @@ function sessionDetailHTML(s) {
     const prs = Q.prFlags(s, e);
     return `<div class="dt-ex">
       <div class="dt-ex-h"><b>${U.esc(e.name)}</b><span>${e.sets.length}セット</span></div>
-      ${e.sets.length ? `<ul class="dt-sets">${e.sets.map((x, i) => `<li><span class="n">${i + 1}</span><span>${x.w > 0 ? `${U.w(x.w)}<small>kg</small>` : '自重'} <span class="x">×</span> ${x.r}</span>${prs[i] ? '<span class="badge-pr">PR</span>' : ''}</li>`).join('')}</ul>` : ''}
+      ${e.sets.length ? `<ul class="dt-sets">${e.sets.map((x, i) => `<li><span class="n">${i + 1}</span><span>${x.lb > 0 ? `${U.w(x.lb)}<small>lb</small>` : x.w > 0 ? `${U.w(x.w)}<small>kg</small>` : '自重'} <span class="x">×</span> ${x.r}${fmt.conv(x) ? `<small class="conv">${fmt.conv(x)}</small>` : ''}</span>${prs[i] ? '<span class="badge-pr">PR</span>' : ''}</li>`).join('')}</ul>` : ''}
       ${e.memo ? `<p class="dt-memo">${U.esc(e.memo)}</p>` : ''}
     </div>`;
   }).join('');
@@ -2376,16 +2408,22 @@ const Actions = {
   logSet(d) {
     const f = findEx(d); if (!f) return;
     const { s, e } = f;
-    const wEl = document.getElementById('w-' + e.id), rEl = document.getElementById('r-' + e.id);
-    const w = parseFloat(String(wEl.value).replace(',', '.') || '0'), r = parseInt(rEl.value, 10);
+    const wEl = document.getElementById('w-' + e.id), rEl = document.getElementById('r-' + e.id), lEl = document.getElementById('l-' + e.id);
+    const dr = Drafts.m.get(e.id) || {};
+    const byLb = dr.src === 'lb' && lEl;
+    const lb = byLb ? Unit.num(lEl.value || '0') : null;
+    if (byLb && (!Number.isFinite(lb) || lb < 0 || lb > 2200)) { shake(lEl); return; }
+    const w = byLb ? Math.round(Unit.toKg(lb) * 100) / 100 : Unit.num(wEl.value || '0'), r = parseInt(rEl.value, 10);
     if (!Number.isFinite(w) || w < 0 || w > 1000) { shake(wEl); return; }
     if (!Number.isFinite(r) || r < 1 || r > 999) { shake(rEl); rEl.focus(); return; }
     const best = Q.best(e.name, s);
     const sessMax = e.sets.length ? Math.max(...e.sets.map(x => x.w)) : -Infinity;
     const isPR = best !== null && w > Math.max(best, sessMax);
     const live = !s.end;
-    e.sets.push({ w: Math.round(w * 100) / 100, r, at: live ? Date.now() : (s.end || s.start) });
-    Drafts.m.set(e.id, { w: U.w(w), r: String(r) });
+    const set = { w: Math.round(w * 100) / 100, r, at: live ? Date.now() : (s.end || s.start) };
+    if (byLb && lb > 0) set.lb = Math.round(lb * 100) / 100;
+    e.sets.push(set);
+    Drafts.m.set(e.id, { w: byLb ? Unit.r1(set.w) : U.w(set.w), r: String(r), l: byLb ? U.w(lb) : (set.w > 0 ? Unit.r1(Unit.toLb(set.w)) : ''), src: byLb ? 'lb' : 'kg' });
     Sound.prime();
     if (isTyping()) document.activeElement.blur();
     UI.flash = `${e.id}:${e.sets.length - 1}`;
@@ -2550,8 +2588,22 @@ document.addEventListener('click', e => {
 document.addEventListener('input', e => {
   const t = e.target;
   if (t.dataset.draft) {
-    const d = Drafts.m.get(t.dataset.ex) || { w: '', r: '' };
-    d[t.dataset.draft] = t.value; Drafts.m.set(t.dataset.ex, d);
+    const k = t.dataset.draft, id = t.dataset.ex;
+    const d = Drafts.m.get(id) || { w: '', r: '', l: '', src: 'kg' };
+    d[k] = t.value;
+    if (k === 'w' || k === 'l') {
+      const v = Unit.num(t.value), other = document.getElementById((k === 'w' ? 'l-' : 'w-') + id);
+      const out = !Number.isFinite(v) ? '' : k === 'w' ? (v > 0 ? Unit.r1(Unit.toLb(v)) : '0') : Unit.r1(Unit.toKg(v));
+      if (k === 'w') d.l = out; else d.w = out;
+      d.src = k === 'w' ? 'kg' : 'lb';
+      if (other) other.value = out;
+      const card = t.closest('.field');
+      if (card) {
+        card.querySelector('.stepper')?.classList.toggle('is-derived', d.src === 'lb');
+        card.querySelector('.lb-row')?.classList.toggle('is-src', d.src === 'lb');
+      }
+    }
+    Drafts.m.set(id, d);
   } else if (t.dataset.memo) {
     const f = findEx(t.dataset); if (!f) return;
     f.e.memo = t.value;
@@ -2581,7 +2633,7 @@ document.addEventListener('keydown', e => {
   if (e.key !== 'Enter') return;
   if (t.dataset && t.dataset.draft) {
     e.preventDefault();
-    if (t.dataset.draft === 'w') { const r = document.getElementById('r-' + t.dataset.ex); if (r) r.focus(); }
+    if (t.dataset.draft === 'w' || t.dataset.draft === 'l') { const r = document.getElementById('r-' + t.dataset.ex); if (r) r.focus(); }
     else Actions.logSet(t.dataset);
   } else if (t.id === 'sgEmail') {
     e.preventDefault(); const pw = $('#sgPass'); if (pw) pw.focus();
