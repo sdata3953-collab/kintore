@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="筋トレ日記">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<script>window.KINTORE_VERSION = '20261011-0211'; window.KINTORE_FIREBASE = {"apiKey": "AIzaSyD8C-cmnF12VJThPhKZv6JbJGbzb8iENGk", "authDomain": "kintore-82613.firebaseapp.com", "projectId": "kintore-82613", "storageBucket": "kintore-82613.firebasestorage.app", "messagingSenderId": "156878101173", "appId": "1:156878101173:web:3c4a96afe1832a79c57cfc"};</script>
+<script>window.KINTORE_VERSION = '20261011-0217'; window.KINTORE_FIREBASE = {"apiKey": "AIzaSyD8C-cmnF12VJThPhKZv6JbJGbzb8iENGk", "authDomain": "kintore-82613.firebaseapp.com", "projectId": "kintore-82613", "storageBucket": "kintore-82613.firebasestorage.app", "messagingSenderId": "156878101173", "appId": "1:156878101173:web:3c4a96afe1832a79c57cfc"};</script>
 <style>
 :root{color-scheme:light;padding-top:env(safe-area-inset-top,0px)}
 body{margin:0}
@@ -508,6 +508,8 @@ small{font-size:inherit}
 .g-row:last-child{border-bottom:0}
 .g-t{font-size:15px}
 .g-s{font-size:12px;color:var(--muted);margin-top:1px}
+.g-v{flex:none;font-size:17px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.g-v small{font-size:11.5px;color:var(--muted);font-weight:500;margin-left:2px}
 .g-btn{cursor:pointer;font-size:15px}
 .g-btn.danger{color:var(--rec)}
 .g-confirm{display:grid;gap:10px;padding:14px 0}
@@ -808,7 +810,7 @@ const Guide = {
    3. Store — localStorage first, private cloud copy when available
    ============================================================ */
 const LS = { data: 'kintore-diary.v1', rest: 'kintore-diary.rest' };
-const DEFAULT_SETTINGS = { restAuto: true, restSec: 90, step: 2.5, wake: false, restSound: true, bodyW: 60 };
+const DEFAULT_SETTINGS = { restAuto: true, restSec: 90, step: 2.5, wake: false, restSound: true, bodyW: 60, height: 0, age: 0, sex: '' };
 const normMeta = m => ({
   activeId: m?.activeId ?? null,
   settings: { ...DEFAULT_SETTINGS, ...(m?.settings || {}) },
@@ -1222,11 +1224,21 @@ const FB = {
 const Fun = {
   MET: 3.5,
   weight() { const w = Number(Store.settings.bodyW); return w >= 20 && w <= 250 ? w : 60; },
-  kcal(s) { return s.end ? Fun.MET * Fun.weight() * ((s.end - s.start) / 3600e3) * 1.05 : 0; },
+  height() { const h = Number(Store.settings.height); return h >= 100 && h <= 230 ? h : 0; },
+  age() { const a = Number(Store.settings.age); return a >= 10 && a <= 100 ? a : 0; },
+  /* basal metabolic rate (kcal/day), National Institute of Health and Nutrition (Japan) equation; 0 until height and age are set */
+  bmr() {
+    const h = Fun.height(), a = Fun.age(); if (!h || !a) return 0;
+    const sx = Store.settings.sex, c = sx === 'm' ? 0.4235 : sx === 'f' ? 0.9708 : 0.6972;
+    return Math.max(0, (0.0481 * Fun.weight() + 0.0234 * h - 0.0138 * a - c) * 1000 / 4.186);
+  },
+  /* kcal burned per hour at 1 MET: resting rate from the BMR (×1.1) when known, otherwise the usual weight × 1.05 */
+  perMet() { const b = Fun.bmr(); return b > 0 ? b * 1.1 / 24 : Fun.weight() * 1.05; },
+  kcal(s) { return s.end ? Fun.MET * Fun.perMet() * ((s.end - s.start) / 3600e3) : 0; },
   /* one set: about 3 s per rep at 6 METs, plus the work of lifting the weight ~50 cm at 25% efficiency */
   setKcal(x) {
     const bw = Fun.weight(), load = x.w > 0 ? x.w : bw * 0.6;
-    return 6 * bw * (x.r * 3 / 3600) * 1.05 + load * 9.81 * 0.5 * x.r / (0.25 * 4184);
+    return 6 * Fun.perMet() * (x.r * 3 / 3600) + load * 9.81 * 0.5 * x.r / (0.25 * 4184);
   },
   foods: [['おにぎり', 180, '個'], ['ケーキ', 350, '個'], ['ラーメン', 500, '杯']],
   things: [['柴犬', 10, '匹'], ['ピアノ', 250, '台'], ['軽自動車', 1000, '台'], ['ゾウ', 6000, '頭'], ['新幹線1両', 40000, '両'], ['ジャンボ機', 180000, '機']],
@@ -1895,8 +1907,15 @@ function settingsSheet() {
   <div class="group">
     <button class="g-row g-btn" data-act="menus"><span><span class="g-t">マイメニュー</span><span class="g-s">${Menus.list().length ? `${Menus.list().length}件保存しています` : 'よくやる種目のセットを保存できます'}</span></span>${I.chevRs}</button>
     <div class="g-row"><p class="g-t">重量の刻み（kg）</p>${seg([1, 1.25, 2.5, 5], st.step, 'setStep')}</div>
-    <div class="g-row"><div><p class="g-t">体重（kg）</p><p class="g-s">消費カロリーのめやすに使います</p></div><input id="bodyW" class="mini-in" type="number" inputmode="decimal" min="20" max="250" step="0.1" value="${Fun.num(Fun.weight())}" aria-label="体重（kg）"></div>
     <div class="g-row"><div><p class="g-t">トレーニング中は画面を消さない</p><p class="g-s">対応しているブラウザのみ</p></div>${sw('wake', '画面を消さない')}</div>
+  </div>
+  <p class="group-l">からだ（消費カロリーの計算に使います）</p>
+  <div class="group">
+    <div class="g-row"><p class="g-t">身長（cm）</p><input id="bodyH" class="mini-in" type="number" inputmode="decimal" min="100" max="230" step="0.1" value="${Fun.height() ? Fun.num(Fun.height()) : ''}" placeholder="未入力" aria-label="身長（cm）"></div>
+    <div class="g-row"><p class="g-t">体重（kg）</p><input id="bodyW" class="mini-in" type="number" inputmode="decimal" min="20" max="250" step="0.1" value="${Fun.num(Fun.weight())}" aria-label="体重（kg）"></div>
+    <div class="g-row"><p class="g-t">年齢</p><input id="bodyA" class="mini-in" type="number" inputmode="numeric" min="10" max="100" step="1" value="${Fun.age() || ''}" placeholder="未入力" aria-label="年齢"></div>
+    <div class="g-row"><p class="g-t">性別</p><div class="seg">${[['m', '男性'], ['f', '女性'], ['', '選ばない']].map(([v, l]) => `<button class="${(st.sex || '') === v ? 'on' : ''}" data-act="setSex" data-v="${v}">${l}</button>`).join('')}</div></div>
+    <div class="g-row"><div><p class="g-t">基礎代謝</p><p class="g-s">${Fun.bmr() ? '身長・体重・年齢・性別から計算（国立健康・栄養研究所の式）' : '身長と年齢を入れると、あなた用の計算になります'}</p></div><p class="g-v">${Fun.bmr() ? `約${U.n(Fun.bmr())}<small>kcal/日</small>` : '—'}</p></div>
   </div>
   ${Updater.v ? `<p class="group-l">アプリ</p>
   <div class="group">
@@ -2269,7 +2288,7 @@ const Views = {
         ${st.kcalMonth >= 1 ? `<p class="fun-s">食べ物にすると…</p>
         <div class="eq-grid">${Fun.foods.map(([n, k, u]) => eq(n, st.kcalMonth / k, u)).join('')}</div>` : `<p class="fun-s">今月のトレーニングが終わると、ここに表示されます</p>`}
         <div class="fun-foot"><span>累計<b>${U.n(st.kcalTotal)}</b>kcal</span><span>1回あたり<b>${U.n(st.kcalAvg)}</b>kcal</span></div>
-        <p class="fun-note">体重${Fun.num(Fun.weight())}kg × 3.5メッツ（休憩込みの筋トレ）× トレーニング時間 × 1.05 で計算しています。<button class="fun-link" data-act="settings">体重を変える</button></p>
+        <p class="fun-note">${Fun.bmr() ? `基礎代謝 約${U.n(Fun.bmr())}kcal/日（身長・体重・年齢・性別から）をもとに、3.5メッツ（休憩込みの筋トレ）× トレーニング時間 で計算しています。` : `体重${Fun.num(Fun.weight())}kg × 3.5メッツ（休憩込みの筋トレ）× トレーニング時間 × 1.05 で計算しています。`}<button class="fun-link" data-act="settings">${Fun.bmr() ? 'からだの設定' : '身長・年齢も入れる'}</button></p>
       </div>
       <div class="card fun">
         <div class="fun-h"><span class="fun-l">これまでに持ち上げた重さ</span></div>
@@ -2616,7 +2635,8 @@ const Actions = {
     Store.commit({ meta: true });
     Haptic.tap();
   },
-  kcalInfo() { Toast.show(`<span>めやす：体重${Fun.num(Fun.weight())}kg、1回3秒として、動いた時間と持ち上げた重さから計算しています</span>`, 3600); },
+  kcalInfo() { Toast.show(`<span>めやす：${Fun.bmr() ? `基礎代謝 約${U.n(Fun.bmr())}kcal/日` : `体重${Fun.num(Fun.weight())}kg`}、1回3秒として、動いた時間と持ち上げた重さから計算しています</span>`, 3600); },
+  setSex(d) { Store.settings.sex = d.v === 'm' || d.v === 'f' ? d.v : ''; Store.commit({ meta: true }); },
   logSet(d) {
     const f = findEx(d); if (!f) return;
     const { s, e } = f;
@@ -2838,6 +2858,12 @@ document.addEventListener('change', e => {
     const v = parseFloat(String(t.value).replace(',', '.'));
     if (v >= 20 && v <= 250) { Store.settings.bodyW = Math.round(v * 10) / 10; Store.commit({ meta: true }); Toast.show(`<span>体重を${Fun.num(Store.settings.bodyW)}kgにしました</span>`); }
     else { t.value = Fun.num(Fun.weight()); Toast.show('<span>体重は20〜250kgの間で入力してください</span>'); }
+  } else if (t.id === 'bodyH' || t.id === 'bodyA') {
+    const isH = t.id === 'bodyH', raw = String(t.value).trim(), v = parseFloat(raw.replace(',', '.'));
+    const [lo, hi] = isH ? [100, 230] : [10, 100];
+    if (!raw) { Store.settings[isH ? 'height' : 'age'] = 0; Store.commit({ meta: true }); }
+    else if (v >= lo && v <= hi) { Store.settings[isH ? 'height' : 'age'] = isH ? Math.round(v * 10) / 10 : Math.round(v); Store.commit({ meta: true }); }
+    else { t.value = isH ? (Fun.height() ? Fun.num(Fun.height()) : '') : (Fun.age() || ''); Toast.show(`<span>${isH ? '身長は100〜230cm' : '年齢は10〜100歳'}の間で入力してください</span>`); }
   }
 });
 document.addEventListener('keydown', e => {
