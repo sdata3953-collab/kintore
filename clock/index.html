@@ -36,6 +36,10 @@
   --sun-2:#F4A06E;
   --sun-3:#6E3A55;
   --ease:cubic-bezier(.3,.7,.2,1);
+  --accent:#EBC88D;
+  --sheet:#141416;
+  --cell:#202023;
+  --danger:#F0857A;
 }
 html{height:100%;box-sizing:border-box;background:var(--page)}
 *,*::before,*::after{box-sizing:inherit}
@@ -134,13 +138,6 @@ button{font:inherit}
 .laps li.is-best .lap{color:var(--good)}
 .laps li.is-worst .lap{color:var(--bad)}
 .laps-empty{font-size:clamp(11px,3cqh,13px);color:var(--fg-3)}
-
-.alarm-face{justify-self:center;display:flex;flex-direction:column;align-items:center;gap:.6em;text-align:center}
-.alarm-pick{position:relative;border-radius:18px;padding:.05em .25em;cursor:pointer}
-.alarm-pick:hover{background:rgba(255,255,255,.05)}
-.alarm-pick:focus-within{outline:1.5px solid var(--fg);outline-offset:3px}
-.alarm-big{font-size:min(24cqh,13cqw);font-weight:300;line-height:1.05;font-variant-numeric:tabular-nums}
-.alarm-input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;border:0;padding:0;margin:0;font-size:16px;color-scheme:dark}
 .switch{display:flex;align-items:center;justify-content:space-between;gap:16px;font-size:clamp(13px,3.6cqh,16px);color:var(--fg-2);cursor:pointer}
 .switch small{display:block;font-size:.8em;color:var(--fg-3);margin-top:.2em}
 .switch input{-webkit-appearance:none;appearance:none;width:50px;height:30px;border-radius:999px;background:rgba(255,255,255,.16);position:relative;cursor:pointer;transition:background .25s;flex:none;margin:0}
@@ -181,11 +178,80 @@ button{font:inherit}
   .dial{width:min(76cqw,40cqh)}
   .big{font-size:min(15cqw,8cqh)}
   .panel{width:100%;align-items:stretch}
-  .alarm-big{font-size:min(22cqw,12cqh)}
 }
 @media (prefers-reduced-motion:reduce){
   .view,.dial .prog,.tabs,.sunrise{transition:none}
   .ring-time{animation:none}
+}
+
+/* ---------- alarms list + edit sheet ---------- */
+.toggle{-webkit-appearance:none;appearance:none;width:50px;height:30px;border-radius:999px;background:rgba(255,255,255,.16);position:relative;cursor:pointer;transition:background .25s;flex:none;margin:0}
+.toggle::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:var(--fg);transition:translate .25s var(--ease)}
+.toggle:checked{background:var(--good)}
+.toggle:checked::after{translate:20px 0}
+
+.al-view{align-items:stretch}
+.al-col{display:flex;flex-direction:column;gap:10px;min-height:0;min-width:0}
+.al-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.al-title{margin:0;font-size:clamp(20px,6.5cqh,30px);font-weight:500;line-height:1.2}
+.al-list{list-style:none;margin:0;padding:0;overflow-y:auto;min-height:0;border-top:1px solid var(--line);overscroll-behavior:contain}
+.al-row{display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--line)}
+.al-open{flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:.55em 0;border:0;background:transparent;color:var(--fg);text-align:left;cursor:pointer}
+.al-time{font-size:clamp(34px,13cqh,58px);font-weight:300;line-height:1.05;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.al-sub{font-size:clamp(12px,3.4cqh,15px);color:var(--fg-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.al-row.is-off .al-time,.al-row.is-off .al-sub{color:var(--fg-3)}
+
+.circle-btn{width:44px;height:44px;flex:none;border-radius:50%;border:0;display:grid;place-items:center;background:rgba(255,255,255,.1);color:var(--fg);cursor:pointer}
+.circle-btn svg{width:20px;height:20px}
+.circle-btn.is-ok{background:var(--accent);color:var(--page)}
+
+.sheet{position:absolute;inset:0;z-index:18;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,0);transition:background .3s ease}
+.sheet.is-open{background:rgba(0,0,0,.55)}
+.sheet-panel{position:relative;overflow:hidden;width:min(940px,calc(100% - 16px));height:calc(100% - 10px);border-radius:30px;background:var(--sheet);
+  box-shadow:0 -10px 40px rgba(0,0,0,.5);translate:0 104%;transition:translate .36s cubic-bezier(.2,.8,.2,1)}
+.sheet.is-open .sheet-panel{translate:0 0}
+.sheet-head{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;gap:12px;padding:12px 14px}
+.sheet-head h2{margin:0;text-align:center;font-size:17px;font-weight:600}
+.sheet-body{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:20px;padding:0 18px 18px;height:calc(100% - 68px);min-height:0}
+.sheet-list{display:flex;flex-direction:column;gap:14px;overflow-y:auto;min-height:0;padding-bottom:10px;overscroll-behavior:contain}
+
+.wheel{position:relative;align-self:center;justify-self:center;display:flex;justify-content:center;gap:34px;height:220px;width:min(100%,280px)}
+.wheel-band{position:absolute;left:0;right:0;top:50%;height:44px;translate:0 -50%;border-radius:14px;background:rgba(255,255,255,.09);pointer-events:none}
+.wcol{position:relative;height:220px;width:76px;padding:88px 0;overflow-y:scroll;scroll-snap-type:y mandatory;scrollbar-width:none;overscroll-behavior:contain;perspective:440px;outline:none;
+  -webkit-mask-image:linear-gradient(transparent,#000 28%,#000 72%,transparent);mask-image:linear-gradient(transparent,#000 28%,#000 72%,transparent)}
+.wcol::-webkit-scrollbar{display:none}
+.wcol:focus-visible{outline:1.5px solid var(--fg);outline-offset:2px;border-radius:12px}
+.witem{height:44px;display:flex;align-items:center;justify-content:center;font-size:27px;font-weight:400;font-variant-numeric:tabular-nums;scroll-snap-align:center;color:var(--fg);user-select:none;-webkit-user-select:none;cursor:pointer;will-change:transform}
+
+.group{display:block;background:var(--cell);border-radius:20px;overflow:hidden;flex:none}
+.cell{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:52px;padding:0 18px;border:0;background:transparent;color:var(--fg);font:inherit;font-size:16px;text-align:left;cursor:pointer}
+.group > .cell + .cell{box-shadow:inset 0 1px 0 var(--line)}
+.cell .val{display:flex;align-items:center;gap:4px;color:var(--fg-3)}
+.cell .val.accent{color:var(--accent)}
+.chev{width:18px;height:18px}
+.cell input[type="text"]{flex:1;min-width:0;background:transparent;border:0;color:var(--fg-2);text-align:right;font:inherit;font-size:16px;padding:14px 0;outline:none}
+.cell input[type="text"]::placeholder{color:var(--fg-3)}
+.days{display:flex;justify-content:space-between;gap:6px;padding:4px 16px 16px}
+.days button{width:clamp(34px,10cqh,42px);aspect-ratio:1;border-radius:50%;border:0;background:rgba(255,255,255,.1);color:var(--fg);font:inherit;font-weight:700;font-size:15px;cursor:pointer;transition:background .2s,color .2s}
+.days button[aria-pressed="true"]{background:var(--accent);color:var(--page)}
+.danger{justify-content:center;color:var(--danger);font-weight:500}
+.cell[aria-pressed] .check{color:var(--accent);width:22px;height:22px}
+.cell .check svg{width:22px;height:22px}
+
+.subpage{position:absolute;inset:0;z-index:2;background:var(--sheet);display:flex;flex-direction:column;translate:100% 0;transition:translate .3s cubic-bezier(.2,.8,.2,1)}
+.subpage.is-open{translate:0 0}
+.sub-scroll{flex:1;min-height:0;overflow-y:auto;padding:0 18px 18px;overscroll-behavior:contain}
+.sub-scroll .group{max-width:520px;margin:0 auto}
+
+@media (orientation:portrait){
+  .al-view{justify-items:stretch;grid-template-rows:minmax(0,1fr) auto;align-content:stretch;overflow-y:auto}
+  .al-view .panel{max-width:none}
+  .sheet-panel{width:100%;height:calc(100% - 24px);border-radius:30px 30px 0 0}
+  .sheet-body{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto;overflow-y:auto;align-content:start}
+  .sheet-list{overflow:visible}
+}
+@media (prefers-reduced-motion:reduce){
+  .sheet,.sheet-panel,.subpage{transition:none}
 }
 </style>
 </head>
@@ -254,15 +320,16 @@ button{font:inherit}
       </div>
     </section>
 
-    <section class="view tool is-off" data-view="alarm" aria-label="アラーム" inert>
-      <div class="alarm-face">
-        <p class="kicker">アラーム</p>
-        <div class="alarm-pick"><p class="alarm-big" id="aBig">7:00</p><input class="alarm-input" id="aTime" type="time" value="07:00" aria-label="アラームの時刻（タップで変更）"></div>
-        <p class="label">タップで時刻を変える</p>
-        <p class="sub" id="aSub"></p>
+    <section class="view tool al-view is-off" data-view="alarm" aria-label="アラーム" inert>
+      <div class="al-col">
+        <header class="al-head">
+          <div><h2 class="al-title">アラーム</h2><p class="sub" id="alNext"></p></div>
+          <button class="circle-btn" type="button" id="alAdd" aria-label="アラームを追加"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
+        </header>
+        <ul class="al-list" id="alList"></ul>
+        <p class="laps-empty" id="alEmpty">アラームはまだないよ。右上の＋で追加してね</p>
       </div>
       <div class="panel">
-        <label class="switch"><span>アラームをオン</span><input type="checkbox" id="aOn"></label>
         <label class="switch"><span>朝の光で起こす<small>鳴る10分前から画面がゆっくり明るくなる</small></span><input type="checkbox" id="aSunrise"></label>
         <div>
           <p class="label">今から寝るなら（寝つき15分＋睡眠サイクル90分）</p>
@@ -304,6 +371,45 @@ button{font:inherit}
 
     <div class="night-veil" aria-hidden="true"></div>
     <div class="sunrise" id="sunrise" aria-hidden="true"></div>
+    <div class="sheet" id="sheet" hidden>
+      <div class="sheet-panel" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+        <header class="sheet-head">
+          <button class="circle-btn" type="button" id="shCancel" aria-label="キャンセル"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button>
+          <h2 id="sheetTitle">アラームを編集</h2>
+          <button class="circle-btn is-ok" type="button" id="shSave" aria-label="保存"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
+        </header>
+        <div class="sheet-body">
+          <div class="wheel" aria-label="時刻">
+            <div class="wheel-band" aria-hidden="true"></div>
+            <div class="wcol" id="wH" tabindex="0" aria-label="時"></div>
+            <div class="wcol" id="wM" tabindex="0" aria-label="分"></div>
+          </div>
+          <div class="sheet-list">
+            <div class="group">
+              <div class="cell"><span>繰り返し</span><span class="val" id="shRepeatVal">しない</span></div>
+              <div class="days" id="shDays">
+                <button type="button" data-d="0" aria-label="日曜日">日</button><button type="button" data-d="1" aria-label="月曜日">月</button><button type="button" data-d="2" aria-label="火曜日">火</button><button type="button" data-d="3" aria-label="水曜日">水</button><button type="button" data-d="4" aria-label="木曜日">木</button><button type="button" data-d="5" aria-label="金曜日">金</button><button type="button" data-d="6" aria-label="土曜日">土</button>
+              </div>
+            </div>
+            <div class="group">
+              <label class="cell"><span>ラベル</span><input type="text" id="shLabel" placeholder="アラーム" maxlength="30" enterkeyhint="done"></label>
+              <button class="cell" type="button" id="shSoundBtn"><span>サウンド</span><span class="val"><span id="shSoundVal">ベル</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 6l6 6-6 6"/></svg></span></button>
+              <label class="cell"><span>スヌーズ</span><input type="checkbox" class="toggle" id="shSnooze"></label>
+              <button class="cell" type="button" id="shSnoozeLenBtn"><span>スヌーズの継続時間</span><span class="val accent" id="shSnoozeLenVal">9分</span></button>
+            </div>
+            <button class="group cell danger" type="button" id="shDelete">アラームを削除</button>
+          </div>
+        </div>
+        <div class="subpage" id="subpage" hidden>
+          <header class="sheet-head">
+            <button class="circle-btn" type="button" id="subBack" aria-label="戻る"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 6l-6 6 6 6"/></svg></button>
+            <h2 id="subTitle">サウンド</h2>
+            <span aria-hidden="true" style="width:44px"></span>
+          </header>
+          <div class="sub-scroll"><div class="group" id="subList"></div></div>
+        </div>
+      </div>
+    </div>
     <div class="ring" id="ring" role="alertdialog" aria-labelledby="ringTitle" hidden>
       <p class="ring-title" id="ringTitle">タイマー終了</p>
       <p class="ring-time" id="ringTime">00:00</p>
@@ -653,7 +759,7 @@ button{font:inherit}
     setTimeout(tick, 1000 - (Date.now() % 1000) + 5);
   }
 
-  // ---------- Tools: tabs, timer, stopwatch, alarm, focus ----------
+  // ---------- Tools: tabs, timer, stopwatch, alarms, focus ----------
   const scr = $('screen');
   const store = {
     get(k, d){ try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
@@ -670,8 +776,9 @@ button{font:inherit}
     return h ? `${h}:${pad(m)}:${pad(s)}.${pad(cs)}` : `${pad(m)}:${pad(s)}.${pad(cs)}`;
   };
   const durJa = (ms) => { const t = Math.max(0, Math.round(ms / 6e4)), h = Math.floor(t / 60), m = t % 60; return h ? `${h}時間${m ? m + '分' : ''}` : `${m}分`; };
+  const CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
 
-  // Sound: a soft synthesized bell (no files needed). iOS needs one tap before audio can play.
+  // Sound: synthesized voices (no files). iOS needs one tap before audio can play.
   const Sound = (() => {
     let ctx = null, loopT = null, loopStart = 0, stopT = null;
     function unlock(){
@@ -682,29 +789,34 @@ button{font:inherit}
         const b = ctx.createBuffer(1, 1, 22050), s = ctx.createBufferSource(); s.buffer = b; s.connect(ctx.destination); s.start(0);
       } catch (e) {}
     }
-    function bell(vol){
-      if (!ctx) return;
-      const t0 = ctx.currentTime + .02;
-      [[659.25, 0], [987.77, .22], [1318.5, .44]].forEach(([f, dt]) => {
-        [[1, 1], [2.76, .25], [5.4, .08]].forEach(([mul, amp]) => {
-          const o = ctx.createOscillator(), g = ctx.createGain();
-          o.type = 'sine'; o.frequency.value = f * mul;
-          g.gain.setValueAtTime(0, t0 + dt);
-          g.gain.linearRampToValueAtTime(vol * amp * .35, t0 + dt + .012);
-          g.gain.exponentialRampToValueAtTime(.0001, t0 + dt + (mul === 1 ? 1.8 : .7));
-          o.connect(g); g.connect(ctx.destination);
-          o.start(t0 + dt); o.stop(t0 + dt + 1.9);
-        });
+    function tone(f, t, dur, vol, type, partials){
+      partials.forEach(([mul, amp]) => {
+        const o = ctx.createOscillator(), g = ctx.createGain();
+        o.type = type; o.frequency.value = f * mul;
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(Math.max(.0002, vol * amp), t + .01);
+        g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+        o.connect(g); g.connect(ctx.destination);
+        o.start(t); o.stop(t + dur + .05);
       });
     }
-    function startLoop(){
+    const VOICES = {
+      bell: { name: 'ベル', period: 2600, play(t, v){ [[659.25, 0], [987.77, .22], [1318.5, .44]].forEach(([f, dt]) => tone(f, t + dt, 1.8, v * .35, 'sine', [[1, 1], [2.76, .25], [5.4, .08]])); } },
+      marimba: { name: 'マリンバ', period: 2100, play(t, v){ [523.25, 659.25, 783.99, 1046.5, 783.99, 659.25].forEach((f, i) => tone(f, t + i * .16, .55, v * .4, 'sine', [[1, 1], [4, .16], [10, .04]])); } },
+      harp: { name: 'ハープ', period: 3000, play(t, v){ [392, 493.88, 587.33, 739.99, 880, 1174.66].forEach((f, i) => tone(f, t + i * .11, 1.6, v * .22, 'triangle', [[1, 1], [2, .2]])); } },
+      morning: { name: 'あさひ', period: 3400, play(t, v){ [[523.25, 0], [659.25, .3], [783.99, .6], [987.77, .9], [1046.5, 1.2]].forEach(([f, dt]) => tone(f, t + dt, 1.4, v * .26, 'sine', [[1, 1], [2, .12], [3, .05]])); } },
+      digital: { name: 'デジタル', period: 1000, play(t, v){ for (let i = 0; i < 4; i++) tone(2093, t + i * .12, .07, v * .14, 'square', [[1, 1]]); } }
+    };
+    function play(name, vol){ if (!ctx) return; (VOICES[name] || VOICES.bell).play(ctx.currentTime + .03, vol); }
+    function startLoop(name){
       stopLoop(); loopStart = Date.now();
-      const step = () => { bell(Math.min(1, .3 + (Date.now() - loopStart) / 30000 * .7)); loopT = setTimeout(step, 2600); };
+      const voice = VOICES[name] ? name : 'bell';
+      const step = () => { play(voice, Math.min(1, .3 + (Date.now() - loopStart) / 30000 * .7)); loopT = setTimeout(step, VOICES[voice].period); };
       step();
       stopT = setTimeout(stopLoop, 10 * 6e4);
     }
     function stopLoop(){ clearTimeout(loopT); clearTimeout(stopT); loopT = stopT = null; }
-    return { unlock, bell, startLoop, stopLoop };
+    return { unlock, play, startLoop, stopLoop, VOICES };
   })();
 
   // ---- tabs ----
@@ -725,6 +837,7 @@ button{font:inherit}
     scr.classList.toggle('is-tool', name !== 'clock');
     store.set('yako.tab', name);
     wakeTabs();
+    if (name === 'alarm') alRenderList(Date.now());
     renderAll(Date.now());
     if (name === 'stopwatch') swFrame();
   }
@@ -739,20 +852,29 @@ button{font:inherit}
 
   // ---- ringing screen ----
   const ringEl = $('ring'), ringTitle = $('ringTitle'), ringTime = $('ringTime'), ringSnooze = $('ringSnooze');
-  let ringing = null;
-  function ring(kind){
-    ringing = kind;
-    ringTitle.textContent = kind === 'alarm' ? 'アラーム' : 'タイマー終了';
-    ringSnooze.hidden = kind !== 'alarm';
+  let ringing = null; // { kind: 'timer' } or { kind: 'alarm', id }
+  function ring(kind, al){
+    ringing = { kind, id: al ? al.id : null };
+    ringTitle.textContent = kind === 'alarm' ? (al.label || 'アラーム') : 'タイマー終了';
+    ringSnooze.hidden = !(kind === 'alarm' && al.snooze);
+    if (kind === 'alarm') ringSnooze.textContent = `スヌーズ（${al.snoozeMin}分）`;
     ringEl.hidden = false;
-    Sound.startLoop();
+    Sound.startLoop(kind === 'alarm' ? al.sound : 'bell');
     renderAll(Date.now());
   }
   function stopRing(snooze){
-    if (ringing === 'alarm' && snooze){ A.next = Date.now() + 5 * 6e4; A.snoozed = true; aSave(); }
-    if (ringing === 'timer'){ TM.state = 'idle'; tSave(); }
+    const now = Date.now();
+    if (ringing && ringing.kind === 'alarm'){
+      const al = ALARMS.find((a) => a.id === ringing.id);
+      if (al){
+        if (snooze){ al.snoozeUntil = now + al.snoozeMin * 6e4; }
+        else { al.snoozeUntil = 0; if (!al.days.length) al.on = false; }
+        alSave(); alRenderList(now);
+      }
+    }
+    if (ringing && ringing.kind === 'timer'){ TM.state = 'idle'; tSave(); }
     ringing = null; ringEl.hidden = true; Sound.stopLoop();
-    renderAll(Date.now());
+    renderAll(now);
   }
   $('ringStop').addEventListener('click', () => stopRing(false));
   ringSnooze.addEventListener('click', () => stopRing(true));
@@ -766,9 +888,9 @@ button{font:inherit}
   const tRemain = (now) => TM.state === 'run' ? TM.end - now : TM.state === 'pause' ? TM.remain : TM.dur;
   function tSet(ms){ TM.dur = Math.max(10e3, Math.min(10 * 36e5, ms)); TM.state = 'idle'; tSave(); renderAll(Date.now()); }
   tPresets.forEach((b) => b.addEventListener('click', () => tSet(Number(b.dataset.min) * 6e4)));
-  $('tMinus').addEventListener('click', () => { if (TM.state === 'run') { TM.end = Math.max(Date.now() + 1000, TM.end - 6e4); tSave(); renderAll(Date.now()); } else tSet(tRemain(Date.now()) - 6e4); });
-  $('tPlus').addEventListener('click', () => { if (TM.state === 'run') { TM.end += 6e4; TM.dur += 6e4; tSave(); renderAll(Date.now()); } else tSet(tRemain(Date.now()) + 6e4); });
-  $('tPlus10s').addEventListener('click', () => { if (TM.state === 'run') { TM.end += 1e4; TM.dur += 1e4; tSave(); renderAll(Date.now()); } else tSet(tRemain(Date.now()) + 1e4); });
+  $('tMinus').addEventListener('click', () => { if (TM.state === 'run'){ TM.end = Math.max(Date.now() + 1000, TM.end - 6e4); tSave(); renderAll(Date.now()); } else tSet(tRemain(Date.now()) - 6e4); });
+  $('tPlus').addEventListener('click', () => { if (TM.state === 'run'){ TM.end += 6e4; TM.dur += 6e4; tSave(); renderAll(Date.now()); } else tSet(tRemain(Date.now()) + 6e4); });
+  $('tPlus10s').addEventListener('click', () => { if (TM.state === 'run'){ TM.end += 1e4; TM.dur += 1e4; tSave(); renderAll(Date.now()); } else tSet(tRemain(Date.now()) + 1e4); });
   tMain.addEventListener('click', () => {
     const now = Date.now();
     if (TM.state === 'run'){ TM.remain = TM.end - now; TM.state = 'pause'; }
@@ -832,25 +954,94 @@ button{font:inherit}
     step();
   }
 
-  // ---- alarm ----
-  const A = Object.assign({ time: '07:00', on: false, sunrise: true, next: 0, snoozed: false }, store.get('yako.alarm', {}));
-  const aBig = $('aBig'), aTime = $('aTime'), aOn = $('aOn'), aSunrise = $('aSunrise'), aSub = $('aSub'), aCycles = $('aCycles'), sunriseEl = $('sunrise');
-  const aSave = () => store.set('yako.alarm', A);
-  function aNextFrom(now){
-    const [h, m] = A.time.split(':').map(Number);
-    const d = new Date(now); d.setHours(h, m, 0, 0);
-    if (d.getTime() <= now) d.setDate(d.getDate() + 1);
-    return d.getTime();
+  // ---- alarms: a list plus an edit sheet, laid out like the iPhone Clock app ----
+  const DOW_JA = ['日', '月', '火', '水', '木', '金', '土'];
+  const AP = Object.assign({ sunrise: true }, store.get('yako.alarmPrefs', {}));
+  function mkAlarm(h, m, o){
+    return Object.assign({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), h, m, days: [], label: '', sound: 'bell', snooze: true, snoozeMin: 9, on: true, next: 0, snoozeUntil: 0 }, o || {});
   }
-  function aSchedule(){ A.next = A.on ? aNextFrom(Date.now()) : 0; A.snoozed = false; aSave(); renderAll(Date.now()); }
-  // an alarm time that passed while the app was closed is skipped, not rung late
-  if (A.on && (!A.next || Date.now() - A.next > 10 * 6e4)) A.next = aNextFrom(Date.now());
-  aTime.value = A.time; aOn.checked = A.on; aSunrise.checked = A.sunrise;
-  aTime.addEventListener('click', () => { try { aTime.showPicker(); } catch (e) {} });
-  aTime.addEventListener('input', () => { if (/^\d\d:\d\d$/.test(aTime.value)) aBig.textContent = aTime.value.replace(/^0/, ''); });
-  aTime.addEventListener('change', () => { if (/^\d\d:\d\d$/.test(aTime.value)){ A.time = aTime.value; A.on = true; aOn.checked = true; aSchedule(); } });
-  aOn.addEventListener('change', () => { A.on = aOn.checked; aSchedule(); });
-  aSunrise.addEventListener('change', () => { A.sunrise = aSunrise.checked; aSave(); renderAll(Date.now()); });
+  let ALARMS = store.get('yako.alarms', null);
+  if (!Array.isArray(ALARMS)){
+    ALARMS = [];
+    const old = store.get('yako.alarm', null); // the single alarm from the earlier version
+    if (old && typeof old.time === 'string' && /^\d\d:\d\d$/.test(old.time)){
+      const [h, m] = old.time.split(':').map(Number);
+      ALARMS.push(mkAlarm(h, m, { on: !!old.on }));
+      if (typeof old.sunrise === 'boolean') AP.sunrise = old.sunrise;
+    }
+  }
+  function nextFire(al, from){
+    for (let i = 0; i <= 7; i++){
+      const d = new Date(from); d.setDate(d.getDate() + i); d.setHours(al.h, al.m, 0, 0);
+      if (d.getTime() <= from) continue;
+      if (!al.days.length || al.days.includes(d.getDay())) return d.getTime();
+    }
+    return 0;
+  }
+  const dueOf = (al) => al.snoozeUntil || al.next;
+  function alSave(){ store.set('yako.alarms', ALARMS); store.set('yako.alarmPrefs', AP); }
+  function alSchedule(al, now){ al.next = al.on ? nextFire(al, now) : 0; al.snoozeUntil = 0; }
+  { // a time that passed while the app was closed is skipped, not rung late; one-time alarms then switch off
+    const now = Date.now();
+    ALARMS.forEach((al) => {
+      if (!al.on){ al.next = 0; al.snoozeUntil = 0; return; }
+      const due = dueOf(al);
+      if (!due) alSchedule(al, now);
+      else if (now - due > 10 * 6e4){ if (!al.days.length) al.on = false; alSchedule(al, now); }
+    });
+    alSave();
+  }
+  function repeatText(days){
+    const d = [...days].sort((a, b) => a - b);
+    if (!d.length) return 'しない';
+    if (d.length === 7) return '毎日';
+    if (d.join() === '1,2,3,4,5') return '平日';
+    if (d.join() === '0,6') return '週末';
+    if (d.length === 1) return `毎週${DOW_JA[d[0]]}曜日`;
+    return d.map((i) => DOW_JA[i]).join(' ');
+  }
+  function subText(al){
+    const label = al.label || 'アラーム';
+    if (al.on && al.snoozeUntil) return `${label}、スヌーズ中 ${hm2(al.snoozeUntil)}`;
+    return al.days.length ? `${label}、${repeatText(al.days)}` : label;
+  }
+  function nextAlarm(){
+    let best = null;
+    ALARMS.forEach((al) => { if (al.on && dueOf(al) && (!best || dueOf(al) < dueOf(best))) best = al; });
+    return best;
+  }
+
+  const alList = $('alList'), alEmpty = $('alEmpty'), alNext = $('alNext'), aSunrise = $('aSunrise'), aCycles = $('aCycles'), sunriseEl = $('sunrise');
+  function alRenderList(now){
+    const sorted = [...ALARMS].sort((a, b) => (a.h * 60 + a.m) - (b.h * 60 + b.m));
+    alList.replaceChildren(...sorted.map((al) => {
+      const li = document.createElement('li');
+      li.className = 'al-row' + (al.on ? '' : ' is-off');
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'al-open';
+      b.setAttribute('aria-label', `${al.h}:${pad(al.m)} のアラームを編集`);
+      const t = document.createElement('span'); t.className = 'al-time'; t.textContent = `${al.h}:${pad(al.m)}`;
+      const s = document.createElement('span'); s.className = 'al-sub'; s.textContent = subText(al);
+      b.append(t, s);
+      b.addEventListener('click', () => openSheet(al.id));
+      const tg = document.createElement('input');
+      tg.type = 'checkbox'; tg.className = 'toggle'; tg.checked = al.on;
+      tg.setAttribute('aria-label', `${al.h}:${pad(al.m)} をオンにする`);
+      tg.addEventListener('change', () => { al.on = tg.checked; alSchedule(al, Date.now()); alSave(); alRenderList(Date.now()); renderAll(Date.now()); });
+      li.append(b, tg);
+      return li;
+    }));
+    alEmpty.hidden = ALARMS.length > 0;
+    alRenderHead(now);
+  }
+  function alRenderHead(now){
+    const n = nextAlarm();
+    const left = n ? dueOf(n) - now : 0;
+    alNext.textContent = n ? `次は ${hm2(dueOf(n))}（${left < 6e4 ? 'まもなく' : 'あと' + durJa(left)}）` : 'オンになっているアラームはないよ';
+  }
+  aSunrise.checked = AP.sunrise;
+  aSunrise.addEventListener('change', () => { AP.sunrise = aSunrise.checked; alSave(); renderAll(Date.now()); });
+  $('alAdd').addEventListener('click', () => openSheet(null));
   let cyclesKey = '';
   function aRenderCycles(now){
     const key = String(Math.floor(now / 6e4));
@@ -861,17 +1052,145 @@ button{font:inherit}
       const b = document.createElement('button');
       b.type = 'button'; b.className = 'chip-btn';
       b.textContent = `${d.getHours()}:${pad(d.getMinutes())}（${n * 1.5}時間）`;
-      b.addEventListener('click', () => { A.time = `${pad(d.getHours())}:${pad(d.getMinutes())}`; aTime.value = A.time; A.on = true; aOn.checked = true; aSchedule(); });
+      b.addEventListener('click', () => openSheet(null, d.getHours(), d.getMinutes()));
       return b;
     }));
   }
-  function aRender(now){
-    if (document.activeElement !== aTime) aTime.value = A.time;
-    aBig.textContent = A.time.replace(/^0/, '');
-    aOn.checked = A.on;
-    aSub.textContent = A.on ? `${A.snoozed ? 'スヌーズ中・' : ''}あと${durJa(A.next - now)}で鳴るよ` : 'オフ';
-    aRenderCycles(now);
+
+  // scroll wheels for hour and minute
+  const ITEM = 44, REP = 7;
+  function buildWheel(col, max, label){
+    const frag = document.createDocumentFragment();
+    for (let r = 0; r < REP; r++) for (let v = 0; v < max; v++){
+      const d = document.createElement('div');
+      d.className = 'witem'; d.textContent = label(v);
+      frag.append(d);
+    }
+    col.append(frag);
+    col._max = max;
+    let t = null, raf = 0;
+    col.addEventListener('scroll', () => {
+      cancelAnimationFrame(raf); raf = requestAnimationFrame(() => wheelStyle(col));
+      clearTimeout(t); t = setTimeout(() => wheelRecenter(col), 160);
+    }, { passive: true });
+    col.addEventListener('click', (e) => {
+      const it = e.target.closest('.witem'); if (!it) return;
+      col.scrollTo({ top: Array.prototype.indexOf.call(col.children, it) * ITEM, behavior: 'smooth' });
+    });
+    col.addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+      e.preventDefault();
+      col.scrollTo({ top: (Math.round(col.scrollTop / ITEM) + (e.key === 'ArrowDown' ? 1 : -1)) * ITEM, behavior: 'smooth' });
+    });
   }
+  const wheelGet = (col) => ((Math.round(col.scrollTop / ITEM) % col._max) + col._max) % col._max;
+  function wheelSet(col, v){ col.scrollTop = (col._max * 3 + v) * ITEM; wheelStyle(col); }
+  function wheelRecenter(col){
+    const idx = Math.round(col.scrollTop / ITEM), max = col._max;
+    if (idx < max * 2 || idx >= max * 5){ col.scrollTop = (max * 3 + ((idx % max) + max) % max) * ITEM; wheelStyle(col); }
+  }
+  function wheelStyle(col){
+    const c = col.scrollTop / ITEM, kids = col.children;
+    for (let i = Math.max(0, Math.floor(c) - 5); i <= Math.min(kids.length - 1, Math.ceil(c) + 5); i++){
+      const d = i - c, a = Math.abs(d);
+      kids[i].style.opacity = String(Math.max(.12, 1 - a * .3));
+      kids[i].style.transform = `rotateX(${(-d * 19).toFixed(1)}deg) scale(${(1 - Math.min(a, 3) * .05).toFixed(3)})`;
+    }
+  }
+  const wH = $('wH'), wM = $('wM');
+  buildWheel(wH, 24, (v) => String(v));
+  buildWheel(wM, 60, (v) => pad(v));
+
+  // edit sheet
+  const sheet = $('sheet'), sheetTitle = $('sheetTitle'), shDays = [...document.querySelectorAll('#shDays button')];
+  const shRepeatVal = $('shRepeatVal'), shLabel = $('shLabel'), shSoundVal = $('shSoundVal'), shSnooze = $('shSnooze');
+  const shSnoozeLenBtn = $('shSnoozeLenBtn'), shSnoozeLenVal = $('shSnoozeLenVal'), shDelete = $('shDelete');
+  const subEl = $('subpage'), subTitle = $('subTitle'), subList = $('subList');
+  let draft = null, editingId = null, closeT = null;
+  function openSheet(id, h, m){
+    const src = id ? ALARMS.find((a) => a.id === id) : null;
+    const now = new Date();
+    draft = src ? JSON.parse(JSON.stringify(src)) : mkAlarm(h != null ? h : now.getHours(), m != null ? m : now.getMinutes());
+    editingId = src ? id : null;
+    sheetTitle.textContent = src ? 'アラームを編集' : 'アラームを追加';
+    shDelete.hidden = !src;
+    shLabel.value = draft.label;
+    closeSub(true);
+    sheetRender();
+    clearTimeout(closeT);
+    sheet.hidden = false;
+    requestAnimationFrame(() => { wheelSet(wH, draft.h); wheelSet(wM, draft.m); sheet.classList.add('is-open'); });
+  }
+  function closeSheet(){
+    sheet.classList.remove('is-open');
+    clearTimeout(closeT);
+    closeT = setTimeout(() => { sheet.hidden = true; closeSub(true); }, 320);
+    draft = null;
+  }
+  function sheetRender(){
+    if (!draft) return;
+    shDays.forEach((b) => b.setAttribute('aria-pressed', String(draft.days.includes(Number(b.dataset.d)))));
+    shRepeatVal.textContent = repeatText(draft.days);
+    shSoundVal.textContent = (Sound.VOICES[draft.sound] || Sound.VOICES.bell).name;
+    shSnooze.checked = draft.snooze;
+    shSnoozeLenBtn.hidden = !draft.snooze;
+    shSnoozeLenVal.textContent = `${draft.snoozeMin}分`;
+  }
+  shDays.forEach((b) => b.addEventListener('click', () => {
+    const d = Number(b.dataset.d);
+    draft.days = draft.days.includes(d) ? draft.days.filter((x) => x !== d) : [...draft.days, d].sort((a, c) => a - c);
+    sheetRender();
+  }));
+  shSnooze.addEventListener('change', () => { draft.snooze = shSnooze.checked; sheetRender(); });
+  $('shCancel').addEventListener('click', closeSheet);
+  $('shSave').addEventListener('click', () => {
+    if (!draft) return;
+    const now = Date.now();
+    draft.h = wheelGet(wH); draft.m = wheelGet(wM);
+    draft.label = shLabel.value.trim().slice(0, 30);
+    draft.on = true;
+    alSchedule(draft, now);
+    if (editingId){ const i = ALARMS.findIndex((a) => a.id === editingId); if (i >= 0) ALARMS[i] = draft; else ALARMS.push(draft); }
+    else ALARMS.push(draft);
+    alSave(); closeSheet(); alRenderList(now); renderAll(now);
+  });
+  shDelete.addEventListener('click', () => {
+    ALARMS = ALARMS.filter((a) => a.id !== editingId);
+    alSave(); closeSheet(); alRenderList(Date.now()); renderAll(Date.now());
+  });
+  function openSub(kind){
+    subTitle.textContent = kind === 'sound' ? 'サウンド' : 'スヌーズの継続時間';
+    const opts = kind === 'sound'
+      ? Object.keys(Sound.VOICES).map((k) => [k, Sound.VOICES[k].name])
+      : Array.from({ length: 15 }, (_, i) => [i + 1, `${i + 1}分`]);
+    subList.replaceChildren(...opts.map(([val, text]) => {
+      const sel = kind === 'sound' ? draft.sound === val : draft.snoozeMin === val;
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'cell'; b.setAttribute('aria-pressed', String(sel));
+      const name = document.createElement('span'); name.textContent = text;
+      const mark = document.createElement('span'); mark.className = 'check'; mark.innerHTML = sel ? CHECK : '';
+      b.append(name, mark);
+      b.addEventListener('click', () => {
+        if (kind === 'sound'){ draft.sound = val; Sound.unlock(); Sound.play(val, .7); }
+        else draft.snoozeMin = val;
+        sheetRender(); openSub(kind);
+      });
+      return b;
+    }));
+    subEl.hidden = false;
+    requestAnimationFrame(() => subEl.classList.add('is-open'));
+  }
+  function closeSub(instant){
+    subEl.classList.remove('is-open');
+    if (instant) subEl.hidden = true; else setTimeout(() => { if (!subEl.classList.contains('is-open')) subEl.hidden = true; }, 300);
+  }
+  $('shSoundBtn').addEventListener('click', () => openSub('sound'));
+  shSnoozeLenBtn.addEventListener('click', () => openSub('snooze'));
+  $('subBack').addEventListener('click', () => closeSub(false));
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape' || sheet.hidden) return;
+    if (!subEl.hidden) closeSub(false); else closeSheet();
+  });
 
   // ---- focus (pomodoro) ----
   const F = Object.assign({ mode: 25, phase: 'focus', done: 0, state: 'idle', end: 0, remain: 0 }, store.get('yako.focus', {}));
@@ -916,41 +1235,53 @@ button{font:inherit}
     const out = [];
     if (TM.state === 'run' || TM.state === 'pause') out.push(`<span>タイマー<b>${fmt(tRemain(now))}</b></span>`);
     if (F.state === 'run' || F.state === 'pause') out.push(`<span>${F.phase === 'focus' ? '集中' : '休憩'}<b>${fmt(fRemain(now))}</b></span>`);
-    if (SW.running) out.push(`<span>計測中<b>${fmt(swElapsed()).replace(/^00:/, '0:')}</b></span>`);
-    if (A.on) out.push(`<span>アラーム<b>${A.snoozed ? hm2(A.next) : A.time.replace(/^0/, '')}</b></span>`);
+    if (SW.running) out.push(`<span>計測中<b>${fmt(swElapsed())}</b></span>`);
+    const n = nextAlarm();
+    if (n) out.push(`<span>${n.snoozeUntil ? 'スヌーズ' : 'アラーム'}<b>${hm2(dueOf(n))}</b></span>`);
     const html = out.join('');
     if (html !== chipsHtml){ chipsHtml = html; chipsEl.innerHTML = html; }
   }
 
+  let lastMinute = -1;
   function renderAll(now){
     chipsRender(now);
     if (currentTab === 'timer') tRender(now);
     if (currentTab === 'stopwatch') swRender();
-    if (currentTab === 'alarm') aRender(now);
+    if (currentTab === 'alarm'){
+      const mk = Math.floor(now / 6e4);
+      if (mk !== lastMinute){ lastMinute = mk; alRenderHead(now); aRenderCycles(now); }
+    }
     if (currentTab === 'focus') fRender(now);
-    if (ringing === 'alarm') ringTime.textContent = `${new Date(now).getHours()}:${pad(new Date(now).getMinutes())}`;
-    if (ringing === 'timer') ringTime.textContent = fmt(TM.dur);
+    if (ringing && ringing.kind === 'alarm') ringTime.textContent = hm2(now);
+    if (ringing && ringing.kind === 'timer') ringTime.textContent = fmt(TM.dur);
     let sun = 0;
-    if (A.on && A.sunrise){ const left = A.next - now; if (left <= 10 * 6e4 && left > 0) sun = .85 * (1 - left / (10 * 6e4)); }
-    if (ringing === 'alarm' && A.sunrise) sun = .85;
+    const n = nextAlarm();
+    if (AP.sunrise && n){ const left = dueOf(n) - now; if (left <= 10 * 6e4 && left > 0) sun = .85 * (1 - left / (10 * 6e4)); }
+    if (AP.sunrise && ringing && ringing.kind === 'alarm') sun = .85;
     sunriseEl.style.opacity = sun.toFixed(3);
   }
 
   // called every second by the clock
   function toolsTick(now){
-    if (TM.state === 'run' && now >= TM.end){ const late = now - TM.end < 10 * 6e4; TM.state = late ? 'done' : 'idle'; tSave(); if (late) ring('timer'); }
-    if (F.state === 'run' && now >= F.end){ fAdvance(true, now); Sound.bell(.6); }
-    if (A.on && A.next && now >= A.next && !ringing){
-      const late = now - A.next;
-      A.snoozed = false;
-      A.next = aNextFrom(now + 6e4);
-      aSave();
-      if (late < 10 * 6e4) ring('alarm');
+    if (TM.state === 'run' && now >= TM.end){ const fresh = now - TM.end < 10 * 6e4; TM.state = fresh ? 'done' : 'idle'; tSave(); if (fresh) ring('timer'); }
+    if (F.state === 'run' && now >= F.end){ fAdvance(true, now); Sound.play('bell', .6); }
+    if (!ringing){
+      for (const al of ALARMS){
+        const due = dueOf(al);
+        if (!al.on || !due || now < due) continue;
+        const fresh = now - due < 10 * 6e4;
+        al.snoozeUntil = 0;
+        al.next = nextFire(al, now + 6e4);
+        if (!fresh && !al.days.length) al.on = false;
+        alSave(); alRenderList(now);
+        if (fresh){ ring('alarm', al); break; }
+      }
     }
     renderAll(now);
   }
 
   swRenderLaps();
+  alRenderList(Date.now());
   showTab(store.get('yako.tab', 'clock'));
 
   // Keep the screen on while it sits on the nightstand
