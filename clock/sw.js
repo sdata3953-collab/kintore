@@ -3,7 +3,7 @@
      falling back to the cached copy after 2.5 s or when offline.
    - Textures, icons and fonts: cached copy first.
    - Weather (api.open-meteo.com) is never cached here; the page keeps its own last reading. */
-const CACHE = 'yako-clock-v1';
+const CACHE = 'yako-clock-v2';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './tex/day.jpg', './tex/night.jpg', './tex/water.png',
   './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png'];
 

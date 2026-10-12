@@ -14,7 +14,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@200;300;400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500&display=swap">
 <style>
 /* Layout: one rounded black screen; the Earth as seen from 140.7°E with today's real day/night line, big thin time on the left, weather top right, a short line bottom left. */
 :root{
@@ -25,7 +25,7 @@
   --fg-2:#C9C8C4;
   --fg-3:#8F8E8A;
   --hair:#5E5D5A;
-  --f-ui:"Hanken Grotesk","Helvetica Neue","Hiragino Sans","Noto Sans JP",sans-serif;
+  --f-ui:"Nunito","Hiragino Maru Gothic ProN","Hiragino Sans","Noto Sans JP",sans-serif;
   --r:clamp(26px,6vmin,56px);
 }
 html{height:100%;box-sizing:border-box;background:var(--page)}
@@ -47,13 +47,13 @@ button{font:inherit}
   grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto minmax(0,1fr) auto;
   grid-template-areas:"time info" "time ." "greet cap";
   padding:clamp(22px,8cqh,60px) clamp(24px,6cqw,68px);transition:translate 4s ease}
-.time{grid-area:time;align-self:center;font-size:min(36cqh,15.5cqw);font-weight:200;line-height:.92;letter-spacing:-.035em;
+.time{grid-area:time;align-self:center;font-size:min(34cqh,14.5cqw);font-weight:300;line-height:.92;letter-spacing:-.02em;
   font-variant-numeric:tabular-nums;margin-left:-.05em;translate:0 -8%;text-shadow:0 2px 24px rgba(0,0,0,.6)}
 
 .info{grid-area:info;display:flex;flex-direction:column;align-items:flex-start;gap:.5em;text-shadow:0 1px 12px rgba(0,0,0,.7)}
 .date{font-size:clamp(12px,4cqh,20px);color:var(--fg-2);margin-bottom:.5em}
 .wx{display:flex;flex-direction:column;align-items:flex-start;gap:.3em}
-.wx-now{display:flex;align-items:center;gap:.28em;font-size:clamp(24px,10cqh,54px);font-weight:200;line-height:1}
+.wx-now{display:flex;align-items:center;gap:.28em;font-size:clamp(24px,10cqh,54px);font-weight:300;line-height:1}
 .wx-icon{width:.78em;height:.78em;flex:none;color:var(--fg)}
 .wx-icon svg{width:100%;height:100%;display:block;overflow:visible}
 .wx-temp{font-variant-numeric:tabular-nums;letter-spacing:-.02em}
@@ -73,7 +73,7 @@ button{font:inherit}
 
 @media (orientation:portrait){
   .ui{grid-template-rows:auto auto minmax(0,1fr) auto;grid-template-areas:"time time" "info info" ". ." "greet cap"}
-  .time{align-self:start;font-size:min(28cqw,16cqh);translate:none;padding-top:4cqh}
+  .time{align-self:start;font-size:min(26cqw,15cqh);translate:none;padding-top:4cqh}
   .info{flex-direction:row;flex-wrap:wrap;align-items:center;gap:.4em 1.4em}
   .date{margin:0}
   .wx{flex-direction:row;flex-wrap:wrap;align-items:center;gap:.4em .8em}
@@ -103,7 +103,7 @@ button{font:inherit}
         </div>
       </div>
       <div class="greet"><span class="dash" aria-hidden="true"></span><p data-k="greet">&nbsp;</p><span class="dash" aria-hidden="true"></span></div>
-      <p class="cap" title="ひまわりと同じ東経140.7°から見た地球。昼と夜の境目はいまの太陽の位置。地表と夜景はNASAの画像">Live sunlight · 140.7°E</p>
+      <p class="cap" title="ひまわりと同じ東経140.7°から見た地球。光の向きはいまの太陽の位置から計算。地表と夜景はNASAの画像">Live sunlight · 140.7°E</p>
     </div>
   </div>
 </main>
@@ -199,41 +199,78 @@ button{font:inherit}
     x.globalAlpha = 1;
   }
 
+  // Light model (mirrors shade.py): linear light, Blue Marble albedo lit through a thin
+  // Rayleigh + aerosol atmosphere (single scattering), soft sea glint, a scattering shell
+  // beyond the limb on the sunlit side, then an ACES tone curve.
+  const TAU_R = [.045, .10, .235], TAU_M = .022, G_M = .70, HS = .012, SHELL = .07, EXPOSURE = 1.25;
+  const TAU = TAU_R.map((t) => t + TAU_M);
+  const WARM = [1, .68, .38];
+  const LUT_N = 4096, LUT_MAX = 6, LUT = new Uint8ClampedArray(LUT_N);
+  for (let i = 0; i < LUT_N; i++){
+    const x = (i / (LUT_N - 1)) ** 2 * LUT_MAX;
+    const a = Math.min(1, Math.max(0, (x * (2.51 * x + .03)) / (x * (2.43 * x + .59) + .14)));
+    LUT[i] = Math.round(255 * Math.pow(a, 1 / 2.2));
+  }
+  const tone = (v) => LUT[Math.min(LUT_N - 1, Math.round(Math.sqrt(Math.max(0, v * EXPOSURE) / LUT_MAX) * (LUT_N - 1)))];
+  const lin = new Float32Array(256);
+  for (let i = 0; i < 256; i++) lin[i] = Math.pow(i / 255, 2.2);
+
   let G = null;
   function build(){
     const L = layout();
     if (!L || !T.day || !T.night || !T.water) return;
     drawSky(L);
     const dpr = Math.min(2, window.devicePixelRatio || 1, 640 / L.R); // keep the per-pixel work bounded on big screens
-    const padC = L.R * .14, sizeC = (L.R + padC) * 2;
+    const padC = L.R * (SHELL + .04), sizeC = (L.R + padC) * 2;
     globeCv.style.width = sizeC + 'px'; globeCv.style.height = sizeC + 'px';
     globeCv.style.left = (L.cx - L.R - padC) + 'px'; globeCv.style.top = (L.cy - L.R - padC) + 'px';
     const N = Math.round(sizeC * dpr), Rd = L.R * dpr, c0 = N / 2;
     globeCv.width = globeCv.height = N;
-    const M = Math.ceil(Math.PI * (Rd + 3) * (Rd + 3)) + 8 * N;
-    const idx = new Int32Array(M), nx = new Float32Array(M), ny = new Float32Array(M), nz = new Float32Array(M), vz = new Float32Array(M);
-    const edge = new Uint8Array(M), lights = new Uint8Array(M), water = new Uint8Array(M), day = new Uint8Array(M * 3);
+    const Rmax = 1 + SHELL;
+    const M = Math.ceil(Math.PI * (Rd * Rmax + 3) ** 2) + 8 * N;
+    const g = {
+      N, Rd, c0, dpr, count: 0, img: null,
+      idx: new Int32Array(M), kind: new Uint8Array(M), nx: new Float32Array(M), ny: new Float32Array(M), nz: new Float32Array(M),
+      mv: new Float32Array(M), a0: new Float32Array(M), a1: new Float32Array(M), a2: new Float32Array(M),
+      t0: new Float32Array(M), t1: new Float32Array(M), t2: new Float32Array(M),
+      water: new Float32Array(M), lights: new Float32Array(M), edge: new Float32Array(M)
+    };
     let k = 0;
-    const lim = Math.ceil(Rd + 1.5);
+    const lim = Math.ceil(Rd * Rmax + 2);
     for (let py = Math.max(0, Math.floor(c0 - lim)); py < Math.min(N, Math.ceil(c0 + lim)); py++){
       const y = (c0 - py - .5) / Rd;
       for (let px = Math.max(0, Math.floor(c0 - lim)); px < Math.min(N, Math.ceil(c0 + lim)); px++){
         const x = (px + .5 - c0) / Rd, rr = Math.sqrt(x * x + y * y);
-        if ((rr - 1) * Rd > 1 || k >= M) continue;
-        const cl = Math.min(1, rr), z = Math.sqrt(Math.max(0, 1 - cl * cl));
-        const sx = x / Math.max(1, rr), sy = y / Math.max(1, rr);
-        const wx = sx * EX[0] + sy * EY[0] + z * EZ[0], wy = sx * EX[1] + sy * EY[1] + z * EZ[1], wz = sx * EX[2] + sy * EY[2] + z * EZ[2];
-        const lat = Math.asin(Math.max(-1, Math.min(1, wz))) / rad, lon = Math.atan2(wy, wx) / rad;
-        const dc = sample(T.day, lat, lon); day[k * 3] = dc[0]; day[k * 3 + 1] = dc[1]; day[k * 3 + 2] = dc[2];
-        const nc = sample(T.night, lat, lon); const lum = .3 * nc[0] + .59 * nc[1] + .11 * nc[2];
-        lights[k] = Math.max(0, Math.min(255, (lum - 26) * 1.4));
-        water[k] = sample(T.water, lat, lon)[0];
-        idx[k] = py * N + px; nx[k] = wx; ny[k] = wy; nz[k] = wz; vz[k] = z;
-        edge[k] = 255 * Math.max(0, Math.min(1, (1 - rr) * Rd + .5));
+        if (rr > Rmax || k >= M) continue;
+        g.idx[k] = py * N + px;
+        if (rr <= 1){
+          // surface
+          const sx = x / Math.max(1, rr), sy = y / Math.max(1, rr), z = Math.sqrt(Math.max(0, 1 - sx * sx - sy * sy));
+          const wx = sx * EX[0] + sy * EY[0] + z * EZ[0], wy = sx * EX[1] + sy * EY[1] + z * EZ[1], wz = sx * EX[2] + sy * EY[2] + z * EZ[2];
+          const lat = Math.asin(Math.max(-1, Math.min(1, wz))) / rad, lon = Math.atan2(wy, wx) / rad;
+          const dc = sample(T.day, lat, lon);
+          g.a0[k] = lin[Math.round(dc[0])]; g.a1[k] = lin[Math.round(dc[1])]; g.a2[k] = lin[Math.round(dc[2])];
+          const nc = sample(T.night, lat, lon), lum = (.3 * nc[0] + .59 * nc[1] + .11 * nc[2]) / 255;
+          g.lights[k] = Math.pow(Math.max(0, Math.min(1, (lum - .1) / .9)), 1.8);
+          g.water[k] = sample(T.water, lat, lon)[0] / 255;
+          const mv = Math.max(z, .035);
+          g.mv[k] = mv; g.t0[k] = Math.exp(-TAU[0] / mv); g.t1[k] = Math.exp(-TAU[1] / mv); g.t2[k] = Math.exp(-TAU[2] / mv);
+          g.nx[k] = wx; g.ny[k] = wy; g.nz[k] = wz;
+          g.edge[k] = 1; // the scattering shell outside covers the rim
+          g.kind[k] = 0;
+        } else {
+          // atmosphere seen edge-on beyond the limb
+          const ux = x / rr, uy = y / rr, h = rr - 1;
+          g.nx[k] = ux * EX[0] + uy * EY[0]; g.ny[k] = ux * EX[1] + uy * EY[1]; g.nz[k] = ux * EX[2] + uy * EY[2];
+          const e = 12 * Math.exp(-h / HS);
+          g.a0[k] = 1 - Math.exp(-TAU[0] * e); g.a1[k] = 1 - Math.exp(-TAU[1] * e); g.a2[k] = 1 - Math.exp(-TAU[2] * e);
+          g.kind[k] = 1;
+        }
         k++;
       }
     }
-    G = { N, Rd, c0, dpr, count: k, idx, nx, ny, nz, vz, edge, lights, water, day, img: null };
+    g.count = k;
+    G = g;
     paint();
   }
 
@@ -241,44 +278,56 @@ button{font:inherit}
     if (!G) return;
     const ctx = globeCv.getContext('2d');
     const S = sunVector(new Date());
+    const cosT = -dot(S, EZ);
+    const pr = .75 * (1 + cosT * cosT), pm = (1 - G_M * G_M) / Math.pow(1 + G_M * G_M - 2 * G_M * cosT, 1.5);
+    const ph = [0, 1, 2].map((c) => (TAU_R[c] * pr + TAU_M * pm) / TAU[c]);
     let hx = S[0] + EZ[0], hy = S[1] + EZ[1], hz = S[2] + EZ[2]; const hl = Math.hypot(hx, hy, hz); hx /= hl; hy /= hl; hz /= hl;
+    const vh = Math.max(0, hx * EZ[0] + hy * EZ[1] + hz * EZ[2]);
+    const KS = 140, specC = (.02 + .98 * Math.pow(1 - vh, 5)) * (KS + 2) / 8 * .14;
     if (!G.img) G.img = ctx.createImageData(G.N, G.N);
     const D = G.img.data; D.fill(0);
+    const v = [0, 0, 0];
     for (let i = 0; i < G.count; i++){
-      const x = G.nx[i], y = G.ny[i], z = G.nz[i], v = G.vz[i];
-      const l = x * S[0] + y * S[1] + z * S[2];
-      const t = Math.max(0, Math.min(1, (l + .06) / .2)), d = t * t * (3 - 2 * t);
-      const lit = .015 + Math.pow(Math.max(0, l), .62) * d;
-      const k = i * 3;
-      let r = G.day[k] * lit, g = G.day[k + 1] * lit, b = G.day[k + 2] * lit;
-      const tw = Math.exp(-(((l - .02) / .08) ** 2));          // warmer light along the terminator
-      r *= 1 + .3 * tw; g *= 1 + .05 * tw; b *= 1 - .2 * tw;
-      const rim = Math.pow(1 - v, 3), air = rim * (.1 + .9 * d); // atmosphere at the limb
-      r += 70 * air; g += 125 * air; b += 245 * air;
-      const hz2 = (1 - v) * d; r += 8 * hz2; g += 16 * hz2; b += 30 * hz2;
-      const gl = Math.pow(Math.max(0, x * hx + y * hy + z * hz), 150) * G.water[i] / 255 * d; // sun glint
-      r += 200 * gl; g += 195 * gl; b += 180 * gl;
-      const nite = Math.pow(1 - d, 1.6), L = G.lights[i] / 255 * nite * (.45 + .55 * v); // city lights
-      r += 265 * L; g += 200 * L; b += 130 * L;
-      r += 1.5 * nite; g += 4 * nite; b += 9 * nite;
+      const x = G.nx[i], y = G.ny[i], z = G.nz[i];
+      const mu = x * S[0] + y * S[1] + z * S[2];
       const p = G.idx[i] * 4;
-      D[p] = r; D[p + 1] = g; D[p + 2] = b; D[p + 3] = G.edge[i];
+      if (G.kind[i] === 0){
+        const mv = G.mv[i], lit = mu > 0 ? mu : 0;
+        const am = Math.min(1 / Math.max(mu, .035), 30);
+        const musc = Math.max(0, Math.min(1, mu + .03)), frac = musc / (musc + mv), inv = 1 / Math.max(musc, 1e-3) + 1 / mv;
+        let nt = (.04 - mu) / .12; nt = nt <= 0 ? 0 : nt >= 1 ? 1 : nt * nt * (3 - 2 * nt);
+        let spec = 0;
+        if (lit > 0 && G.water[i] > 0){
+          const nh = x * hx + y * hy + z * hz;
+          if (nh > .9){ let f = (mv - .25) / .35; f = f <= 0 ? 0 : f >= 1 ? 1 : f * f * (3 - 2 * f); spec = specC * Math.pow(nh, KS) / mv * G.water[i] * f; } // no glint hot spots right at the limb
+        }
+        const Lc = G.lights[i] * nt * .8;
+        const a0 = G.a0[i], a1 = G.a1[i], a2 = G.a2[i], t0 = G.t0[i], t1 = G.t1[i], t2 = G.t2[i];
+        v[0] = (a0 + spec) * lit * Math.exp(-TAU[0] * am) * t0 + .1875 * ph[0] * frac * (1 - Math.exp(-TAU[0] * inv)) + Lc * WARM[0] * t0 + a0 * .0012 * nt;
+        v[1] = (a1 + spec) * lit * Math.exp(-TAU[1] * am) * t1 + .1875 * ph[1] * frac * (1 - Math.exp(-TAU[1] * inv)) + Lc * WARM[1] * t1 + a1 * .0012 * nt;
+        v[2] = (a2 + spec) * lit * Math.exp(-TAU[2] * am) * t2 + .1875 * ph[2] * frac * (1 - Math.exp(-TAU[2] * inv)) + Lc * WARM[2] * t2 + a2 * .0012 * nt;
+        D[p] = tone(v[0]); D[p + 1] = tone(v[1]); D[p + 2] = tone(v[2]); D[p + 3] = 255 * G.edge[i];
+      } else {
+        let il = (mu + .12) / .37; il = il <= 0 ? 0 : il >= 1 ? 1 : il * il * (3 - 2 * il);
+        if (il <= 0) continue;
+        const amt = Math.min(1 / Math.max(mu + .15, .05), 8);
+        const k0 = .325 * il;
+        v[0] = tone(k0 * ph[0] * G.a0[i] * Math.exp(-TAU[0] * amt));
+        v[1] = tone(k0 * ph[1] * G.a1[i] * Math.exp(-TAU[1] * amt));
+        v[2] = tone(k0 * ph[2] * G.a2[i] * Math.exp(-TAU[2] * amt));
+        const mx = Math.max(v[0], v[1], v[2]);
+        const a = Math.min(1, mx / 255 * 1.4);
+        if (a < .004) continue;
+        D[p] = v[0] / a; D[p + 1] = v[1] / a; D[p + 2] = v[2] / a; D[p + 3] = 255 * a;
+      }
     }
     ctx.putImageData(G.img, 0, 0);
-
-    // thin halo behind the disc
-    ctx.save();
-    ctx.globalCompositeOperation = 'destination-over';
-    const halo = ctx.createRadialGradient(G.c0, G.c0, G.Rd * .97, G.c0, G.c0, G.Rd * 1.12);
-    halo.addColorStop(0, 'rgba(110,155,255,.3)'); halo.addColorStop(.35, 'rgba(90,135,240,.09)'); halo.addColorStop(1, 'rgba(80,120,230,0)');
-    ctx.fillStyle = halo; ctx.fillRect(0, 0, G.N, G.N);
-    ctx.restore();
 
     // home marker
     const hv = toVec(HOME[0], HOME[1]);
     if (dot(hv, EZ) > 0){
       const px = G.c0 + dot(hv, EX) * G.Rd, py = G.c0 - dot(hv, EY) * G.Rd;
-      ctx.strokeStyle = 'rgba(255,255,255,.75)'; ctx.lineWidth = G.dpr;
+      ctx.strokeStyle = 'rgba(255,255,255,.7)'; ctx.lineWidth = G.dpr;
       ctx.beginPath(); ctx.arc(px, py, 4.5 * G.dpr, 0, Math.PI * 2); ctx.stroke();
     }
     globeCv.classList.add('is-ready');
