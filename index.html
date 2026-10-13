@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="筋トレ日記">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<script>window.KINTORE_VERSION = '20261011-0217'; window.KINTORE_FIREBASE = {"apiKey": "AIzaSyD8C-cmnF12VJThPhKZv6JbJGbzb8iENGk", "authDomain": "kintore-82613.firebaseapp.com", "projectId": "kintore-82613", "storageBucket": "kintore-82613.firebasestorage.app", "messagingSenderId": "156878101173", "appId": "1:156878101173:web:3c4a96afe1832a79c57cfc"};</script>
+<script>window.KINTORE_VERSION = '20261013-1425'; window.KINTORE_FIREBASE = {"apiKey": "AIzaSyD8C-cmnF12VJThPhKZv6JbJGbzb8iENGk", "authDomain": "kintore-82613.firebaseapp.com", "projectId": "kintore-82613", "storageBucket": "kintore-82613.firebasestorage.app", "messagingSenderId": "156878101173", "appId": "1:156878101173:web:3c4a96afe1832a79c57cfc"};</script>
 <style>
 :root{color-scheme:light;padding-top:env(safe-area-inset-top,0px)}
 body{margin:0}
@@ -1371,12 +1371,19 @@ const Toast = {
 };
 
 /* Rest-timer beep: two short tones ("pi-pip"), queued on the audio clock when the
-   timer starts so it lands exactly on zero. It mixes with music from other apps.
-   Browsers only play it while the app is open, and iPhone mutes it in silent mode. */
+   timer starts so it lands exactly on zero. Browsers only play it while the app is open,
+   and iPhone mutes it in silent mode.
+   Music from other apps (Spotify etc.): on iPhone, a page that starts Web Audio takes over the
+   audio session and pauses them. So the session is set to "ambient" (mixes with other audio),
+   audio is only woken up when a rest beep is actually needed, and it is let go afterwards. */
 const Sound = {
   ctx: null, pending: [], unlocked: false, onReady: null,
   get on() { return Store.settings.restSound !== false; },
+  session() { try { const a = navigator.audioSession; if (a && a.type !== 'ambient') a.type = 'ambient'; } catch {} },
+  /* only while a rest timer with sound is running */
+  needed() { return this.on && !!Rest.end && !Rest.doneAt; },
   prime() {
+    this.session();
     try {
       if (!this.ctx) { const C = window.AudioContext || window.webkitAudioContext; if (!C) return Promise.resolve(); this.ctx = new C(); }
       const c = this.ctx;
@@ -1420,6 +1427,13 @@ const Sound = {
     this.pending = [];
   },
   beep() { if (this.ready()) this.tones(this.ctx.currentTime + 0.02); },
+  /* stop holding the audio output when no beep is waiting */
+  release() {
+    if (!this.ctx || this.needed()) return;
+    this.pending = [];
+    if (this.ctx.state === 'running') this.ctx.suspend().catch(() => {});
+  },
+  releaseSoon() { clearTimeout(this.rt); this.rt = setTimeout(() => this.release(), 1500); },
 };
 const Haptic = {
   tap() { try { navigator.vibrate && navigator.vibrate(10); } catch {} },
@@ -1449,7 +1463,7 @@ const Rest = {
     this.total = Math.max(this.total + sec * 1000, this.end - Date.now(), 1000);
     this.save(); this.arm(); this.paint();
   },
-  stop() { this.disarm(); this.end = 0; this.doneAt = 0; this.save(); this.paint(); },
+  stop() { this.disarm(); this.end = 0; this.doneAt = 0; this.save(); this.paint(); Sound.releaseSoon(); },
   tick() {
     if (!this.end) return;
     if (this.end - Date.now() <= 0 && !this.doneAt) {
@@ -1458,6 +1472,7 @@ const Rest = {
       if (!this.armed && Sound.on && this.doneAt - this.end < 2000) Sound.beep();
       this.armed = false;
       Haptic.done();
+      Sound.releaseSoon();
     }
     if (this.doneAt && Date.now() - this.doneAt > 8000) { this.stop(); return; }
     this.paint();
@@ -1900,7 +1915,7 @@ function settingsSheet() {
   <div class="group">
     <div class="g-row"><div><p class="g-t">セット記録後に自動で開始</p><p class="g-s">記録ボタンを押すと休憩タイマーが動きます</p></div>${sw('restAuto', '自動で開始')}</div>
     <div class="g-row"><p class="g-t">休憩時間（秒）</p>${seg([60, 90, 120, 180], st.restSec, 'setRest')}</div>
-    <div class="g-row"><div><p class="g-t">終わったら音で知らせる</p><p class="g-s">「ピピッ」と短く2回だけ鳴ります</p></div>${sw('restSound', '終わったら音で知らせる')}</div>
+    <div class="g-row"><div><p class="g-t">終わったら音で知らせる</p><p class="g-s">「ピピッ」と短く2回だけ。流している音楽は止めずに重ねて鳴ります</p></div>${sw('restSound', '終わったら音で知らせる')}</div>
     <button class="g-row g-btn" data-act="testSound"><span><span class="g-t">音を試す</span><span class="g-s">iPhoneは消音モード中や、画面が消えている間は鳴りません</span></span></button>
   </div>
   <p class="group-l">記録</p>
@@ -2456,7 +2471,6 @@ const Actions = {
   closeSheet() { Sheet.close(); },
 
   start() {
-    Sound.prime();
     if (Q.active()) { App.go('today'); return; }
     const s = Model.start();
     App.go('today');
@@ -2587,7 +2601,7 @@ const Actions = {
   syncNow() { if (Cloud.col) Cloud.sync(); else FB.start(); },
   appCheck() { Updater.check(true); },
   appUpdate() { Updater.apply(); },
-  testSound() { Sound.prime().then(() => { Sound.beep(); if (!Sound.ready()) Toast.show('<span>この環境では音を鳴らせませんでした</span>'); }); },
+  testSound() { Sound.prime().then(() => { Sound.beep(); if (!Sound.ready()) Toast.show('<span>この環境では音を鳴らせませんでした</span>'); Sound.releaseSoon(); }); },
   pickEx(d) {
     const name = (d.name || '').trim().slice(0, 40);
     const s = Model.get(UI.addSid); if (!name || !s) return;
@@ -2655,8 +2669,8 @@ const Actions = {
     const set = { w: Math.round(w * 100) / 100, r, at: live ? Date.now() : (s.end || s.start) };
     if (byLb && lb > 0) set.lb = Math.round(lb * 100) / 100;
     e.sets.push(set);
+    if (live && Store.settings.restAuto && Sound.on) Sound.prime();
     Drafts.m.set(e.id, { w: byLb ? Unit.r1(set.w) : U.w(set.w), r: String(r), l: byLb ? U.w(lb) : (set.w > 0 ? Unit.r1(Unit.toLb(set.w)) : ''), src: byLb ? 'lb' : 'kg', main: dr.main || 'kg' });
-    Sound.prime();
     if (isTyping()) document.activeElement.blur();
     UI.flash = `${e.id}:${e.sets.length - 1}`;
     Store.commit({ sessions: [s.id] });
@@ -2692,7 +2706,7 @@ const Actions = {
     const t = document.getElementById('memo-' + d.ex); if (t) t.focus();
   },
 
-  restPick(d) { const v = Number(d.v); Store.settings.restSec = v; Store.commit({ meta: true }); Sound.prime(); Rest.start(v); },
+  restPick(d) { const v = Number(d.v); Store.settings.restSec = v; Store.commit({ meta: true }); if (Sound.on) Sound.prime(); Rest.start(v); },
   restAdd(d) { Rest.add(Number(d.d)); },
   restStop() { Rest.stop(); },
 
@@ -2909,10 +2923,10 @@ document.addEventListener('pointerout', e => {
   if (from && !to) Charts.hideAll();
 });
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible') { App.render(); Wake.sync(); Rest.rearm(); Updater.check(false); }
-  else Rest.disarm();
+  if (document.visibilityState === 'visible') { App.render(); Wake.sync(); if (Sound.needed()) Sound.prime(); Rest.rearm(); Updater.check(false); }
+  else { Rest.disarm(); Sound.release(); }
 });
-const primeSound = () => Sound.prime();
+const primeSound = () => { if (Sound.needed()) Sound.prime(); };
 document.addEventListener('click', primeSound, true);
 document.addEventListener('touchend', primeSound, { capture: true, passive: true });
 Sound.onReady = () => Rest.rearm();
@@ -2924,6 +2938,7 @@ function boot() {
   App.view = $('#view');
   Sheet.root = $('#sheet'); Sheet.panel = $('#sheetPanel');
   Toast.el = $('#toast'); Rest.el = $('#rest');
+  Sound.session();
   Store.load(); Rest.load();
   App.render(); Rest.paint();
   setInterval(tick, 500);
