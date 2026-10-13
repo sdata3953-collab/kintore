@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="筋トレ日記">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<script>window.KINTORE_VERSION = '20261013-1439'; window.KINTORE_FIREBASE = {"apiKey": "AIzaSyD8C-cmnF12VJThPhKZv6JbJGbzb8iENGk", "authDomain": "kintore-82613.firebaseapp.com", "projectId": "kintore-82613", "storageBucket": "kintore-82613.firebasestorage.app", "messagingSenderId": "156878101173", "appId": "1:156878101173:web:3c4a96afe1832a79c57cfc"};</script>
+<script>window.KINTORE_VERSION = '20261013-1457'; window.KINTORE_FIREBASE = {"apiKey": "AIzaSyD8C-cmnF12VJThPhKZv6JbJGbzb8iENGk", "authDomain": "kintore-82613.firebaseapp.com", "projectId": "kintore-82613", "storageBucket": "kintore-82613.firebasestorage.app", "messagingSenderId": "156878101173", "appId": "1:156878101173:web:3c4a96afe1832a79c57cfc"};</script>
 <style>
 :root{color-scheme:light;padding-top:env(safe-area-inset-top,0px)}
 body{margin:0}
@@ -160,6 +160,9 @@ small{font-size:inherit}
 .last-l{font-size:13px;color:var(--fg-2);line-height:1.6}
 .last-m{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
 .howto{display:grid;gap:14px}
+.topic-box{display:flex;align-items:center;gap:10px;padding:8px 8px 8px 14px;border-radius:14px;background:var(--fill-2)}
+.topic-box code{flex:1;min-width:0;font-family:var(--mono);font-size:14px;overflow-wrap:anywhere;user-select:all;-webkit-user-select:all}
+.topic-box .btn{width:auto;min-height:40px;padding:0 16px;font-size:14px;border-radius:12px}
 .steps{list-style:none;padding:0;display:grid;gap:14px;counter-reset:s}
 .steps li{display:grid;grid-template-columns:28px 1fr;gap:2px 12px;counter-increment:s}
 .steps li::before{content:counter(s);grid-row:1/3;width:28px;height:28px;border-radius:50%;background:var(--fill);display:grid;place-items:center;font-family:var(--mono);font-size:12px;color:var(--fg-2)}
@@ -810,7 +813,7 @@ const Guide = {
    3. Store — localStorage first, private cloud copy when available
    ============================================================ */
 const LS = { data: 'kintore-diary.v1', rest: 'kintore-diary.rest' };
-const DEFAULT_SETTINGS = { restAuto: true, restSec: 90, step: 2.5, wake: false, restSound: true, bodyW: 60, height: 0, age: 0, sex: '' };
+const DEFAULT_SETTINGS = { restAuto: true, restSec: 90, step: 2.5, wake: false, restSound: true, bodyW: 60, height: 0, age: 0, sex: '', restNotify: false, ntfyTopic: '' };
 const normMeta = m => ({
   activeId: m?.activeId ?? null,
   settings: { ...DEFAULT_SETTINGS, ...(m?.settings || {}) },
@@ -1436,6 +1439,45 @@ const Sound = {
   },
   releaseSoon() { clearTimeout(this.rt); this.rt = setTimeout(() => this.release(), 1500); },
 };
+/* Rest-end notification that appears on top of any app: the end time is scheduled as a message
+   on ntfy.sh (free, open source), and the free ntfy app on the phone shows it as a normal
+   notification. Only the random topic name links the phone to this app; the message says
+   nothing but "休憩終了". A new rest replaces the scheduled one (same sequence id). */
+const Notify = {
+  base: 'https://ntfy.sh/', seq: 'rest', t: 0, next: 0,
+  get on() { return !!Store.settings.restNotify && !!Store.settings.ntfyTopic; },
+  topic() { return Store.settings.ntfyTopic || ''; },
+  newTopic() {
+    const a = 'abcdefghijkmnpqrstuvwxyz23456789', r = crypto.getRandomValues(new Uint8Array(18));
+    let t = 'kintore-'; for (const x of r) t += a[x % a.length];
+    return t;
+  },
+  post(msg) {
+    return fetch(this.base, { method: 'POST', keepalive: true, body: JSON.stringify({ topic: this.topic(), tags: ['muscle'], ...msg }) })
+      .then(r => { if (!r.ok) throw new Error('http ' + r.status); return r; });
+  },
+  /* schedule (or move) the notification for a rest that ends at `end` (ms) */
+  schedule(end, soon) {
+    if (!this.on) return;
+    clearTimeout(this.t); this.next = end;
+    if (soon) this.t = setTimeout(() => this.flush(), 700); else this.flush();
+  },
+  flush() {
+    clearTimeout(this.t);
+    const end = this.next; this.next = 0;
+    if (!end || !this.on) return;
+    const now = Date.now() / 1000;
+    if (end / 1000 - now < 11) { this.cancel(); return; } // ntfy needs at least 10 s
+    const at = Math.max(Math.round((end - 4000) / 1000), Math.ceil(now + 11)); // ntfy sends due messages every ~10 s, so aim a little early
+    this.post({ title: '休憩終了', message: '次のセットへ', priority: 4, delay: String(at), sequence_id: this.seq }).catch(() => {});
+  },
+  cancel() {
+    clearTimeout(this.t); this.next = 0;
+    if (!this.on) return;
+    fetch(this.base + encodeURIComponent(this.topic()) + '/' + this.seq, { method: 'DELETE', keepalive: true }).catch(() => {});
+  },
+  test() { return this.post({ title: '筋トレ日記', message: 'この通知が見えたら準備OKです' }); },
+};
 const Haptic = {
   tap() { try { navigator.vibrate && navigator.vibrate(10); } catch {} },
   done() { try { navigator.vibrate && navigator.vibrate([180, 90, 180]); } catch {} },
@@ -1448,7 +1490,7 @@ const Rest = {
   },
   save() { lsSet(LS.rest, JSON.stringify(this.end ? { end: this.end, total: this.total } : null)); },
   armed: false,
-  start(sec) { this.total = sec * 1000; this.end = Date.now() + this.total; this.doneAt = 0; this.save(); this.arm(); this.paint(true); },
+  start(sec) { this.total = sec * 1000; this.end = Date.now() + this.total; this.doneAt = 0; this.save(); this.arm(); this.paint(true); Notify.schedule(this.end); },
   /* (re)queue the end-of-rest beep for the time that is left */
   arm() {
     const left = (this.end - Date.now()) / 1000;
@@ -1462,9 +1504,10 @@ const Rest = {
     if (this.doneAt) { if (sec > 0) this.start(sec); return; }
     this.end = Math.max(Date.now() + 1000, this.end + sec * 1000);
     this.total = Math.max(this.total + sec * 1000, this.end - Date.now(), 1000);
-    this.save(); this.arm(); this.paint();
+    this.save(); this.arm(); this.paint(); Notify.schedule(this.end, true);
   },
   stop() {
+    if (this.end && !this.doneAt) Notify.cancel();
     this.disarm(); this.end = 0; this.doneAt = 0; this.save(); this.paint(); Sound.releaseSoon();
     if (Updater.pending) setTimeout(() => { if (Updater.canAuto()) Updater.apply(); }, 600);
   },
@@ -1823,6 +1866,22 @@ function suggestSheet() {
     <button class="icon-btn" data-act="closeSheet" aria-label="閉じる">${I.x}</button></div>
   ${g ? Views.suggest(g) : '<p class="muted">今日はもうトレーニング済みです</p>'}`;
 }
+function notifySheet() {
+  const t = Notify.topic();
+  return `<div class="sheet-h"><div><p class="eyebrow">Notification</p><h2>通知の準備</h2></div>
+    <button class="icon-btn" data-act="closeSheet" aria-label="閉じる">${I.x}</button></div>
+  <p class="muted" style="padding:0 4px 14px">休憩が終わると、ほかのアプリを使っていても画面の上に通知が出ます。無料アプリ「ntfy」で受け取ります。最初に一度だけ準備してください。</p>
+  <div class="card howto">
+    <ol class="steps">
+      <li><b>App Storeで「ntfy」を入れる</b><span><a class="fun-link" style="margin:0" href="https://apps.apple.com/app/ntfy/id1625396347" target="_blank" rel="noopener">App Storeで開く</a></span></li>
+      <li><b>ntfyで「＋」を押して、この名前を入れて登録</b><span>サーバーはそのまま（ntfy.sh）でOK</span></li>
+      <li><b>通知を許可する</b><span>ntfyを最初に開いたときに聞かれます</span></li>
+    </ol>
+    <div class="topic-box"><code>${U.esc(t)}</code><button class="btn btn-soft" data-act="copyTopic">コピー</button></div>
+    <button class="btn btn-primary" data-act="notifyTest">テスト通知を送る</button>
+    <p class="g-s" style="padding:0 4px">この名前を知っている人だけが通知を受け取れます。ほかの人には教えないでください。通知の音は、iPhoneの「設定」→「通知」→「ntfy」で消せます。</p>
+  </div>`;
+}
 function howtoSheet() {
   return `<div class="sheet-h"><div><p class="eyebrow">How it works</p><h2>使い方</h2></div>
     <button class="icon-btn" data-act="closeSheet" aria-label="閉じる">${I.x}</button></div>
@@ -1920,7 +1979,9 @@ function settingsSheet() {
   <div class="group">
     <div class="g-row"><div><p class="g-t">セット記録後に自動で開始</p><p class="g-s">記録ボタンを押すと休憩タイマーが動きます</p></div>${sw('restAuto', '自動で開始')}</div>
     <div class="g-row"><p class="g-t">休憩時間（秒）</p>${seg([60, 90, 120, 180], st.restSec, 'setRest')}</div>
-    <div class="g-row"><div><p class="g-t">終わったら音で知らせる</p><p class="g-s">「ピピッ」と短く2回だけ。${'audioSession' in navigator ? '流している音楽は止めずに重ねて鳴ります' : 'この端末では、セットを記録したときに流している音楽が止まることがあります。止めたくないときはオフに'}</p></div>${sw('restSound', '終わったら音で知らせる')}</div>
+    <div class="g-row"><div><p class="g-t">終わったら通知で知らせる</p><p class="g-s">ほかのアプリを使っていても、画面の上に通知が出ます（無料アプリ「ntfy」を使います）</p></div><button class="switch" role="switch" aria-checked="${Notify.on}" data-act="notifyToggle" aria-label="終わったら通知で知らせる"></button></div>
+    ${Notify.on ? `<button class="g-row g-btn" data-act="notifySetup"><span><span class="g-t">通知の受け取り設定</span><span class="g-s">ntfyの準備・テスト通知</span></span>${I.chevRs}</button>` : ''}
+    <div class="g-row"><div><p class="g-t">終わったら音で知らせる</p><p class="g-s">「ピピッ」と短く2回だけ。iPhoneでは、セットを記録したときに流している音楽が止まることがあります。止めたくないときはオフにして、通知を使ってください</p></div>${sw('restSound', '終わったら音で知らせる')}</div>
     <button class="g-row g-btn" data-act="testSound"><span><span class="g-t">音を試す</span><span class="g-s">iPhoneは消音モード中や、画面が消えている間は鳴りません</span></span></button>
   </div>
   <p class="group-l">記録</p>
@@ -2655,6 +2716,26 @@ const Actions = {
     Haptic.tap();
   },
   kcalInfo() { Toast.show(`<span>めやす：${Fun.bmr() ? `基礎代謝 約${U.n(Fun.bmr())}kcal/日` : `体重${Fun.num(Fun.weight())}kg`}、1回3秒として、動いた時間と持ち上げた重さから計算しています</span>`, 3600); },
+  notifyToggle() {
+    const st = Store.settings, on = !(st.restNotify && st.ntfyTopic);
+    st.restNotify = on;
+    if (on && !st.ntfyTopic) st.ntfyTopic = Notify.newTopic();
+    const muted = on && st.restSound !== false;
+    if (muted) { st.restSound = false; Rest.disarm(); }
+    if (!on && Rest.end && !Rest.doneAt) fetch(Notify.base + encodeURIComponent(st.ntfyTopic) + '/' + Notify.seq, { method: 'DELETE', keepalive: true }).catch(() => {});
+    Store.commit({ meta: true });
+    if (on) { Sheet.open(notifySheet); if (muted) Toast.show('<span>通知をオンにしました。音はオフにしました</span>', 3200); }
+  },
+  notifySetup() { Sheet.open(notifySheet); },
+  copyTopic() {
+    const t = Notify.topic();
+    (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => Toast.show('<span>コピーしました。ntfyに貼り付けてください</span>'))
+      .catch(() => Toast.show('<span>コピーできませんでした。名前を長押ししてコピーしてください</span>', 3600));
+  },
+  notifyTest() {
+    Notify.test().then(() => Toast.show('<span>送りました。ntfyに届いたか確認してください</span>', 3600))
+      .catch(() => Toast.show('<span>送れませんでした。電波のある場所でもう一度お試しください</span>', 3600));
+  },
   setSex(d) { Store.settings.sex = d.v === 'm' || d.v === 'f' ? d.v : ''; Store.commit({ meta: true }); },
   logSet(d) {
     const f = findEx(d); if (!f) return;
@@ -2929,7 +3010,7 @@ document.addEventListener('pointerout', e => {
 });
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') { App.render(); Wake.sync(); Rest.rearm(); Updater.check(false); }
-  else { Rest.disarm(); Sound.release(); }
+  else { Rest.disarm(); Sound.release(); if (Notify.next) Notify.flush(); }
 });
 Sound.onReady = () => Rest.rearm();
 let rsz = 0;
