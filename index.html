@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="筋トレ日記">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<script>window.KINTORE_VERSION = '20261013-1425'; window.KINTORE_FIREBASE = {"apiKey": "AIzaSyD8C-cmnF12VJThPhKZv6JbJGbzb8iENGk", "authDomain": "kintore-82613.firebaseapp.com", "projectId": "kintore-82613", "storageBucket": "kintore-82613.firebasestorage.app", "messagingSenderId": "156878101173", "appId": "1:156878101173:web:3c4a96afe1832a79c57cfc"};</script>
+<script>window.KINTORE_VERSION = '20261013-1439'; window.KINTORE_FIREBASE = {"apiKey": "AIzaSyD8C-cmnF12VJThPhKZv6JbJGbzb8iENGk", "authDomain": "kintore-82613.firebaseapp.com", "projectId": "kintore-82613", "storageBucket": "kintore-82613.firebasestorage.app", "messagingSenderId": "156878101173", "appId": "1:156878101173:web:3c4a96afe1832a79c57cfc"};</script>
 <style>
 :root{color-scheme:light;padding-top:env(safe-area-inset-top,0px)}
 body{margin:0}
@@ -1373,9 +1373,10 @@ const Toast = {
 /* Rest-timer beep: two short tones ("pi-pip"), queued on the audio clock when the
    timer starts so it lands exactly on zero. Browsers only play it while the app is open,
    and iPhone mutes it in silent mode.
-   Music from other apps (Spotify etc.): on iPhone, a page that starts Web Audio takes over the
-   audio session and pauses them. So the session is set to "ambient" (mixes with other audio),
-   audio is only woken up when a rest beep is actually needed, and it is let go afterwards. */
+   Music from other apps (Spotify etc.): on iPhone, a page that starts or resumes Web Audio takes
+   over the audio session and pauses them. So the session is set to "ambient" (mixes with other
+   audio), audio is only woken up by the tap that starts a rest timer (logging a set, picking a
+   rest time, the test button) and never by other taps, and it is let go after the beep. */
 const Sound = {
   ctx: null, pending: [], unlocked: false, onReady: null,
   get on() { return Store.settings.restSound !== false; },
@@ -1463,7 +1464,10 @@ const Rest = {
     this.total = Math.max(this.total + sec * 1000, this.end - Date.now(), 1000);
     this.save(); this.arm(); this.paint();
   },
-  stop() { this.disarm(); this.end = 0; this.doneAt = 0; this.save(); this.paint(); Sound.releaseSoon(); },
+  stop() {
+    this.disarm(); this.end = 0; this.doneAt = 0; this.save(); this.paint(); Sound.releaseSoon();
+    if (Updater.pending) setTimeout(() => { if (Updater.canAuto()) Updater.apply(); }, 600);
+  },
   tick() {
     if (!this.end) return;
     if (this.end - Date.now() <= 0 && !this.doneAt) {
@@ -1523,6 +1527,7 @@ const Updater = {
       const v = (await r.json()).v;
       if (v && v !== this.v) {
         if (manual || this.canAuto()) { this.apply(); return; }
+        this.pending = true;
         Toast.show('<span>新しいバージョンがあります</span><button class="t-act" data-act="appUpdate">更新する</button>', 12000);
       } else if (manual) Toast.show('<span>最新のバージョンです</span>');
     } catch {
@@ -1536,7 +1541,7 @@ const Updater = {
     Toast.show('<span>更新しています…</span>', 5000);
     try { sessionStorage.setItem('kintore-diary.updated', '1'); } catch {}
     try { const reg = navigator.serviceWorker && await navigator.serviceWorker.getRegistration(); if (reg) await reg.update(); } catch {}
-    try { if (window.caches) { const ks = await caches.keys(); await Promise.all(ks.map(k => caches.delete(k))); } } catch {}
+    try { if (window.caches) { const ks = await caches.keys(); await Promise.all(ks.filter(k => k.startsWith('kintore-')).map(k => caches.delete(k))); } } catch {}
     location.reload();
   },
 };
@@ -1915,7 +1920,7 @@ function settingsSheet() {
   <div class="group">
     <div class="g-row"><div><p class="g-t">セット記録後に自動で開始</p><p class="g-s">記録ボタンを押すと休憩タイマーが動きます</p></div>${sw('restAuto', '自動で開始')}</div>
     <div class="g-row"><p class="g-t">休憩時間（秒）</p>${seg([60, 90, 120, 180], st.restSec, 'setRest')}</div>
-    <div class="g-row"><div><p class="g-t">終わったら音で知らせる</p><p class="g-s">「ピピッ」と短く2回だけ。流している音楽は止めずに重ねて鳴ります</p></div>${sw('restSound', '終わったら音で知らせる')}</div>
+    <div class="g-row"><div><p class="g-t">終わったら音で知らせる</p><p class="g-s">「ピピッ」と短く2回だけ。${'audioSession' in navigator ? '流している音楽は止めずに重ねて鳴ります' : 'この端末では、セットを記録したときに流している音楽が止まることがあります。止めたくないときはオフに'}</p></div>${sw('restSound', '終わったら音で知らせる')}</div>
     <button class="g-row g-btn" data-act="testSound"><span><span class="g-t">音を試す</span><span class="g-s">iPhoneは消音モード中や、画面が消えている間は鳴りません</span></span></button>
   </div>
   <p class="group-l">記録</p>
@@ -2923,12 +2928,9 @@ document.addEventListener('pointerout', e => {
   if (from && !to) Charts.hideAll();
 });
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible') { App.render(); Wake.sync(); if (Sound.needed()) Sound.prime(); Rest.rearm(); Updater.check(false); }
+  if (document.visibilityState === 'visible') { App.render(); Wake.sync(); Rest.rearm(); Updater.check(false); }
   else { Rest.disarm(); Sound.release(); }
 });
-const primeSound = () => { if (Sound.needed()) Sound.prime(); };
-document.addEventListener('click', primeSound, true);
-document.addEventListener('touchend', primeSound, { capture: true, passive: true });
 Sound.onReady = () => Rest.rearm();
 let rsz = 0;
 window.addEventListener('resize', () => { clearTimeout(rsz); rsz = setTimeout(() => Charts.mount(App.view), 150); });
