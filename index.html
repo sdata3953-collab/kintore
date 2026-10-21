@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="筋トレ日記">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<script>window.KINTORE_VERSION = '20261021-1019'; window.KINTORE_FIREBASE = {"apiKey": "AIzaSyD8C-cmnF12VJThPhKZv6JbJGbzb8iENGk", "authDomain": "kintore-82613.firebaseapp.com", "projectId": "kintore-82613", "storageBucket": "kintore-82613.firebasestorage.app", "messagingSenderId": "156878101173", "appId": "1:156878101173:web:3c4a96afe1832a79c57cfc"};</script>
+<script>window.KINTORE_VERSION = '20261021-1028'; window.KINTORE_FIREBASE = {"apiKey": "AIzaSyD8C-cmnF12VJThPhKZv6JbJGbzb8iENGk", "authDomain": "kintore-82613.firebaseapp.com", "projectId": "kintore-82613", "storageBucket": "kintore-82613.firebasestorage.app", "messagingSenderId": "156878101173", "appId": "1:156878101173:web:3c4a96afe1832a79c57cfc"};</script>
 <style>
 :root{color-scheme:light;padding-top:env(safe-area-inset-top,0px)}
 body{margin:0}
@@ -280,10 +280,16 @@ small{font-size:inherit}
 .btn-add svg{width:18px;height:18px}
 .end-bottom{margin-top:22px}
 .addx{display:grid;gap:12px;margin-top:4px}
-.addx-h{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:52px;padding:0 16px;border-radius:16px;background:var(--card);box-shadow:var(--shadow);font-size:16px;font-weight:600;text-align:left}
-.addx-h > span{display:inline-flex;align-items:center;gap:8px}
-.addx-h svg{width:18px;height:18px}
-.addx-h small{font-size:12.5px;font-weight:500;color:var(--muted)}
+.addx-h,.live-add{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:68px;padding:0 14px 0 12px;border-radius:14px;background:var(--lime);color:var(--on-lime);
+  box-shadow:inset 0 0 0 1.5px var(--on-lime),0 14px 30px -18px rgba(110,150,0,.8);font-size:19px;font-weight:700;letter-spacing:.02em;text-align:left;transition:transform .16s var(--ease)}
+.addx-h:active,.live-add:active{transform:scale(.98)}
+.addx-h > span,.live-add > span{display:inline-flex;align-items:center;gap:12px}
+.addx-h i,.live-add i{width:42px;height:42px;border-radius:9px;background:var(--on-lime);color:var(--lime);display:grid;place-items:center;flex:none}
+.addx-h svg,.live-add svg{width:22px;height:22px}
+.addx-h small{font-size:13px;font-weight:700;opacity:.7}
+.live-add{justify-content:center;margin-top:4px}
+.btn-end{min-height:64px;border-radius:14px;background:#E5484D;color:#fff;font-size:18px;font-weight:700;letter-spacing:.04em;box-shadow:0 14px 30px -18px rgba(229,72,77,.9)}
+.btn-end:active{transform:scale(.98)}
 .addx .part-tabs{margin-top:2px}
 .addx .pick-list{margin-top:10px}
 
@@ -1747,7 +1753,7 @@ function addxHTML(s) {
   UI.addSid = s.id;
   const open = UI.addOpen ?? Q.sets(s) === 0;
   return `<section class="addx" id="addx" aria-label="種目を追加">
-    <button class="addx-h" data-act="addxToggle" aria-expanded="${open}"><span>${I.plus}種目を追加</span><small>${open ? '閉じる' : '開く'}</small></button>
+    <button class="addx-h" data-act="addxToggle" aria-expanded="${open}"><span><i>${I.plus}</i>種目を追加</span><small>${open ? '閉じる' : '開く'}</small></button>
     ${open ? `<div class="search"><input id="exq" type="search" placeholder="種目名で検索、または新しく追加" value="${U.esc(UI.exQuery)}" autocomplete="off" enterkeyhint="done" aria-label="種目を検索"></div>
     <div id="exlist">${exListHTML()}</div>` : ''}
   </section>`;
@@ -1756,7 +1762,7 @@ function editorHTML(s, live) {
   let h = live ? restRowHTML() : '';
   if (!s.exercises.length) h += copyMenuHTML(s);
   h += s.exercises.map(e => exCardHTML(s, e)).join('');
-  h += live ? `<button class="btn btn-soft btn-add" data-act="addxOpen">${I.plus}<span>種目を追加</span></button>`
+  h += live ? `<button class="live-add" data-act="addxOpen"><span><i>${I.plus}</i>種目を追加</span></button>`
     : `<button class="btn btn-soft btn-add" data-act="addEx" data-sid="${s.id}">${I.plus}<span>種目を追加</span></button>`;
   if (s.exercises.length && !Menus.same(s.exercises.map(e => e.name))) h += `<button class="btn btn-quiet" data-act="menuFromSession" data-sid="${s.id}">この種目をマイメニューに保存</button>`;
   return h;
@@ -2184,7 +2190,7 @@ const Views = {
       h += this.liveHero(s);
       h += addxHTML(s);
       h += `<section class="workout" aria-label="トレーニングの記録">${editorHTML(s, true)}</section>`;
-      h += `<button class="btn btn-soft end-bottom" data-act="endAsk">トレーニングを終了する</button>`;
+      h += `<button class="btn btn-end end-bottom" data-act="endAsk">トレーニングを終了する</button>`;
       return h;
     }
     const todays = Q.onDate(U.key(now)).filter(x => x.end);
