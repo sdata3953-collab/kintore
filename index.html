@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="筋トレ日記">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<script>window.KINTORE_VERSION = '20261021-1007'; window.KINTORE_FIREBASE = {"apiKey": "AIzaSyD8C-cmnF12VJThPhKZv6JbJGbzb8iENGk", "authDomain": "kintore-82613.firebaseapp.com", "projectId": "kintore-82613", "storageBucket": "kintore-82613.firebasestorage.app", "messagingSenderId": "156878101173", "appId": "1:156878101173:web:3c4a96afe1832a79c57cfc"};</script>
+<script>window.KINTORE_VERSION = '20261021-1019'; window.KINTORE_FIREBASE = {"apiKey": "AIzaSyD8C-cmnF12VJThPhKZv6JbJGbzb8iENGk", "authDomain": "kintore-82613.firebaseapp.com", "projectId": "kintore-82613", "storageBucket": "kintore-82613.firebasestorage.app", "messagingSenderId": "156878101173", "appId": "1:156878101173:web:3c4a96afe1832a79c57cfc"};</script>
 <style>
 :root{color-scheme:light;padding-top:env(safe-area-inset-top,0px)}
 body{margin:0}
@@ -278,7 +278,14 @@ small{font-size:inherit}
 .shake{animation:shake .38s}
 @keyframes shake{20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}
 .btn-add svg{width:18px;height:18px}
-.end-bottom{margin-top:6px}
+.end-bottom{margin-top:22px}
+.addx{display:grid;gap:12px;margin-top:4px}
+.addx-h{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:52px;padding:0 16px;border-radius:16px;background:var(--card);box-shadow:var(--shadow);font-size:16px;font-weight:600;text-align:left}
+.addx-h > span{display:inline-flex;align-items:center;gap:8px}
+.addx-h svg{width:18px;height:18px}
+.addx-h small{font-size:12.5px;font-weight:500;color:var(--muted)}
+.addx .part-tabs{margin-top:2px}
+.addx .pick-list{margin-top:10px}
 
 /* tab bar */
 .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--glass);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);border-top:1px solid var(--line);box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 40%,transparent);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -424,21 +431,27 @@ body:has(.hx)::before{background:
   linear-gradient(90deg,var(--hx-grid) 1px,transparent 1px) 50% 0/22px 22px;
   -webkit-mask-image:linear-gradient(180deg,#000 0,#000 48%,rgba(0,0,0,.25) 78%,transparent 100%);mask-image:linear-gradient(180deg,#000 0,#000 48%,rgba(0,0,0,.25) 78%,transparent 100%)}
 .app:has(.hx){padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))}
-.hx-top .brand{display:flex;align-items:baseline;gap:9px;color:var(--hx-fg)}
-.hx-mark{align-self:center;width:9px;height:15px;background:var(--lime);transform:skewX(-16deg);flex:none}
-.hx-word{font-family:var(--display);font-stretch:112%;font-weight:800;font-size:17px;letter-spacing:.16em}
-.hx-top .brand small{font-size:11px;font-weight:500;color:var(--hx-sub);letter-spacing:.04em}
+.hx-top{height:auto;min-height:58px;padding-top:4px}
+.hx-top .brand{display:flex;align-items:center;gap:11px;color:var(--hx-fg)}
+.hx-mark{width:12px;height:34px;background:var(--lime);transform:skewX(-16deg);flex:none}
+.hx-brandtxt{display:grid;gap:3px}
+.hx-word{font-family:var(--display);font-stretch:112%;font-weight:800;font-size:clamp(22px,7.2vw,28px);line-height:1;letter-spacing:.14em}
+.hx-top .brand small{font-size:11.5px;font-weight:600;color:var(--hx-sub);letter-spacing:.12em}
 .hx-top .icon-btn{border-radius:10px;background:transparent;box-shadow:inset 0 0 0 1px var(--hx-line);-webkit-backdrop-filter:none;backdrop-filter:none;color:var(--hx-fg)}
 .hx{color:var(--hx-fg)}
 .hx-hero{padding-top:18px}
 .hx-date{display:flex;align-items:center;gap:12px;font-family:var(--display);font-stretch:110%;font-weight:600;font-size:13px;letter-spacing:.22em;color:var(--hx-sub)}
 .hx-date::after{content:"";flex:1;height:7px;background:linear-gradient(var(--hx-line),var(--hx-line)) 0 100%/100% 1px no-repeat,repeating-linear-gradient(90deg,var(--hx-line) 0 1px,transparent 1px 11px) 0 100%/100% 7px no-repeat}
+.hx-date-ja{margin-top:6px;font-size:15px;font-weight:600;letter-spacing:.04em;color:var(--hx-fg)}
 .hx-clockwrap{position:relative;margin:10px 0 0;padding:6px 0 10px;pointer-events:none}
 .hx-clockwrap::before,.hx-clockwrap::after{content:"";position:absolute;width:14px;height:14px;border-color:var(--lime-ink);border-style:solid;opacity:.9}
 .hx-clockwrap::before{top:0;right:0;border-width:1.5px 1.5px 0 0}
 .hx-clockwrap::after{bottom:0;left:0;border-width:0 0 1.5px 1.5px}
 .hx-clock{display:inline-block;font-family:var(--display);font-stretch:78%;font-weight:800;font-size:min(40vw,200px);line-height:.86;letter-spacing:-.01em;font-variant-numeric:tabular-nums;white-space:nowrap}
-.hx-clock i{font-style:normal;color:var(--lime-ink);margin:0 .02em}
+.hx-colon{display:inline-block;position:relative;width:.3em;height:.68em}
+.hx-colon::before,.hx-colon::after{content:"";position:absolute;left:50%;width:.15em;height:.15em;margin-left:-.075em;border-radius:50%;background:var(--lime-ink)}
+.hx-colon::before{top:.1em}
+.hx-colon::after{bottom:.05em}
 .hx-tags{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:14px;text-align:left;color:var(--hx-fg)}
 button.hx-tags{transition:opacity .16s}
 button.hx-tags:active{opacity:.6}
@@ -447,13 +460,13 @@ button.hx-tags:active{opacity:.6}
 .hx-tag.key{box-shadow:inset 3px 0 0 var(--lime),inset 0 0 0 1px var(--hx-line);padding-left:13px}
 .hx-tag svg{width:13px;height:13px;margin:0 -3px 0 6px;color:var(--hx-sub)}
 .hx-undo{height:28px;padding:0 10px;border-radius:6px;font-size:12.5px;font-weight:600;color:var(--hx-fg);background:var(--fill)}
-.hx-start{display:flex;align-items:center;gap:14px;width:100%;height:70px;margin-top:16px;padding:0 16px;border-radius:10px;background:var(--lime);color:var(--on-lime);text-align:left;
+.hx-start{display:flex;align-items:center;justify-content:center;gap:16px;width:100%;height:88px;margin-top:22px;padding:0 18px;border-radius:12px;background:var(--lime);color:var(--on-lime);text-align:left;
   box-shadow:inset 0 0 0 1.5px var(--on-lime),0 16px 34px -18px rgba(110,150,0,.75);transition:transform .16s var(--ease)}
 .hx-start:active{transform:scale(.98)}
-.hx-play{width:38px;height:38px;flex:none;border-radius:8px;background:var(--on-lime);color:var(--lime);display:grid;place-items:center}
-.hx-play svg{width:17px;height:17px;margin-left:2px}
-.hx-start b{display:block;font-family:var(--display);font-stretch:112%;font-weight:800;font-size:21px;line-height:1;letter-spacing:.1em}
-.hx-start small{display:block;font-size:11.5px;font-weight:600;margin-top:5px;opacity:.72;letter-spacing:.04em}
+.hx-play{width:46px;height:46px;flex:none;border-radius:9px;background:var(--on-lime);color:var(--lime);display:grid;place-items:center}
+.hx-play svg{width:20px;height:20px;margin-left:2px}
+.hx-start b{display:block;font-family:var(--display);font-stretch:112%;font-weight:800;font-size:clamp(19px,5.8vw,25px);line-height:1;letter-spacing:.06em;white-space:nowrap}
+.hx-start small{display:block;font-size:13px;font-weight:600;margin-top:6px;opacity:.75;letter-spacing:.06em}
 .hx-sec{margin-top:30px}
 .hx-h{display:flex;align-items:center;gap:10px;margin-bottom:2px;font-family:var(--display);font-stretch:110%;font-weight:700;font-size:12px;letter-spacing:.2em;color:var(--hx-sub)}
 .hx-h::after{content:"";order:1;flex:1;height:1px;background:var(--hx-line)}
@@ -1729,11 +1742,22 @@ function exCardHTML(s, e) {
   </article>`;
 }
 
+/* live: the exercise list sits right under the clock (open until the first set is logged) */
+function addxHTML(s) {
+  UI.addSid = s.id;
+  const open = UI.addOpen ?? Q.sets(s) === 0;
+  return `<section class="addx" id="addx" aria-label="種目を追加">
+    <button class="addx-h" data-act="addxToggle" aria-expanded="${open}"><span>${I.plus}種目を追加</span><small>${open ? '閉じる' : '開く'}</small></button>
+    ${open ? `<div class="search"><input id="exq" type="search" placeholder="種目名で検索、または新しく追加" value="${U.esc(UI.exQuery)}" autocomplete="off" enterkeyhint="done" aria-label="種目を検索"></div>
+    <div id="exlist">${exListHTML()}</div>` : ''}
+  </section>`;
+}
 function editorHTML(s, live) {
   let h = live ? restRowHTML() : '';
   if (!s.exercises.length) h += copyMenuHTML(s);
   h += s.exercises.map(e => exCardHTML(s, e)).join('');
-  h += `<button class="btn btn-soft btn-add" data-act="addEx" data-sid="${s.id}">${I.plus}<span>種目を追加</span></button>`;
+  h += live ? `<button class="btn btn-soft btn-add" data-act="addxOpen">${I.plus}<span>種目を追加</span></button>`
+    : `<button class="btn btn-soft btn-add" data-act="addEx" data-sid="${s.id}">${I.plus}<span>種目を追加</span></button>`;
   if (s.exercises.length && !Menus.same(s.exercises.map(e => e.name))) h += `<button class="btn btn-quiet" data-act="menuFromSession" data-sid="${s.id}">この種目をマイメニューに保存</button>`;
   return h;
 }
@@ -2153,13 +2177,14 @@ const Poster = {
 const Views = {
   today() {
     const now = Date.now(), s = Q.active();
-    let h = s ? `<div class="topbar"><span class="brand">筋トレ日記</span>` : `<div class="topbar hx-top"><span class="brand"><i class="hx-mark" aria-hidden="true"></i><span class="hx-word">WORKOUT LOG</span><small>筋トレ日記</small></span>`;
+    let h = s ? `<div class="topbar"><span class="brand">筋トレ日記</span>` : `<div class="topbar hx-top"><span class="brand"><i class="hx-mark" aria-hidden="true"></i><span class="hx-brandtxt"><span class="hx-word">WORKOUT LOG</span><small>筋トレ日記</small></span></span>`;
     h += `<button class="icon-btn" data-act="settings" aria-label="設定">${I.sliders}</button></div>`;
     h += storageNotice();
     if (s) {
       h += this.liveHero(s);
+      h += addxHTML(s);
       h += `<section class="workout" aria-label="トレーニングの記録">${editorHTML(s, true)}</section>`;
-      if (s.exercises.length) h += `<button class="btn btn-quiet end-bottom" data-act="endAsk">トレーニングを終了する</button>`;
+      h += `<button class="btn btn-soft end-bottom" data-act="endAsk">トレーニングを終了する</button>`;
       return h;
     }
     const todays = Q.onDate(U.key(now)).filter(x => x.end);
@@ -2183,7 +2208,8 @@ const Views = {
     return `<section class="hx">
       <div class="hx-hero">
         <p class="hx-date" data-tick="dateEn">${U.dateEn(now)}</p>
-        <div class="hx-clockwrap"><div class="hx-clock" data-tick="hm" data-v="${hm}" aria-label="現在時刻 ${hm}">${hm.replace(':', '<i>:</i>')}</div></div>
+        <p class="hx-date-ja" data-tick="date">${U.dateLong(now)}</p>
+        <div class="hx-clockwrap"><div class="hx-clock" data-tick="hm" data-v="${hm}" aria-label="現在時刻 ${hm}">${hm.replace(':', '<i class="hx-colon"></i>')}</div></div>
         ${tags}
         <button class="hx-start" data-act="start"><span class="hx-play">${I.play}</span><span><b>TRAINING START</b><small>トレーニング開始</small></span></button>
       </div>
@@ -2267,7 +2293,6 @@ const Views = {
       <p class="clock-cap">経過時間</p>
       <div class="mini"><span>種目<b>${s.exercises.length}</b></span><span>セット<b>${Q.sets(s)}</b></span><span>ボリューム<b>${fmt.volTxt(Q.volume(s))}</b></span></div>
       ${forgot ? `<div class="notice" style="margin:0 0 12px"><div><b>終了を押し忘れていませんか？</b><span>最後のセットは ${U.hm(lastAt)} でした</span></div><button class="notice-btn" data-act="endAt" data-t="${lastAt + 5 * 60000}">${U.hm(lastAt + 5 * 60000)}で終了</button></div>` : ''}
-      <button class="btn btn-soft" data-act="endAsk">トレーニング終了</button>
     </section>`;
   },
   doneHero(todays) {
@@ -2490,7 +2515,7 @@ function tick(force) {
     else if (k === 'greet') v = U.greet(now).toUpperCase();
     else if (k === 'date') v = U.dateLong(now);
     else if (k === 'dateEn') v = U.dateEn(now);
-    else if (k === 'hm') { const t = U.hm(now); if (el.dataset.v !== t) { el.dataset.v = t; el.innerHTML = t.replace(':', '<i>:</i>'); } return; }
+    else if (k === 'hm') { const t = U.hm(now); if (el.dataset.v !== t) { el.dataset.v = t; el.innerHTML = t.replace(':', '<i class="hx-colon"></i>'); } return; }
     else if (k === 'endnow') v = U.hm(now);
     else if (k === 'enddur' && s) v = U.dur(now - s.start);
     if (v !== undefined && el.textContent !== v) el.textContent = v;
@@ -2552,6 +2577,7 @@ const Actions = {
 
   start() {
     if (Q.active()) { App.go('today'); return; }
+    UI.addOpen = null; UI.exQuery = '';
     const s = Model.start();
     App.go('today');
     Wake.sync();
@@ -2576,6 +2602,8 @@ const Actions = {
   },
 
   addEx(d) { UI.addSid = d.sid; UI.exQuery = ''; Sheet.open(addExSheet); },
+  addxToggle() { const s = Q.active(); UI.addOpen = !(UI.addOpen ?? (s ? Q.sets(s) === 0 : true)); UI.exQuery = ''; App.render(); },
+  addxOpen() { UI.addOpen = true; UI.exQuery = ''; App.render(); requestAnimationFrame(() => $('#addx')?.scrollIntoView({ behavior: 'smooth', block: 'start' })); },
   exPart(d) { UI.exPart = d.p; const l = $('#exlist'); if (l) { l.innerHTML = exListHTML(); } },
   guide(d) { UI.guide = { name: d.name, from: d.from || 'card' }; Sheet.open(guideSheet); },
   guideBack() { Sheet.open(addExSheet); },
@@ -2692,8 +2720,11 @@ const Actions = {
       Store.commit({ meta: true, silent: true });
     }
     const e = Model.addExercise(s.id, name);
+    const inline = !!$('#addx #exlist');
     if (isNew) Toast.show(`<span>「${U.esc(name)}」を${PARTS[Lib.part(name)]}に追加しました</span>`);
+    else if (inline) Toast.show(`<span>「${U.esc(name)}」を追加しました</span>`);
     UI.exQuery = '';
+    if (inline) return;
     requestAnimationFrame(() => {
       const card = document.getElementById('ex-' + e.id);
       if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -2770,6 +2801,7 @@ const Actions = {
     if (byLb && lb > 0) set.lb = Math.round(lb * 100) / 100;
     e.sets.push(set);
     if (live && Store.settings.restAuto && Sound.on) Sound.prime();
+    if (live) UI.addOpen = null;
     Drafts.m.set(e.id, { w: byLb ? Unit.r1(set.w) : U.w(set.w), r: String(r), l: byLb ? U.w(lb) : (set.w > 0 ? Unit.r1(Unit.toLb(set.w)) : ''), src: byLb ? 'lb' : 'kg', main: dr.main || 'kg' });
     if (isTyping()) document.activeElement.blur();
     UI.flash = `${e.id}:${e.sets.length - 1}`;
