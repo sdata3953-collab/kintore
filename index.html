@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="筋トレ日記">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<script>window.KINTORE_VERSION = '20261021-1028'; window.KINTORE_FIREBASE = {"apiKey": "AIzaSyD8C-cmnF12VJThPhKZv6JbJGbzb8iENGk", "authDomain": "kintore-82613.firebaseapp.com", "projectId": "kintore-82613", "storageBucket": "kintore-82613.firebasestorage.app", "messagingSenderId": "156878101173", "appId": "1:156878101173:web:3c4a96afe1832a79c57cfc"};</script>
+<script>window.KINTORE_VERSION = '20261021-1216'; window.KINTORE_FIREBASE = {"apiKey": "AIzaSyD8C-cmnF12VJThPhKZv6JbJGbzb8iENGk", "authDomain": "kintore-82613.firebaseapp.com", "projectId": "kintore-82613", "storageBucket": "kintore-82613.firebasestorage.app", "messagingSenderId": "156878101173", "appId": "1:156878101173:web:3c4a96afe1832a79c57cfc"};</script>
 <style>
 :root{color-scheme:light;padding-top:env(safe-area-inset-top,0px)}
 body{margin:0}
@@ -279,19 +279,12 @@ small{font-size:inherit}
 @keyframes shake{20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}
 .btn-add svg{width:18px;height:18px}
 .end-bottom{margin-top:22px}
-.addx{display:grid;gap:12px;margin-top:4px}
-.addx-h,.live-add{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:68px;padding:0 14px 0 12px;border-radius:14px;background:var(--lime);color:var(--on-lime);
-  box-shadow:inset 0 0 0 1.5px var(--on-lime),0 14px 30px -18px rgba(110,150,0,.8);font-size:19px;font-weight:700;letter-spacing:.02em;text-align:left;transition:transform .16s var(--ease)}
-.addx-h:active,.live-add:active{transform:scale(.98)}
-.addx-h > span,.live-add > span{display:inline-flex;align-items:center;gap:12px}
-.addx-h i,.live-add i{width:42px;height:42px;border-radius:9px;background:var(--on-lime);color:var(--lime);display:grid;place-items:center;flex:none}
-.addx-h svg,.live-add svg{width:22px;height:22px}
-.addx-h small{font-size:13px;font-weight:700;opacity:.7}
-.live-add{justify-content:center;margin-top:4px}
+.live-add{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:68px;margin:4px 0 2px;padding:0 16px;border-radius:14px;background:var(--lime);color:var(--on-lime);
+  box-shadow:inset 0 0 0 1.5px var(--on-lime),0 14px 30px -18px rgba(110,150,0,.8);font-size:19px;font-weight:700;letter-spacing:.02em;transition:transform .16s var(--ease)}
+.live-add:active{transform:scale(.98)}
+.live-add svg{width:24px;height:24px}
 .btn-end{min-height:64px;border-radius:14px;background:#E5484D;color:#fff;font-size:18px;font-weight:700;letter-spacing:.04em;box-shadow:0 14px 30px -18px rgba(229,72,77,.9)}
 .btn-end:active{transform:scale(.98)}
-.addx .part-tabs{margin-top:2px}
-.addx .pick-list{margin-top:10px}
 
 /* tab bar */
 .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--glass);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);border-top:1px solid var(--line);box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 40%,transparent);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -466,12 +459,10 @@ button.hx-tags:active{opacity:.6}
 .hx-tag.key{box-shadow:inset 3px 0 0 var(--lime),inset 0 0 0 1px var(--hx-line);padding-left:13px}
 .hx-tag svg{width:13px;height:13px;margin:0 -3px 0 6px;color:var(--hx-sub)}
 .hx-undo{height:28px;padding:0 10px;border-radius:6px;font-size:12.5px;font-weight:600;color:var(--hx-fg);background:var(--fill)}
-.hx-start{display:flex;align-items:center;justify-content:center;gap:16px;width:100%;height:88px;margin-top:22px;padding:0 18px;border-radius:12px;background:var(--lime);color:var(--on-lime);text-align:left;
+.hx-start{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;width:100%;height:88px;margin-top:22px;padding:0 18px;border-radius:12px;background:var(--lime);color:var(--on-lime);text-align:center;
   box-shadow:inset 0 0 0 1.5px var(--on-lime),0 16px 34px -18px rgba(110,150,0,.75);transition:transform .16s var(--ease)}
 .hx-start:active{transform:scale(.98)}
-.hx-play{width:46px;height:46px;flex:none;border-radius:9px;background:var(--on-lime);color:var(--lime);display:grid;place-items:center}
-.hx-play svg{width:20px;height:20px;margin-left:2px}
-.hx-start b{display:block;font-family:var(--display);font-stretch:112%;font-weight:800;font-size:clamp(19px,5.8vw,25px);line-height:1;letter-spacing:.06em;white-space:nowrap}
+.hx-start b{display:block;font-family:var(--display);font-stretch:112%;font-weight:800;font-size:clamp(24px,7.6vw,31px);line-height:1;letter-spacing:.08em;white-space:nowrap}
 .hx-start small{display:block;font-size:13px;font-weight:600;margin-top:6px;opacity:.75;letter-spacing:.06em}
 .hx-sec{margin-top:30px}
 .hx-h{display:flex;align-items:center;gap:10px;margin-bottom:2px;font-family:var(--display);font-stretch:110%;font-weight:700;font-size:12px;letter-spacing:.2em;color:var(--hx-sub)}
@@ -1748,22 +1739,15 @@ function exCardHTML(s, e) {
   </article>`;
 }
 
-/* live: the exercise list sits right under the clock (open until the first set is logged) */
+/* live: one big "add exercise" button right under the clock; it opens the usual add-exercise screen */
 function addxHTML(s) {
-  UI.addSid = s.id;
-  const open = UI.addOpen ?? Q.sets(s) === 0;
-  return `<section class="addx" id="addx" aria-label="種目を追加">
-    <button class="addx-h" data-act="addxToggle" aria-expanded="${open}"><span><i>${I.plus}</i>種目を追加</span><small>${open ? '閉じる' : '開く'}</small></button>
-    ${open ? `<div class="search"><input id="exq" type="search" placeholder="種目名で検索、または新しく追加" value="${U.esc(UI.exQuery)}" autocomplete="off" enterkeyhint="done" aria-label="種目を検索"></div>
-    <div id="exlist">${exListHTML()}</div>` : ''}
-  </section>`;
+  return `<button class="live-add" data-act="addEx" data-sid="${s.id}">${I.plus}<span>種目を追加</span></button>`;
 }
 function editorHTML(s, live) {
   let h = live ? restRowHTML() : '';
   if (!s.exercises.length) h += copyMenuHTML(s);
   h += s.exercises.map(e => exCardHTML(s, e)).join('');
-  h += live ? `<button class="live-add" data-act="addxOpen"><span><i>${I.plus}</i>種目を追加</span></button>`
-    : `<button class="btn btn-soft btn-add" data-act="addEx" data-sid="${s.id}">${I.plus}<span>種目を追加</span></button>`;
+  if (!live) h += `<button class="btn btn-soft btn-add" data-act="addEx" data-sid="${s.id}">${I.plus}<span>種目を追加</span></button>`;
   if (s.exercises.length && !Menus.same(s.exercises.map(e => e.name))) h += `<button class="btn btn-quiet" data-act="menuFromSession" data-sid="${s.id}">この種目をマイメニューに保存</button>`;
   return h;
 }
@@ -2217,7 +2201,7 @@ const Views = {
         <p class="hx-date-ja" data-tick="date">${U.dateLong(now)}</p>
         <div class="hx-clockwrap"><div class="hx-clock" data-tick="hm" data-v="${hm}" aria-label="現在時刻 ${hm}">${hm.replace(':', '<i class="hx-colon"></i>')}</div></div>
         ${tags}
-        <button class="hx-start" data-act="start"><span class="hx-play">${I.play}</span><span><b>TRAINING START</b><small>トレーニング開始</small></span></button>
+        <button class="hx-start" data-act="start"><b>TRAINING START</b><small>トレーニング開始</small></button>
       </div>
       ${this.hxLists()}
     </section>`;
@@ -2583,7 +2567,7 @@ const Actions = {
 
   start() {
     if (Q.active()) { App.go('today'); return; }
-    UI.addOpen = null; UI.exQuery = '';
+    UI.exQuery = '';
     const s = Model.start();
     App.go('today');
     Wake.sync();
@@ -2608,8 +2592,6 @@ const Actions = {
   },
 
   addEx(d) { UI.addSid = d.sid; UI.exQuery = ''; Sheet.open(addExSheet); },
-  addxToggle() { const s = Q.active(); UI.addOpen = !(UI.addOpen ?? (s ? Q.sets(s) === 0 : true)); UI.exQuery = ''; App.render(); },
-  addxOpen() { UI.addOpen = true; UI.exQuery = ''; App.render(); requestAnimationFrame(() => $('#addx')?.scrollIntoView({ behavior: 'smooth', block: 'start' })); },
   exPart(d) { UI.exPart = d.p; const l = $('#exlist'); if (l) { l.innerHTML = exListHTML(); } },
   guide(d) { UI.guide = { name: d.name, from: d.from || 'card' }; Sheet.open(guideSheet); },
   guideBack() { Sheet.open(addExSheet); },
@@ -2726,11 +2708,8 @@ const Actions = {
       Store.commit({ meta: true, silent: true });
     }
     const e = Model.addExercise(s.id, name);
-    const inline = !!$('#addx #exlist');
     if (isNew) Toast.show(`<span>「${U.esc(name)}」を${PARTS[Lib.part(name)]}に追加しました</span>`);
-    else if (inline) Toast.show(`<span>「${U.esc(name)}」を追加しました</span>`);
     UI.exQuery = '';
-    if (inline) return;
     requestAnimationFrame(() => {
       const card = document.getElementById('ex-' + e.id);
       if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -2807,7 +2786,6 @@ const Actions = {
     if (byLb && lb > 0) set.lb = Math.round(lb * 100) / 100;
     e.sets.push(set);
     if (live && Store.settings.restAuto && Sound.on) Sound.prime();
-    if (live) UI.addOpen = null;
     Drafts.m.set(e.id, { w: byLb ? Unit.r1(set.w) : U.w(set.w), r: String(r), l: byLb ? U.w(lb) : (set.w > 0 ? Unit.r1(Unit.toLb(set.w)) : ''), src: byLb ? 'lb' : 'kg', main: dr.main || 'kg' });
     if (isTyping()) document.activeElement.blur();
     UI.flash = `${e.id}:${e.sets.length - 1}`;
