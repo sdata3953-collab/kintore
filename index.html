@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="筋トレ日記">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<script>window.KINTORE_VERSION = '20261021-1216'; window.KINTORE_FIREBASE = {"apiKey": "AIzaSyD8C-cmnF12VJThPhKZv6JbJGbzb8iENGk", "authDomain": "kintore-82613.firebaseapp.com", "projectId": "kintore-82613", "storageBucket": "kintore-82613.firebasestorage.app", "messagingSenderId": "156878101173", "appId": "1:156878101173:web:3c4a96afe1832a79c57cfc"};</script>
+<script>window.KINTORE_VERSION = '20261027-1346'; window.KINTORE_FIREBASE = {"apiKey": "AIzaSyD8C-cmnF12VJThPhKZv6JbJGbzb8iENGk", "authDomain": "kintore-82613.firebaseapp.com", "projectId": "kintore-82613", "storageBucket": "kintore-82613.firebasestorage.app", "messagingSenderId": "156878101173", "appId": "1:156878101173:web:3c4a96afe1832a79c57cfc"};</script>
 <style>
 :root{color-scheme:light;padding-top:env(safe-area-inset-top,0px)}
 body{margin:0}
@@ -1739,7 +1739,8 @@ function exCardHTML(s, e) {
   </article>`;
 }
 
-/* live: one big "add exercise" button right under the clock; it opens the usual add-exercise screen */
+/* live: one big "add exercise" button that opens the usual add-exercise screen —
+   under the clock until the first exercise is added, then right after the last exercise */
 function addxHTML(s) {
   return `<button class="live-add" data-act="addEx" data-sid="${s.id}">${I.plus}<span>種目を追加</span></button>`;
 }
@@ -1748,6 +1749,7 @@ function editorHTML(s, live) {
   if (!s.exercises.length) h += copyMenuHTML(s);
   h += s.exercises.map(e => exCardHTML(s, e)).join('');
   if (!live) h += `<button class="btn btn-soft btn-add" data-act="addEx" data-sid="${s.id}">${I.plus}<span>種目を追加</span></button>`;
+  else if (s.exercises.length) h += addxHTML(s);
   if (s.exercises.length && !Menus.same(s.exercises.map(e => e.name))) h += `<button class="btn btn-quiet" data-act="menuFromSession" data-sid="${s.id}">この種目をマイメニューに保存</button>`;
   return h;
 }
@@ -2172,7 +2174,7 @@ const Views = {
     h += storageNotice();
     if (s) {
       h += this.liveHero(s);
-      h += addxHTML(s);
+      if (!s.exercises.length) h += addxHTML(s);
       h += `<section class="workout" aria-label="トレーニングの記録">${editorHTML(s, true)}</section>`;
       h += `<button class="btn btn-end end-bottom" data-act="endAsk">トレーニングを終了する</button>`;
       return h;
