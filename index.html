@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="筋トレ日記">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<script>window.KINTORE_VERSION = '20261027-1346'; window.KINTORE_FIREBASE = {"apiKey": "AIzaSyD8C-cmnF12VJThPhKZv6JbJGbzb8iENGk", "authDomain": "kintore-82613.firebaseapp.com", "projectId": "kintore-82613", "storageBucket": "kintore-82613.firebasestorage.app", "messagingSenderId": "156878101173", "appId": "1:156878101173:web:3c4a96afe1832a79c57cfc"};</script>
+<script>window.KINTORE_VERSION = '20261112-1238'; window.KINTORE_FIREBASE = {"apiKey": "AIzaSyD8C-cmnF12VJThPhKZv6JbJGbzb8iENGk", "authDomain": "kintore-82613.firebaseapp.com", "projectId": "kintore-82613", "storageBucket": "kintore-82613.firebasestorage.app", "messagingSenderId": "156878101173", "appId": "1:156878101173:web:3c4a96afe1832a79c57cfc"};</script>
 <style>
 :root{color-scheme:light;padding-top:env(safe-area-inset-top,0px)}
 body{margin:0}
@@ -222,6 +222,12 @@ small{font-size:inherit}
 .pchip{font-family:var(--mono);font-size:13px;padding:4px 9px;border-radius:9px;background:var(--card);color:var(--fg-2);font-variant-numeric:tabular-nums;box-shadow:var(--shadow)}
 .pchip.is-next{box-shadow:inset 0 0 0 1.5px var(--fg);color:var(--fg)}
 .prev.is-empty{font-size:12.5px;color:var(--muted)}
+.prev-best{display:flex;align-items:baseline;gap:10px;padding-top:9px;border-top:1px solid var(--line)}
+.pb-l{font-size:12px;color:var(--muted)}
+.pb-v{font-family:var(--mono);font-size:16px;font-weight:600;color:var(--fg);font-variant-numeric:tabular-nums}
+.pb-v small{font-size:11px;color:var(--muted);margin-left:1px}
+.pb-v .x{margin:0 4px;color:var(--muted);font-size:12px}
+.pb-d{margin-left:auto;font-size:12px;color:var(--muted)}
 .sets{list-style:none;padding:0;display:grid}
 .set{display:grid;grid-template-columns:24px minmax(0,max-content) minmax(0,1fr) 34px;align-items:center;gap:8px;min-height:46px;border-bottom:1px solid var(--line)}
 .set:last-child{border-bottom:0}
@@ -438,6 +444,13 @@ body:has(.hx)::before{background:
 .hx-top .brand small{font-size:11.5px;font-weight:600;color:var(--hx-sub);letter-spacing:.12em}
 .hx-top .icon-btn{border-radius:10px;background:transparent;box-shadow:inset 0 0 0 1px var(--hx-line);-webkit-backdrop-filter:none;backdrop-filter:none;color:var(--hx-fg)}
 .hx{color:var(--hx-fg)}
+.auto-log{display:grid;gap:10px;margin:8px 0 6px;padding:14px 14px 14px 16px;border-radius:12px;background:var(--card);box-shadow:inset 3px 0 0 var(--lime),var(--shadow);color:var(--fg)}
+.al-h{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.al-tag{font-family:var(--display);font-stretch:110%;font-weight:800;font-size:11px;letter-spacing:.16em;padding:3px 7px;border-radius:5px;background:var(--lime);color:var(--on-lime)}
+.al-t{display:grid;gap:4px;font-size:13.5px;line-height:1.55;color:var(--fg-2)}
+.al-t b{font-size:15px;color:var(--fg)}
+.al-acts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.al-acts .btn{min-height:44px;border-radius:12px;font-size:14.5px}
 .hx-hero{padding-top:18px}
 .hx-date{display:flex;align-items:center;gap:12px;font-family:var(--display);font-stretch:110%;font-weight:600;font-size:13px;letter-spacing:.22em;color:var(--hx-sub)}
 .hx-date::after{content:"";flex:1;height:7px;background:linear-gradient(var(--hx-line),var(--hx-line)) 0 100%/100% 1px no-repeat,repeating-linear-gradient(90deg,var(--hx-line) 0 1px,transparent 1px 11px) 0 100%/100% 7px no-repeat}
@@ -539,6 +552,8 @@ button.hx-tags:active{opacity:.6}
 .group{background:var(--card);border-radius:18px;box-shadow:var(--shadow);padding:0 16px}
 .group + .group{margin-top:14px}
 .g-row{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:56px;padding:10px 0;border-bottom:1px solid var(--line);width:100%;text-align:left}
+.g-row.g-col{flex-direction:column;align-items:stretch;gap:10px}
+.g-col .seg{align-self:stretch;display:grid;grid-template-columns:repeat(4,1fr)}
 .g-row:last-child{border-bottom:0}
 .g-t{font-size:15px}
 .g-s{font-size:12px;color:var(--muted);margin-top:1px}
@@ -846,7 +861,7 @@ const Guide = {
    3. Store — localStorage first, private cloud copy when available
    ============================================================ */
 const LS = { data: 'kintore-diary.v1', rest: 'kintore-diary.rest' };
-const DEFAULT_SETTINGS = { restAuto: true, restSec: 90, step: 2.5, wake: false, restSound: true, bodyW: 60, height: 0, age: 0, sex: '', restNotify: false, ntfyTopic: '' };
+const DEFAULT_SETTINGS = { restAuto: true, restSec: 90, step: 2.5, wake: false, restSound: true, bodyW: 60, height: 0, age: 0, sex: '', restNotify: false, ntfyTopic: '', autoEndH: 3 };
 const normMeta = m => ({
   activeId: m?.activeId ?? null,
   settings: { ...DEFAULT_SETTINGS, ...(m?.settings || {}) },
@@ -1092,6 +1107,18 @@ const Q = {
   sets(s) { return s.exercises.reduce((n, e) => n + e.sets.length, 0); },
   volume(s) { return s.exercises.reduce((v, e) => v + e.sets.reduce((a, x) => a + x.w * x.r, 0), 0); },
   trained(s) { return this.sets(s) > 0; },
+  /* heaviest set of an exercise before this session (most reps at that weight; bodyweight → most reps) */
+  bestSet(name, exceptId) {
+    let b = null, t = 0;
+    for (const s of this.all()) {
+      if (s.id === exceptId) continue;
+      for (const e of s.exercises) {
+        if (e.name !== name) continue;
+        for (const x of e.sets) if (!b || x.w > b.w || (x.w === b.w && x.r > b.r)) { b = x; t = s.start; }
+      }
+    }
+    return b ? { x: b, t } : null;
+  },
   lastSetAt(s) { let t = 0; s.exercises.forEach(e => e.sets.forEach(x => { if (x.at > t) t = x.at; })); return t; },
   prev(name, s) {
     const list = this.all();
@@ -1511,6 +1538,39 @@ const Notify = {
   },
   test() { return this.post({ title: '筋トレ日記', message: 'この通知が見えたら準備OKです' }); },
 };
+/* A session left running (end never pressed) is closed by itself once nothing has been logged for a
+   while (setting: 3 h by default). The end time is put just after the last set; with no sets, the
+   usual workout length is used. The session keeps a note so the next screen can say what happened. */
+const AutoEnd = {
+  last: 0,
+  hours() { const h = Store.settings.autoEndH; return h === 0 ? 0 : [3, 6, 24].includes(Number(h)) ? Number(h) : 3; },
+  typical() {
+    const d = Q.all().filter(x => x.end && !x.auto).map(x => x.end - x.start).filter(x => x > 10 * 60e3 && x < 4 * 3600e3).sort((a, b) => a - b);
+    return d.length ? d[d.length >> 1] : 60 * 60e3;
+  },
+  check(force) {
+    const now = Date.now(); if (!force && now - this.last < 30e3) return; this.last = now;
+    const h = this.hours(), s = Q.active(); if (!h || !s) return;
+    const lastAt = Q.lastSetAt(s), idleFrom = Math.max(s.start, lastAt);
+    if (now - idleFrom < h * 3600e3) return;
+    const span = h === 24 ? '1日' : `${h}時間`;
+    let end, why;
+    if (lastAt) {
+      end = Math.min(lastAt + 5 * 60e3, now);
+      why = `最後のセット（${U.hm(lastAt)}）から${span}以上記録がなかったので、その5分後の${U.hm(end)}に終了したことにしました。`;
+    } else {
+      const typ = this.typical();
+      end = Math.min(s.start + typ, now);
+      why = `セットの記録がないまま${span}以上たったので、いつものトレーニング時間（約${U.mins(typ)}分）で区切って${U.hm(end)}に終了したことにしました。`;
+    }
+    s.auto = { at: now, why, seen: false };
+    if (Rest.end) Rest.stop();
+    Model.finish(s.id, end);
+    Wake.sync();
+    if (document.visibilityState === 'visible') Toast.show('<span>終了の押し忘れがあったので、自動で記録を終了しました</span>', 3600);
+  },
+  pending() { return Q.all().filter(x => x.auto && !x.auto.seen).slice(-3); },
+};
 const Haptic = {
   tap() { try { navigator.vibrate && navigator.vibrate(10); } catch {} },
   done() { try { navigator.vibrate && navigator.vibrate([180, 90, 180]); } catch {} },
@@ -1678,9 +1738,11 @@ function exCardHTML(s, e) {
   const d = Drafts.get(s, e, prev);
   const n = e.sets.length;
   const en = Lib.en(e.name);
+  const best = prev ? Q.bestSet(e.name, s.id) : null;
   const prevBlock = prev
     ? `<div class="prev"><div class="prev-l"><span>前回</span><span>${U.md(prev.s.start)}</span></div>
-        <div class="prev-sets">${prev.e.sets.map((x, i) => `<span class="pchip${i === n ? ' is-next' : ''}">${fmt.chip(x)}</span>`).join('')}</div></div>`
+        <div class="prev-sets">${prev.e.sets.map((x, i) => `<span class="pchip${i === n ? ' is-next' : ''}">${fmt.chip(x)}</span>`).join('')}</div>
+        ${best ? `<div class="prev-best"><span class="pb-l">最大</span><span class="pb-v">${fmt.setH(best.x)}</span><span class="pb-d">${U.md(best.t)}</span></div>` : ''}</div>`
     : `<div class="prev is-empty">はじめての種目です。今日の記録が次回の目安になります。</div>`;
   const rows = e.sets.map((x, i) => {
     const p = prev?.e.sets[i];
@@ -2029,6 +2091,11 @@ function settingsSheet() {
     <div class="g-row"><p class="g-t">重量の刻み（kg）</p>${seg([1, 1.25, 2.5, 5], st.step, 'setStep')}</div>
     <div class="g-row"><div><p class="g-t">トレーニング中は画面を消さない</p><p class="g-s">対応しているブラウザのみ</p></div>${sw('wake', '画面を消さない')}</div>
   </div>
+  <p class="group-l">終了の押し忘れ</p>
+  <div class="group">
+    <div class="g-row g-col"><div><p class="g-t">自動で終了する</p><p class="g-s">最後の記録からこの時間がたつと、トレーニングを自動で終了します。終了時刻は最後のセットの5分後になります</p></div>
+      <div class="seg">${[[3, '3時間'], [6, '6時間'], [24, '1日'], [0, 'しない']].map(([v, l]) => `<button class="${AutoEnd.hours() === v ? 'on' : ''}" data-act="setAutoEnd" data-v="${v}">${l}</button>`).join('')}</div></div>
+  </div>
   <p class="group-l">からだ（消費カロリーの計算に使います）</p>
   <div class="group">
     <div class="g-row"><p class="g-t">身長（cm）</p><input id="bodyH" class="mini-in" type="number" inputmode="decimal" min="100" max="230" step="0.1" value="${Fun.height() ? Fun.num(Fun.height()) : ''}" placeholder="未入力" aria-label="身長（cm）"></div>
@@ -2180,6 +2247,7 @@ const Views = {
       return h;
     }
     const todays = Q.onDate(U.key(now)).filter(x => x.end);
+    h += this.autoLog();
     if (todays.length) return h + this.doneHero(todays) + this.hxLists();
     return h + this.home(now, Suggest.get());
   },
@@ -2207,6 +2275,14 @@ const Views = {
       </div>
       ${this.hxLists()}
     </section>`;
+  },
+  /* "closed automatically" log entries, shown until the person confirms them */
+  autoLog() {
+    return AutoEnd.pending().map(s => `<section class="auto-log" role="status">
+      <p class="al-h"><span class="al-tag">AUTO END</span><span>${U.dateLong(s.start)}　${U.hm(s.start)}〜${U.hm(s.end)}</span></p>
+      <p class="al-t"><b>終了の押し忘れがあったので、自動で記録を終了しました</b>${U.esc(s.auto.why)}</p>
+      <div class="al-acts"><button class="btn btn-soft" data-act="editSession" data-sid="${s.id}">時刻を直す</button><button class="btn btn-primary" data-act="autoSeen" data-sid="${s.id}">OK</button></div>
+    </section>`).join('');
   },
   /* recent workouts and my menus as compact rows (shared by the idle and the done-today screens) */
   hxLists() {
@@ -2499,6 +2575,7 @@ function fitClock() {
   if (w > 0) el.style.fontSize = Math.min(232, Math.floor(100 * avail / w * 0.99)) + 'px';
 }
 function tick(force) {
+  AutoEnd.check();
   const now = Date.now(), s = Q.active();
   document.querySelectorAll('[data-tick]').forEach(el => {
     const k = el.dataset.tick; let v;
@@ -2839,6 +2916,8 @@ const Actions = {
     UI.editId = d.sid;
     App.go('edit');
   },
+  setAutoEnd(d) { const v = Number(d.v); Store.settings.autoEndH = [3, 6, 24, 0].includes(v) ? v : 3; Store.commit({ meta: true }); AutoEnd.check(true); },
+  autoSeen(d) { const s = Model.get(d.sid); if (!s || !s.auto) return; s.auto.seen = true; Store.commit({ sessions: [s.id] }); },
   editDone() { App.go(UI.back || 'calendar'); },
   editTime() {
     const s = Model.get(UI.editId); if (!s) return;
@@ -3041,7 +3120,7 @@ document.addEventListener('pointerout', e => {
   if (from && !to) Charts.hideAll();
 });
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible') { App.render(); Wake.sync(); Rest.rearm(); Updater.check(false); }
+  if (document.visibilityState === 'visible') { AutoEnd.check(true); App.render(); Wake.sync(); Rest.rearm(); Updater.check(false); }
   else { Rest.disarm(); Sound.release(); if (Notify.next) Notify.flush(); }
 });
 Sound.onReady = () => Rest.rearm();
@@ -3055,7 +3134,7 @@ function boot() {
   Sheet.root = $('#sheet'); Sheet.panel = $('#sheetPanel');
   Toast.el = $('#toast'); Rest.el = $('#rest');
   Sound.session();
-  Store.load(); Rest.load();
+  Store.load(); Rest.load(); AutoEnd.check(true);
   App.render(); Rest.paint();
   setInterval(tick, 500);
   Wake.sync();
